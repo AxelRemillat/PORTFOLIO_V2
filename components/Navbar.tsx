@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const navLinks = [
-  { href: "/projets", label: "Projets" },
+  { href: "/", label: "Projets" },
   { href: "/demos", label: "Démos" },
   { href: "/parcours", label: "Parcours" },
   { href: "/contact", label: "Contact" },
@@ -32,7 +32,7 @@ export default function Navbar() {
               key={link.href}
               href={link.href}
               className={`text-sm transition-colors ${
-                pathname?.startsWith(link.href)
+                (link.href === "/" ? pathname === "/" : pathname?.startsWith(link.href))
                   ? "text-white"
                   : "text-muted hover:text-white"
               }`}
