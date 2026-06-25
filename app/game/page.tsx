@@ -19,10 +19,11 @@ const GameCanvas = dynamic(
 );
 
 const PORTAL_LABELS: Record<string, string> = {
-  "/demos/rag": "CV Interactif RAG",
-  "/projets/seaco": "SEACO Pipeline",
-  "/projets/n8n": "Automatisations N8N",
-  "/projets/rise": "RISE",
+  "/demos/rag":       "CV Interactif RAG",
+  "/projets/seaco":   "SEACO Pipeline",
+  "/projets/n8n":     "Automatisations N8N",
+  "/projets/rise":    "RISE",
+  "/projets/music":   "Planète qui Chante",
 };
 
 export default function GamePage() {
@@ -115,14 +116,15 @@ export default function GamePage() {
             Portails
           </p>
           {[
-            { color: "#f97316", label: "CV RAG",  dir: "N-E" },
-            { color: "#e2e8f0", label: "RISE",    dir: "N-O" },
-            { color: "#60a5fa", label: "SEACO",   dir: "S-E" },
-            { color: "#a855f7", label: "N8N",     dir: "S-O" },
-          ].map(({ color, label, dir }) => (
+            { color: "#FF8C00", label: "CV Interactif RAG",  n: "1" },
+            { color: "#FFFFFF", label: "RISE",                n: "2" },
+            { color: "#00BFFF", label: "SEACO Pipeline",      n: "3" },
+            { color: "#CC44FF", label: "Automatisations N8N", n: "4" },
+            { color: "#FFD700", label: "Planète qui Chante",  n: "5" },
+          ].map(({ color, label, n }) => (
             <div key={label} className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 4px ${color}` }} />
-              <span className="text-[10px] font-mono text-muted">{dir} — {label}</span>
+              <span className="text-[10px] font-mono text-muted">{n} — {label}</span>
             </div>
           ))}
         </div>

@@ -6,19 +6,32 @@ import * as THREE from "three";
 import { Robot } from "./Robot";
 import { Portal } from "./Portal";
 
-// ─── Ellipsoid helpers ────────────────────────────────────────────────────────
-// Planet: sphereGeometry radius 7, scale Y 0.85 → semi-axes (7, 5.95, 7)
+// ─── Sphere helpers ───────────────────────────────────────────────────────────
+// Planet: perfect sphere radius 7. A_XZ = A_Y = 7.
+// ellipsoidProject / ellipsoidNormal work for any ellipsoid; with equal axes
+// they degenerate to simple normalize-to-radius helpers for a sphere.
 
 const A_XZ = 7;
-const A_Y  = 7 * 0.85; // 5.95
+const A_Y  = 7;       // was 7 * 0.85 — now a perfect sphere
 
-// Module-level temps to avoid per-frame allocations
+// Movement temps (used in Scene useFrame)
 const _sn  = new THREE.Vector3(); // surface normal
 const _sp  = new THREE.Vector3(); // surface position
 const _dir = new THREE.Vector3(); // direction / input
 const _ax  = new THREE.Vector3(); // xAxis for basis
 const _az  = new THREE.Vector3(); // zAxis for basis
 const _m4  = new THREE.Matrix4();
+
+// Camera constants
+const CAM_BACK      = 10.0; // units behind robot (gives room to see portals/asteroids)
+const CAM_HEIGHT    =  6.0; // units above robot along surface normal
+const CAM_LERP      =  0.05; // position smooth factor per frame
+const CAM_FACE_LERP =  0.025; // how fast camera direction follows robot facing (low = no sudden pivots)
+
+// Camera temps (independent from movement temps)
+const _cn  = new THREE.Vector3();    // camera: surface normal at robot
+const _cd  = new THREE.Vector3();    // camera: desired world position
+const _m4c = new THREE.Matrix4();    // camera: lookAt rotation matrix
 
 /** Project any point onto the ellipsoid surface (along the ray from origin). */
 function ellipsoidProject(p: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
@@ -39,43 +52,38 @@ function ellipsoidNormal(p: THREE.Vector3, out: THREE.Vector3): THREE.Vector3 {
   ).normalize();
 }
 
-// ─── Helper ──────────────────────────────────────────────────────────────────
-
-function planetSurfaceY(x: number, z: number): number {
-  return Math.sqrt(Math.max(0, 49 - x * x - z * z)) * 0.85;
+// Compute portal world-space position from a pre-normalized surface direction vector.
+// Portal center = dir × (planetRadius + portalOffset) = dir × 7.9
+function dirToPortalPos(nx: number, ny: number, nz: number): [number, number, number] {
+  const r = A_XZ + 0.9; // 7 + portalOffset(0.9) = 7.9
+  return [nx * r, ny * r, nz * r];
 }
 
 // ─── Static data ─────────────────────────────────────────────────────────────
 
 const PORTALS = [
-  { id: "rag",   position: [ 4, planetSurfaceY( 4, -4) + 0.3, -4] as [number,number,number], yRotation: -Math.PI / 4,      color: "#f97316", label: "CV Interactif RAG",  href: "/demos/rag"     },
-  { id: "rise",  position: [-4, planetSurfaceY(-4, -4) + 0.3, -4] as [number,number,number], yRotation:  Math.PI / 4,      color: "#e2e8f0", label: "RISE",                href: "/projets/rise"  },
-  { id: "seaco", position: [ 4, planetSurfaceY( 4,  4) + 0.3,  4] as [number,number,number], yRotation: -3 * Math.PI / 4,  color: "#60a5fa", label: "SEACO Pipeline",      href: "/projets/seaco" },
-  { id: "n8n",   position: [-4, planetSurfaceY(-4,  4) + 0.3,  4] as [number,number,number], yRotation:  3 * Math.PI / 4,  color: "#a855f7", label: "Automatisations N8N", href: "/projets/n8n"   },
+  { id: "rag",   position: dirToPortalPos( 0.62,  0.55,  0.56), color: "#FF8C00", label: "CV Interactif RAG",  href: "/demos/rag"     },
+  { id: "rise",  position: dirToPortalPos(-0.71,  0.38, -0.59), color: "#FFFFFF", label: "RISE",                href: "/projets/rise"  },
+  { id: "seaco", position: dirToPortalPos(-0.48, -0.52,  0.71), color: "#00BFFF", label: "SEACO Pipeline",      href: "/projets/seaco" },
+  { id: "n8n",   position: dirToPortalPos( 0.35, -0.78, -0.52), color: "#CC44FF", label: "Automatisations N8N", href: "/projets/n8n"   },
+  { id: "music", position: dirToPortalPos( 0.80,  0.42, -0.43), color: "#FFD700", label: "Planète qui Chante",  href: "/projets/music" },
 ];
 
-const SURFACE_Y     = 7 * 0.85;   // ≈ 5.95 — sommet de la sphère (centre à Y=0)
+const SURFACE_Y     = 7;           // sommet de la sphère parfaite (rayon 7)
 const SPEED         = 6;
-const PORTAL_RADIUS = 1.5;
-const MAP_BOUND     = 4.5;
+// Detection radius: portal center is 0.9 units above surface along normal.
+// With 1.2, robot triggers when within ~0.8 units horizontally = the full ring opening.
+const PORTAL_RADIUS = 1.2;
 const JUMP_HEIGHT   = 1.5;
 const JUMP_DURATION = 0.6;
+const SPAWN_COOLDOWN = 2.0;       // secondes d'immunité après apparition
 
-const PATH_MIDS: Record<string, [number, number, number]> = {
-  rag:   [ 2, planetSurfaceY( 2, -2) + 0.15, -2],
-  rise:  [-2, planetSurfaceY(-2, -2) + 0.15, -2],
-  seaco: [ 2, planetSurfaceY( 2,  2) + 0.15,  2],
-  n8n:   [-2, planetSurfaceY(-2,  2) + 0.15,  2],
-};
 
-const CRATERS: Array<{ pos: [number, number, number]; r: number }> = [
-  { pos: [ 3.5, 4.77,  1.5], r: 0.45 },
-  { pos: [-2.5, 5.12,  2.0], r: 0.35 },
-  { pos: [ 1.0, 4.88, -3.5], r: 0.40 },
-  { pos: [-3.0, 4.85, -2.0], r: 0.50 },
-  { pos: [ 2.5, 4.72,  3.0], r: 0.45 },
-  { pos: [-1.5, 5.02, -3.0], r: 0.40 },
-];
+// ─── Decoration palette ──────────────────────────────────────────────────────
+
+const ROCK_COLORS  = ["#4a4a5a", "#5a5a6a", "#6a6070", "#3a3a4a"] as const;
+const GRASS_COLORS = ["#1a3d0c", "#2d5a1b", "#3a6b22", "#1e4a12", "#0f2a08"] as const;
+const BUSH_COLORS  = ["#1a3d0c", "#1e4a12", "#243d12", "#0d2607"] as const;
 
 // ─── FogSetup ────────────────────────────────────────────────────────────────
 
@@ -373,51 +381,6 @@ function OrbitalObjects() {
   );
 }
 
-// ─── PortalParticles ─────────────────────────────────────────────────────────
-
-function PortalParticles({ position, color, count = 6 }: {
-  position: [number, number, number];
-  color: string;
-  count?: number;
-}) {
-  const groupRef = useRef<THREE.Group>(null);
-  const particles = useMemo(
-    () => Array.from({ length: count }, (_, i) => ({
-      radius: 0.85 + i * 0.12,
-      baseY:  (i / count - 0.5) * 1.0,
-      speed:  0.55 + i * 0.08,
-      phase:  (i / count) * Math.PI * 2,
-    })),
-    [count],
-  );
-
-  useFrame((state) => {
-    if (!groupRef.current) return;
-    const t = state.clock.elapsedTime;
-    particles.forEach((p, i) => {
-      const child = groupRef.current!.children[i];
-      if (!child) return;
-      const angle = t * p.speed + p.phase;
-      child.position.set(
-        Math.cos(angle) * p.radius,
-        p.baseY + Math.sin(t * 1.1 + p.phase) * 0.15,
-        Math.sin(angle) * p.radius,
-      );
-    });
-  });
-
-  return (
-    <group ref={groupRef} position={position}>
-      {particles.map((_, i) => (
-        <mesh key={i}>
-          <sphereGeometry args={[0.055, 5, 5]} />
-          <meshBasicMaterial color={color} />
-        </mesh>
-      ))}
-    </group>
-  );
-}
-
 // ─── ClickIndicator ──────────────────────────────────────────────────────────
 
 function ClickIndicator({ infoRef }: {
@@ -448,36 +411,109 @@ function ClickIndicator({ infoRef }: {
   );
 }
 
-// ─── PathCurve ───────────────────────────────────────────────────────────────
-
-function PathCurve({ from, mid, to, color }: {
-  from: [number, number, number];
-  mid: [number, number, number];
-  to:  [number, number, number];
-  color: string;
-}) {
-  const tubeGeo = useMemo(() => {
-    const curve = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(from[0], from[1], from[2]),
-      new THREE.Vector3(mid[0],  mid[1],  mid[2]),
-      new THREE.Vector3(to[0],   to[1],   to[2]),
-    ]);
-    return new THREE.TubeGeometry(curve, 24, 0.04, 5, false);
-  }, [from, mid, to]);
-
-  useEffect(() => () => { tubeGeo.dispose(); }, [tubeGeo]);
-
-  return (
-    <mesh geometry={tubeGeo}>
-      <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.8} transparent opacity={0.6} roughness={0.6} />
-    </mesh>
-  );
-}
-
 // ─── PlanetSurface ───────────────────────────────────────────────────────────
 
 function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Vector3) => void }) {
   const groupRef = useRef<THREE.Group>(null);
+
+  // Rocks and grass generated once with a deterministic seeded hash.
+  // Positions are computed per-index so they never shift between renders.
+  const { rocks, grasses, bushes } = useMemo(() => {
+    const h = (n: number) => Math.abs(Math.sin(n * 127.1) * 43758.5453) % 1;
+    const localUp = new THREE.Vector3(0, 1, 0);
+
+    function tooClose(x: number, y: number, z: number): boolean {
+      for (const p of PORTALS) {
+        const [px, py, pz] = p.position;
+        if ((x - px) ** 2 + (y - py) ** 2 + (z - pz) ** 2 < 1.44) return true; // 1.2² = 1.44
+      }
+      return false;
+    }
+
+    function spherePt(seed: number, radius: number) {
+      const theta = h(seed * 13 + 0) * Math.PI * 2;
+      const phi   = Math.acos(2 * h(seed * 13 + 1) - 1);
+      const nx = Math.sin(phi) * Math.cos(theta);
+      const ny = Math.cos(phi);
+      const nz = Math.sin(phi) * Math.sin(theta);
+      return { x: nx * radius, y: ny * radius, z: nz * radius, nx, ny, nz };
+    }
+
+    // ── Rocks ─────────────────────────────────────────────────────────────────
+    type Rock = {
+      pos:   [number, number, number];
+      rx: number; ry: number; rz: number;
+      scale: number;
+      color: string;
+      geo:   "dodec" | "ico";
+    };
+    const rocks: Rock[] = [];
+    let ri = 0;
+    while (rocks.length < 30 && ri < 300) {
+      const { x, y, z } = spherePt(ri, 7.05);
+      if (!tooClose(x, y, z)) {
+        rocks.push({
+          pos:   [x, y, z],
+          rx:    h(ri * 13 + 2) * Math.PI * 2,
+          ry:    h(ri * 13 + 3) * Math.PI * 2,
+          rz:    h(ri * 13 + 4) * Math.PI * 2,
+          scale: 0.15 + h(ri * 13 + 5) * 0.55,
+          color: ROCK_COLORS[Math.floor(h(ri * 13 + 6) * ROCK_COLORS.length)],
+          geo:   h(ri * 13 + 7) > 0.5 ? "dodec" : "ico",
+        });
+      }
+      ri++;
+    }
+
+    // ── Grass tufts (cone-based) ───────────────────────────────────────────────
+    type Cone  = { ox: number; oz: number; tilt: number; tiltDir: number; height: number; colorIdx: number };
+    type Grass = { pos: [number, number, number]; quat: THREE.Quaternion; scale: number; cones: Cone[] };
+    const grasses: Grass[] = [];
+    let gi = 0;
+    while (grasses.length < 55 && gi < 500) {
+      const seed = gi + 500;
+      const { x, y, z, nx, ny, nz } = spherePt(seed, 7.03);
+      if (!tooClose(x, y, z)) {
+        const quat   = new THREE.Quaternion().setFromUnitVectors(localUp, new THREE.Vector3(nx, ny, nz));
+        const cCount = 5 + Math.floor(h(seed * 13 + 8) * 4); // 5–8 cones per tuft
+        const cones  = Array.from({ length: cCount }, (_, c) => ({
+          ox:       (h(seed * 13 + 10 + c * 5) - 0.5) * 0.18,
+          oz:       (h(seed * 13 + 11 + c * 5) - 0.5) * 0.18,
+          tilt:     h(seed * 13 + 12 + c * 5) * 0.3,
+          tiltDir:  h(seed * 13 + 13 + c * 5) * Math.PI * 2,
+          height:   0.3 + h(seed * 13 + 14 + c * 5) * 0.4, // 0.3–0.7
+          colorIdx: Math.floor(h(seed * 13 + 15 + c * 5) * GRASS_COLORS.length),
+        }));
+        grasses.push({ pos: [x, y, z], quat, scale: 1.5 + h(seed * 13 + 9) * 3.0, cones });
+      }
+      gi++;
+    }
+
+    // ── Bushes ────────────────────────────────────────────────────────────────
+    type Cluster = { ox: number; oy: number; oz: number; r: number; colorIdx: number };
+    type Bush    = { pos: [number, number, number]; quat: THREE.Quaternion; scale: number; clusters: Cluster[] };
+    const bushes: Bush[] = [];
+    let bi = 0;
+    while (bushes.length < 10 && bi < 200) {
+      const seed = bi + 1000;
+      const { x, y, z, nx, ny, nz } = spherePt(seed, 7.06);
+      if (!tooClose(x, y, z)) {
+        const quat    = new THREE.Quaternion().setFromUnitVectors(localUp, new THREE.Vector3(nx, ny, nz));
+        const cCount  = 2 + Math.floor(h(seed * 17 + 0) * 2); // 2–3 foliage spheres
+        const clusters = Array.from({ length: cCount }, (_, c) => ({
+          ox:       (h(seed * 17 + 2 + c * 4) - 0.5) * 0.5,
+          oy:       0.45 + h(seed * 17 + 3 + c * 4) * 0.45,
+          oz:       (h(seed * 17 + 4 + c * 4) - 0.5) * 0.5,
+          r:        0.28 + h(seed * 17 + 5 + c * 4) * 0.28,
+          colorIdx: Math.floor(h(seed * 17 + 6 + c * 4) * BUSH_COLORS.length),
+        }));
+        bushes.push({ pos: [x, y, z], quat, scale: 0.8 + h(seed * 17 + 1) * 1.0, clusters });
+      }
+      bi++;
+    }
+
+    return { rocks, grasses, bushes };
+  }, []);
 
   useFrame((state) => {
     if (!groupRef.current) return;
@@ -488,28 +524,218 @@ function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Vector3) 
   return (
     <group ref={groupRef} position={[0, 0, 0]}>
       {/* Sphère principale */}
-      <mesh
-        scale={[1, 0.85, 1]}
-        onPointerDown={(e) => { if (e.button !== 0) return; onSurfaceClick(e.point); }}
-      >
-        <sphereGeometry args={[7, 12, 10]} />
-        <meshStandardMaterial
-          color="#1e2a5e"
-          emissive="#0a0f2e"
-          emissiveIntensity={0.3}
-          roughness={0.85}
-          flatShading
-        />
+      <mesh onPointerDown={(e) => { if (e.button !== 0) return; onSurfaceClick(e.point); }}>
+        <sphereGeometry args={[7, 32, 24]} />
+        <meshStandardMaterial color="#1e2a5e" emissive="#0a0f2e" emissiveIntensity={0.3} roughness={0.85} flatShading />
       </mesh>
 
-      {/* Cratères décoratifs */}
-      {CRATERS.map(({ pos, r }, i) => (
-        <mesh key={i} position={pos}>
-          <sphereGeometry args={[r, 7, 7]} />
-          <meshStandardMaterial color="#2a3a7e" roughness={0.9} flatShading />
+      {/* Cailloux distribués sur toute la surface */}
+      {rocks.map((r, i) => (
+        <mesh key={`r${i}`} position={r.pos} rotation={[r.rx, r.ry, r.rz]} scale={r.scale}>
+          {r.geo === "dodec"
+            ? <dodecahedronGeometry args={[1, 0]} />
+            : <icosahedronGeometry  args={[1, 0]} />
+          }
+          <meshStandardMaterial color={r.color} roughness={0.9} metalness={0.1} />
         </mesh>
       ))}
+
+      {/* Touffes d'herbe (cônes 4-sided) orientées selon la normale de surface */}
+      {grasses.map((g, i) => (
+        <group key={`g${i}`} position={g.pos} quaternion={g.quat} scale={g.scale}>
+          {g.cones.map((c, j) => (
+            <mesh
+              key={j}
+              position={[c.ox, c.height * 0.5, c.oz]}
+              rotation={[Math.sin(c.tiltDir) * c.tilt, 0, Math.cos(c.tiltDir) * c.tilt]}
+            >
+              <coneGeometry args={[0.035, c.height, 4]} />
+              <meshStandardMaterial color={GRASS_COLORS[c.colorIdx]} roughness={0.95} flatShading />
+            </mesh>
+          ))}
+        </group>
+      ))}
+
+      {/* Buissons : tronc + sphères de feuillage */}
+      {bushes.map((b, i) => (
+        <group key={`b${i}`} position={b.pos} quaternion={b.quat} scale={b.scale}>
+          <mesh position={[0, 0.3, 0]}>
+            <cylinderGeometry args={[0.06, 0.13, 0.6, 5]} />
+            <meshStandardMaterial color="#2a1a0e" roughness={0.97} />
+          </mesh>
+          {b.clusters.map((c, j) => (
+            <mesh key={j} position={[c.ox, c.oy, c.oz]}>
+              <icosahedronGeometry args={[c.r, 1]} />
+              <meshStandardMaterial color={BUSH_COLORS[c.colorIdx]} roughness={0.9} flatShading />
+            </mesh>
+          ))}
+        </group>
+      ))}
     </group>
+  );
+}
+
+// ─── SunObject ────────────────────────────────────────────────────────────────
+
+function SunObject() {
+  return (
+    <group position={[35, 18, 28]}>
+      {/* Core — bright yellow-white */}
+      <mesh>
+        <sphereGeometry args={[3.2, 24, 24]} />
+        <meshBasicMaterial color="#fffbe0" fog={false} />
+      </mesh>
+      {/* Inner corona */}
+      <mesh>
+        <sphereGeometry args={[3.9, 16, 16]} />
+        <meshBasicMaterial color="#ffcc00" transparent opacity={0.45} depthWrite={false} fog={false} />
+      </mesh>
+      {/* Outer glow */}
+      <mesh>
+        <sphereGeometry args={[5.0, 16, 16]} />
+        <meshBasicMaterial color="#ff8800" transparent opacity={0.15} depthWrite={false} fog={false} />
+      </mesh>
+    </group>
+  );
+}
+
+// ─── MoonObject ───────────────────────────────────────────────────────────────
+
+function MoonObject() {
+  // Crescent: outer disc minus a large inner disc offset to the right.
+  // With hole radius ≈ outer radius and significant offset, the resulting shape
+  // is a thin curved sliver — a proper crescent, not a "D".
+  // Tips meet where the two circles intersect: (x ≈ 1.2, y ≈ ±1.8).
+  const shape = useMemo(() => {
+    const s = new THREE.Shape();
+    s.absarc(0, 0, 2.2, 0, Math.PI * 2, false); // outer disc
+    const hole = new THREE.Path();
+    hole.absarc(0.58, 0, 1.96, 0, Math.PI * 2, true); // inner disc offset right → thin left sliver
+    s.holes.push(hole);
+    return s;
+  }, []);
+
+  return (
+    <>
+      {/* Diffuse spherical glow — no oval border, pure atmospheric bloom */}
+      <mesh position={[-28, 6, -22]}>
+        <sphereGeometry args={[4.2, 10, 10]} />
+        <meshBasicMaterial color="#3355bb" transparent opacity={0.09} depthWrite={false} fog={false} />
+      </mesh>
+      {/* Crescent disc — minimal Y-rotation to avoid oval foreshortening,
+          Z tilted ~32° for natural sky appearance, X slight depth tilt */}
+      <group position={[-28, 6, -22]} rotation={[0.12, -0.18, 0.56]}>
+        <mesh>
+          <shapeGeometry args={[shape, 64]} />
+          <meshBasicMaterial color="#ddeeff" side={THREE.DoubleSide} fog={false} />
+        </mesh>
+      </group>
+    </>
+  );
+}
+
+// ─── CameraRig ───────────────────────────────────────────────────────────────
+// Runs AFTER Scene's useFrame so posRef/faceRef are always up-to-date.
+//
+// Strategy:
+//  - camFaceRef is the camera's OWN facing direction, lagging far behind the robot's
+//    facing (CAM_FACE_LERP = 0.025/frame ≈ 2 s swing for 90°) → no sudden pivots.
+//  - camera.position lerps toward desiredPos (smooth translation).
+//  - lookAt is computed from camera.CURRENT position (not desiredPos) → robot is
+//    ALWAYS centered on screen without any quaternion slerp lag.
+
+function CameraRig({
+  posRef,
+  faceRef,
+}: {
+  posRef:  React.MutableRefObject<THREE.Vector3>;
+  faceRef: React.MutableRefObject<THREE.Vector3>;
+}) {
+  const { camera } = useThree();
+  // Camera's own facing direction — initialized same as faceRef
+  const camFaceRef = useRef(new THREE.Vector3(0, 0, 1));
+
+  useFrame(() => {
+    const robotPos = posRef.current;
+    const face     = faceRef.current;
+
+    // Surface normal at robot position
+    ellipsoidNormal(robotPos, _cn);
+
+    // ── Lazily update camFace toward robot's actual facing ──
+    const cf = camFaceRef.current;
+    // Re-project onto current tangent plane (drift correction as robot moves on sphere)
+    cf.addScaledVector(_cn, -cf.dot(_cn));
+    if (cf.lengthSq() < 1e-6) cf.copy(face);
+    else cf.normalize();
+    // Very slow lerp → camera swings smoothly, never snaps on direction change
+    cf.lerp(face, CAM_FACE_LERP).normalize();
+
+    // ── Desired camera position: above robot + behind along camFace ──
+    _cd
+      .copy(robotPos)
+      .addScaledVector(_cn, CAM_HEIGHT)
+      .addScaledVector(cf, -CAM_BACK);
+
+    // ── Smooth translation toward desired position ──
+    camera.position.lerp(_cd, CAM_LERP);
+
+    // ── Always look at robot from wherever camera currently is ──
+    // Computing lookAt from camera.position (not _cd) guarantees the robot stays
+    // perfectly centered even while the camera is still translating toward _cd.
+    // No quaternion slerp needed — orientation is always correct, only position lags.
+    _m4c.lookAt(camera.position, robotPos, _cn);
+    camera.quaternion.setFromRotationMatrix(_m4c);
+  });
+
+  return null;
+}
+
+// ─── PortalFlash ─────────────────────────────────────────────────────────────
+// Expanding torus ring + point light burst when the robot enters a portal.
+
+function PortalFlash({ infoRef }: {
+  infoRef: React.MutableRefObject<{ pos: THREE.Vector3; color: string; t: number } | null>;
+}) {
+  const meshRef  = useRef<THREE.Mesh>(null);
+  const matRef   = useRef<THREE.MeshBasicMaterial>(null);
+  const lightRef = useRef<THREE.PointLight>(null);
+
+  useFrame((_, delta) => {
+    const info  = infoRef.current;
+    const mesh  = meshRef.current;
+    const mat   = matRef.current;
+    const light = lightRef.current;
+    if (!mesh || !mat || !light) return;
+
+    if (!info) { mesh.visible = false; light.visible = false; return; }
+
+    info.t += delta;
+    const p = Math.min(info.t / 0.35, 1);
+    if (p >= 1) { infoRef.current = null; mesh.visible = false; light.visible = false; return; }
+
+    // Ring expands and fades out
+    mesh.visible = true;
+    mesh.position.copy(info.pos);
+    mesh.scale.setScalar(0.4 + p * 4.0);
+    mat.color.set(info.color);
+    mat.opacity = (1 - p) * 0.85;
+
+    // Point light flares and dies
+    light.visible = true;
+    light.position.copy(info.pos);
+    light.color.set(info.color);
+    light.intensity = 30 * (1 - p);
+  });
+
+  return (
+    <>
+      <mesh ref={meshRef} visible={false}>
+        <torusGeometry args={[0.8, 0.14, 8, 32]} />
+        <meshBasicMaterial ref={matRef} transparent opacity={0} depthWrite={false} />
+      </mesh>
+      <pointLight ref={lightRef} visible={false} distance={20} decay={2} />
+    </>
   );
 }
 
@@ -517,17 +743,21 @@ function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Vector3) 
 
 function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
   const posRef        = useRef(new THREE.Vector3(0, SURFACE_Y, 0));
+  const prevPosRef    = useRef(new THREE.Vector3(0, SURFACE_Y, 0)); // for velocity tracking
   const movingRef     = useRef(false);
   const rotRef        = useRef(0); // kept for compatibility
   const quatRef       = useRef(new THREE.Quaternion());
-  // faceRef: robot facing direction in world space (always in the tangent plane)
-  // Initially faces +Z (toward camera at z=16) — same as rotation.y = 0
   const faceRef       = useRef(new THREE.Vector3(0, 0, 1));
   const keysRef       = useRef(new Set<string>());
   const enteredRef    = useRef(false);
   const targetRef     = useRef<THREE.Vector3 | null>(null);
   const jumpRef       = useRef({ active: false, t: 0 });
   const clickIndicRef = useRef<{ pos: THREE.Vector3; t: number } | null>(null);
+  // Portal entry state
+  const spawnCooldown = useRef(SPAWN_COOLDOWN);
+  const enterAnim     = useRef<{ t: number; href: string; pos: THREE.Vector3; color: string } | null>(null);
+  const robotScaleRef = useRef(1.0);
+  const flashRef      = useRef<{ pos: THREE.Vector3; color: string; t: number } | null>(null);
 
   const handleSurfaceClick = useCallback((point: THREE.Vector3) => {
     // Project click point onto ellipsoid surface and store as target
@@ -549,8 +779,26 @@ function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
     return () => { window.removeEventListener("keydown", down); window.removeEventListener("keyup", up); };
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (enteredRef.current) return;
+
+    // ── 0a. Spawn cooldown — portal detection disabled for 2s after mount ──
+    if (spawnCooldown.current > 0) {
+      spawnCooldown.current = Math.max(0, spawnCooldown.current - delta);
+    }
+
+    // ── 0b. Portal entry animation — scale robot to 0 over 0.3s then redirect ──
+    const ea = enterAnim.current;
+    if (ea) {
+      ea.t += delta;
+      const p = Math.min(ea.t / 0.3, 1);
+      robotScaleRef.current = 1 - p;           // shrink to 0
+      if (ea.t >= 0.3) {
+        enteredRef.current = true;
+        onPortalEnter(ea.href);
+      }
+      return; // freeze movement during animation
+    }
 
     const pos = posRef.current;
 
@@ -582,15 +830,24 @@ function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
     if (hasKey) targetRef.current = null;
 
     if (hasKey) {
-      // World XZ input vector, projected onto the tangent plane at current surface point
-      _dir.set(dx, 0, dz).normalize();
-      _dir.addScaledVector(_sn, -_dir.dot(_sn));   // subtract normal component
-      if (_dir.lengthSq() > 1e-8) {
-        _dir.normalize();
-        _sp.addScaledVector(_dir, SPEED * delta);
-        ellipsoidProject(_sp, _sp);                 // re-project onto ellipsoid
-        ellipsoidNormal(_sp, _sn);                  // refresh normal after move
-        faceRef.current.copy(_dir);                 // update facing direction
+      // Camera-relative input: project camera's look direction onto the tangent plane,
+      // then derive the right axis. This fixes equator blockage (when world-XZ input
+      // is collinear with the surface normal the projection degenerates to zero) and
+      // keeps controls consistent everywhere on the sphere.
+      state.camera.getWorldDirection(_dir);  // camera look direction = "forward on screen"
+      _dir.addScaledVector(_sn, -_dir.dot(_sn)); // project onto tangent plane
+      if (_dir.lengthSq() < 1e-8) _dir.set(1, 0, 0).addScaledVector(_sn, -_sn.x).normalize();
+      else _dir.normalize();
+      _ax.crossVectors(_sn, _dir).normalize(); // camera right = normal × camForward
+      // dz = -1 (Z/up)  → move in camera-forward direction
+      // dx = +1 (D/right) → move in camera-right direction
+      _az.copy(_dir).multiplyScalar(-dz).addScaledVector(_ax, dx);
+      if (_az.lengthSq() > 1e-8) {
+        _az.normalize();
+        _sp.addScaledVector(_az, SPEED * delta);
+        ellipsoidProject(_sp, _sp);
+        ellipsoidNormal(_sp, _sn);
+        faceRef.current.copy(_az);
       }
       movingRef.current = true;
 
@@ -636,12 +893,32 @@ function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
     _az.crossVectors(_ax, _sn).normalize();
     quatRef.current.setFromRotationMatrix(_m4.makeBasis(_ax, _sn, _az));
 
-    // ── 6. Portal detection (unchanged) ──
-    for (const portal of PORTALS) {
-      const [px, , pz] = portal.position;
-      const d = Math.sqrt((pos.x - px) ** 2 + (pos.z - pz) ** 2);
-      if (d < PORTAL_RADIUS) { enteredRef.current = true; onPortalEnter(portal.href); break; }
+    // ── 6. Portal detection ──
+    // Conditions: cooldown expired + 3D distance < 0.5 + robot moving toward portal
+    if (spawnCooldown.current <= 0) {
+      for (const portal of PORTALS) {
+        const [px, py, pz] = portal.position;
+        const d3 = Math.sqrt((pos.x-px)**2 + (pos.y-py)**2 + (pos.z-pz)**2);
+        if (d3 < PORTAL_RADIUS) {
+          // Velocity = displacement this frame (pos was updated above, prevPos is last frame)
+          const vx = pos.x - prevPosRef.current.x;
+          const vy = pos.y - prevPosRef.current.y;
+          const vz = pos.z - prevPosRef.current.z;
+          if (vx*vx + vy*vy + vz*vz > 1e-8) {
+            // dot(velocity, robot→portal) > 0 means actively moving toward the portal
+            const dot = vx*(px-pos.x) + vy*(py-pos.y) + vz*(pz-pos.z);
+            if (dot > 0) {
+              enterAnim.current = { t: 0, href: portal.href, pos: new THREE.Vector3(px, py, pz), color: portal.color };
+              flashRef.current  = { pos: new THREE.Vector3(px, py, pz), color: portal.color, t: 0 };
+              break;
+            }
+          }
+        }
+      }
     }
+
+    // ── 7. Record position for next-frame velocity ──
+    prevPosRef.current.copy(pos);
   });
 
   return (
@@ -652,57 +929,50 @@ function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
       <Rocket />
       <LaserBeams />
 
-      {/* Éclairage */}
-      <ambientLight intensity={1.4} />
-      <directionalLight position={[-5, 14, -8]} intensity={1.8} color="#aaccff" />
-      <pointLight position={[0, 12, 0]} intensity={2.2} color="#ffffff" distance={24} decay={1} />
-      <pointLight position={[18, 10, -10]} intensity={1.2} color="#4466ff" distance={90} decay={1} />
+      {/* ── Éclairage : Soleil chaud + Lune froide + fill omnidirectionnel ── */}
+      {/* Ambient élevé pour garantir qu'aucune face n'est dans le noir complet */}
+      <ambientLight intensity={1.5} color="#99aabb" />
+      {/* Soleil — côté +X/+Z, lumière principale chaude */}
+      <directionalLight position={[35, 18, 28]} intensity={2.8} color="#ffe060" />
+      <pointLight position={[22, 10, 16]} intensity={1.4} color="#ffcc44" distance={70} decay={1.4} />
+      {/* Lune croissant — côté −X/−Z, lumière froide */}
+      <directionalLight position={[-28, 6, -22]} intensity={1.2} color="#7799dd" />
+      <pointLight position={[-16, 4, -13]} intensity={0.7} color="#5566bb" distance={55} decay={1.4} />
+      {/* Fill light sous la planète — éclaire l'hémisphère sud et l'équateur */}
+      <directionalLight position={[0, -14, 0]} intensity={0.8} color="#aabbcc" />
 
       {/* Planète */}
       <PlanetSurface onSurfaceClick={handleSurfaceClick} />
 
-      {/* Lune lointaine */}
-      <mesh position={[20, 8, -25]}>
-        <sphereGeometry args={[1.5, 8, 8]} />
-        <meshStandardMaterial color="#e8d5a0" roughness={0.9} />
-      </mesh>
+      {/* Soleil visuel */}
+      <SunObject />
+      {/* Lune croissant visuelle */}
+      <MoonObject />
 
       {/* Objets orbitaux */}
       <OrbitalObjects />
 
-      {/* Chemins vers les portails */}
-      {PORTALS.map((p) => (
-        <PathCurve
-          key={p.id}
-          from={[0, SURFACE_Y + 0.05, 0]}
-          mid={PATH_MIDS[p.id]}
-          to={p.position}
-          color={p.color}
-        />
-      ))}
-
-      {/* Portails */}
+      {/* Portails — anneaux dimensionnels perpendiculaires à la surface */}
       {PORTALS.map((portal) => (
         <Portal
           key={portal.id}
           position={portal.position}
           color={portal.color}
           label={portal.label}
-          yRotation={portal.yRotation}
-          tiltX={-0.3}
         />
-      ))}
-
-      {/* Particules orbitales par portail */}
-      {PORTALS.map((portal) => (
-        <PortalParticles key={portal.id + "-p"} position={portal.position} color={portal.color} count={6} />
       ))}
 
       {/* Indicateur clic */}
       <ClickIndicator infoRef={clickIndicRef} />
 
+      {/* Flash d'entrée portail */}
+      <PortalFlash infoRef={flashRef} />
+
       {/* Joueur */}
-      <Robot posRef={posRef} movingRef={movingRef} rotRef={rotRef} quatRef={quatRef} />
+      <Robot posRef={posRef} movingRef={movingRef} rotRef={rotRef} quatRef={quatRef} scaleRef={robotScaleRef} />
+
+      {/* Caméra suiveuse — monté après Robot pour que useFrame lise les refs à jour */}
+      <CameraRig posRef={posRef} faceRef={faceRef} />
     </>
   );
 }
@@ -710,13 +980,15 @@ function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
 // ─── Canvas export ───────────────────────────────────────────────────────────
 
 export function GameCanvas({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
+  // Initial camera: behind robot along -Z + above along normal (+Y) for sphere radius 7.
+  // robotPos=(0,7,0), face=(0,0,1) → desiredCam=(0, 7+6, 0-10)=(0, 13, -10)
   return (
     <Canvas
-      camera={{ position: [0, 12, 16], fov: 45 }}
+      camera={{ position: [0, 13, -10], fov: 65 }}
       frameloop="always"
       gl={{ antialias: true, powerPreference: "high-performance" }}
       style={{ width: "100%", height: "100%", background: "#020210" }}
-      onCreated={({ camera }) => { camera.lookAt(0, 2, 0); }}
+      onCreated={({ camera }) => { camera.lookAt(0, 7, 0); }}
     >
       <Scene onPortalEnter={onPortalEnter} />
     </Canvas>

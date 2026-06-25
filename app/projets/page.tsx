@@ -11,6 +11,71 @@ const PlaneModel       = dynamic(() => import("@/components/projects/PlaneModel"
 const SatelliteModel   = dynamic(() => import("@/components/projects/SatelliteModel"), { ssr: false });
 const GearsModel       = dynamic(() => import("@/components/projects/GearsModel"),     { ssr: false });
 
+// ─── Music planet visual (CSS — no Three.js canvas needed for the card) ──────
+
+function MusicPlanetVisual() {
+  return (
+    <div style={{
+      width: "100%", height: "100%",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      position: "relative", overflow: "hidden",
+    }}>
+      {/* Soft glow behind planet */}
+      <div style={{
+        position: "absolute",
+        width: 200, height: 200,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(124,58,237,0.28) 0%, transparent 68%)",
+      }} />
+
+      {/* Planet sphere */}
+      <div style={{
+        width: 88, height: 88,
+        borderRadius: "50%",
+        background: "radial-gradient(circle at 33% 33%, #2d1060 8%, #110038 52%, #060018 100%)",
+        boxShadow: "0 0 28px rgba(139,92,246,0.5), 0 0 60px rgba(109,40,217,0.2), inset -8px -8px 18px rgba(0,0,0,0.65)",
+        position: "relative", zIndex: 2, flexShrink: 0,
+      }}>
+        <div style={{
+          position: "absolute", top: "14%", left: "16%",
+          width: 20, height: 16, borderRadius: "50%",
+          background: "rgba(196,181,253,0.2)", filter: "blur(4px)",
+        }} />
+      </div>
+
+      {/* Tilted orbit ring */}
+      <div style={{
+        position: "absolute",
+        width: 150, height: 46,
+        border: "1.5px solid rgba(167,139,250,0.4)",
+        borderRadius: "50%",
+        boxShadow: "0 0 8px rgba(139,92,246,0.28)",
+        transform: "rotateX(72deg)",
+        zIndex: 1,
+      }} />
+
+      {/* Orbiting dots — centered at 50%/50% then CSS orbit animation rotates them */}
+      <div style={{ position: "absolute", top: "50%", left: "50%", width: 0, height: 0 }}>
+        <div className="music-orbit-1">
+          <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#ffd700", boxShadow: "0 0 8px #ffd700, 0 0 14px rgba(255,215,0,0.45)", marginLeft: -3.5, marginTop: -3.5 }} />
+        </div>
+      </div>
+      <div style={{ position: "absolute", top: "50%", left: "50%", width: 0, height: 0 }}>
+        <div className="music-orbit-2">
+          <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#c4b5fd", boxShadow: "0 0 6px #c4b5fd", marginLeft: -2.5, marginTop: -2.5 }} />
+        </div>
+      </div>
+
+      {/* Pulsing note */}
+      <div className="music-note-pulse" style={{
+        position: "absolute", top: "16%", right: "18%",
+        fontSize: 22, color: "rgba(196,181,253,0.7)",
+        userSelect: "none", zIndex: 4,
+      }}>♪</div>
+    </div>
+  );
+}
+
 // ─── Theme config ─────────────────────────────────────────────────────────────
 
 type ProjectTheme = {
@@ -74,6 +139,18 @@ const THEMES: Record<string, ProjectTheme> = {
     tagColor:   "#34d399",
     demoStyle:  { background: "#10b981", color: "#000", fontWeight: 700, border: "none" },
     Model:      GearsModel,
+  },
+  music: {
+    accent:     "#a78bfa",
+    borderIdle: "#7c3aed",
+    cardBg:     "radial-gradient(ellipse at 28% 65%, #0e0025 0%, #060018 45%, #020008 100%)",
+    glowAnim:   "breatheViolet 3.5s ease-in-out infinite",
+    descColor:  "rgba(210,190,255,0.85)",
+    tagBg:      "rgba(167,139,250,0.15)",
+    tagBorder:  "rgba(167,139,250,0.35)",
+    tagColor:   "#c4b5fd",
+    demoStyle:  { background: "#7c3aed", color: "#fff", fontWeight: 700, border: "none" },
+    Model:      MusicPlanetVisual,
   },
 };
 
@@ -331,11 +408,52 @@ function N8nDecorator() {
   );
 }
 
+function MusicDecorator() {
+  const notes = [
+    { text: "♪", left: "5%",  delay: "0s",   dur: "3.8s" },
+    { text: "♫", left: "12%", delay: "1.3s", dur: "4.4s" },
+    { text: "♩", left: "19%", delay: "2.6s", dur: "3.5s" },
+    { text: "♪", left: "27%", delay: "0.7s", dur: "4.8s" },
+    { text: "♬", left: "34%", delay: "3.1s", dur: "3.2s" },
+  ];
+  return (
+    <>
+      <div style={{
+        position: "absolute", inset: 0, pointerEvents: "none", zIndex: 0,
+        background: "radial-gradient(ellipse at 22% 65%, rgba(124,58,237,0.20) 0%, transparent 55%)",
+      }} />
+      {notes.map((n, i) => (
+        <div key={i} className="music-note-float" style={{
+          position: "absolute", bottom: "8%", left: n.left,
+          fontSize: 16 + (i % 3) * 3,
+          color: `rgba(167,139,250,${0.28 + (i % 3) * 0.08})`,
+          pointerEvents: "none", zIndex: 0,
+          animationDelay: n.delay, animationDuration: n.dur,
+          userSelect: "none",
+        }}>{n.text}</div>
+      ))}
+      {[...Array(7)].map((_, i) => (
+        <div key={i} className="star-twinkle" style={{
+          position: "absolute",
+          top:  `${12 + (i * 11) % 72}%`,
+          left: `${4  + (i * 14) % 42}%`,
+          width: 2, height: 2, borderRadius: "50%",
+          background: "rgba(196,181,253,0.72)",
+          pointerEvents: "none", zIndex: 0,
+          animationDelay: `${i * 0.45}s`,
+          animationDuration: `${2.1 + i * 0.28}s`,
+        }} />
+      ))}
+    </>
+  );
+}
+
 const DECORATORS: Record<string, React.ReactNode> = {
   "rag-chatbot":     <RagDecorator />,
   rise:              <RiseDecorator />,
   seaco:             <SeacoDecorator />,
   "n8n-automations": <N8nDecorator />,
+  music:             <MusicDecorator />,
 };
 
 // ─── ProjectCard3D ────────────────────────────────────────────────────────────
@@ -361,7 +479,7 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
       {DECORATORS[project.slug]}
 
       <Link
-        href={`/projets/${project.slug}`}
+        href={project.directUrl ?? `/projets/${project.slug}`}
         className="flex flex-col sm:flex-row h-full"
         style={{ position: "relative", zIndex: 1 }}
       >
@@ -446,7 +564,7 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const ORDERED_SLUGS = ["rag-chatbot", "rise", "seaco", "n8n-automations"];
+const ORDERED_SLUGS = ["rag-chatbot", "rise", "seaco", "n8n-automations", "music"];
 
 export default function ProjetsPage() {
   const ordered = ORDERED_SLUGS
@@ -529,6 +647,32 @@ export default function ProjetsPage() {
         .seaco-draw-v  { animation: seacoDrawV ease-in-out infinite; transform-origin: top center; }
         .circuit-flow  { animation: circuitFlow linear infinite; }
         .scroll-code   { animation: scrollCode 8s linear infinite; }
+        @keyframes breatheViolet {
+          0%,100% { box-shadow: 0 0 38px rgba(124,58,237,0.28), 0 0 70px rgba(109,40,217,0.12), inset 0 0 45px rgba(124,58,237,0.06); }
+          50%     { box-shadow: 0 0 72px rgba(139,92,246,0.58), 0 0 130px rgba(124,58,237,0.25), inset 0 0 85px rgba(109,40,217,0.14); }
+        }
+        @keyframes musicNoteFloat {
+          0%   { transform: translateY(0) rotate(-6deg); opacity: 0; }
+          8%   { opacity: 0.65; }
+          90%  { opacity: 0.3; }
+          100% { transform: translateY(-88px) rotate(8deg); opacity: 0; }
+        }
+        @keyframes musicOrbit1 {
+          from { transform: rotate(0deg)   translateX(54px); }
+          to   { transform: rotate(360deg) translateX(54px); }
+        }
+        @keyframes musicOrbit2 {
+          from { transform: rotate(180deg) translateX(38px); }
+          to   { transform: rotate(540deg) translateX(38px); }
+        }
+        @keyframes musicNotePulse {
+          0%,100% { opacity: 0.35; transform: scale(0.9); }
+          50%     { opacity: 0.78; transform: scale(1.15); }
+        }
+        .music-note-float { animation: musicNoteFloat ease-in-out infinite; }
+        .music-orbit-1    { animation: musicOrbit1 4s linear infinite; transform-origin: 0 0; }
+        .music-orbit-2    { animation: musicOrbit2 7s linear infinite; transform-origin: 0 0; }
+        .music-note-pulse { animation: musicNotePulse 2.6s ease-in-out infinite; }
       `}</style>
 
       <SpaceBackground />

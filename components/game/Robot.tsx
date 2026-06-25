@@ -5,13 +5,14 @@ import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
 interface RobotProps {
-  posRef:   React.MutableRefObject<THREE.Vector3>;
+  posRef:    React.MutableRefObject<THREE.Vector3>;
   movingRef: React.MutableRefObject<boolean>;
-  rotRef:   React.MutableRefObject<number>;
-  quatRef:  React.MutableRefObject<THREE.Quaternion>;
+  rotRef:    React.MutableRefObject<number>;
+  quatRef:   React.MutableRefObject<THREE.Quaternion>;
+  scaleRef?: React.MutableRefObject<number>;
 }
 
-export function Robot({ posRef, movingRef, quatRef }: RobotProps) {
+export function Robot({ posRef, movingRef, quatRef, scaleRef }: RobotProps) {
   const groupRef    = useRef<THREE.Group>(null);
   const leftLegRef  = useRef<THREE.Mesh>(null);
   const rightLegRef = useRef<THREE.Mesh>(null);
@@ -23,6 +24,7 @@ export function Robot({ posRef, movingRef, quatRef }: RobotProps) {
 
     groupRef.current.position.copy(posRef.current);
     groupRef.current.quaternion.copy(quatRef.current);
+    groupRef.current.scale.setScalar(scaleRef ? scaleRef.current : 1);
 
     if (movingRef.current) {
       const swing = Math.sin(state.clock.elapsedTime * 9) * 0.45;

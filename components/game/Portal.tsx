@@ -1,85 +1,150 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Html } from "@react-three/drei";
 import * as THREE from "three";
+
+// Sphere constants — must match GameCanvas.tsx (A_XZ = A_Y = 7, perfect sphere)
+const A_XZ = 7;
+const A_Y  = 7;
+
+// Module-level temp vectors to avoid per-frame allocations
+const _n   = new THREE.Vector3();
+const _fwd = new THREE.Vector3();
+const _rgt = new THREE.Vector3();
+const _fwdOrtho = new THREE.Vector3();
+const _m4portal  = new THREE.Matrix4();
 
 interface PortalProps {
   position: [number, number, number];
   color: string;
   label: string;
-  yRotation: number;
-  tiltX?: number;
 }
 
-export function Portal({ position, color, label, yRotation, tiltX = 0 }: PortalProps) {
-  const lightRef = useRef<THREE.PointLight>(null);
-  const innerRef = useRef<THREE.Mesh>(null);
-  const ringRef = useRef<THREE.Mesh>(null);
+const PARTICLE_COUNT = 5;
+
+export function Portal({ position, color, label }: PortalProps) {
+  const ringRef      = useRef<THREE.Mesh>(null);
+  const membraneRef  = useRef<THREE.Mesh>(null);
+  const lightRef     = useRef<THREE.PointLight>(null);
+  const particlesRef = useRef<THREE.Group>(null);
+
+  // ── Orientation: ring stands perpendicular to the ellipsoid surface ──
+  // Local Y = surface normal (up on surface)
+  // Local Z = tangent facing toward north pole (the direction you walk through)
+  // Local X = right tangent = n × Z
+  // ⟹ TorusGeometry (XY plane) lies in the plane containing Y(normal) & X(right).
+  //   The ring stands like a doorway on the planet surface.
+  const quaternion = useMemo(() => {
+    const pos = new THREE.Vector3(...position);
+
+    // Surface normal at this point on the ellipsoid
+    _n.set(pos.x / (A_XZ * A_XZ), pos.y / (A_Y * A_Y), pos.z / (A_XZ * A_XZ)).normalize();
+
+    // Choose facing direction: toward the starting position (north pole)
+    _fwd.set(0, A_Y, 0).sub(pos).normalize();
+    // Project onto tangent plane (remove normal component)
+    _fwd.addScaledVector(_n, -_fwd.dot(_n));
+    if (_fwd.lengthSq() < 0.01) {
+      // Fallback: any tangent direction
+      _fwd.set(1, 0, 0).addScaledVector(_n, -_n.x).normalize();
+    } else {
+      _fwd.normalize();
+    }
+
+    // right = n × facing, then re-orthogonalize forward
+    _rgt.crossVectors(_n, _fwd).normalize();
+    _fwdOrtho.crossVectors(_rgt, _n).normalize();
+
+    // Basis: X=right, Y=normal(up), Z=forward(tangent facing)
+    _m4portal.makeBasis(_rgt, _n, _fwdOrtho);
+    return new THREE.Quaternion().setFromRotationMatrix(_m4portal);
+  }, [position]);
+
+  // Evenly distributed initial phases for particles
+  const phases = useMemo(
+    () => Array.from({ length: PARTICLE_COUNT }, (_, i) => (i / PARTICLE_COUNT) * Math.PI * 2),
+    [],
+  );
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
+    const pulse = Math.sin(t * 2.4);
+
     if (lightRef.current) {
-      lightRef.current.intensity = 5.0 + Math.sin(t * 2.4) * 2.0;
+      lightRef.current.intensity = 5.0 + pulse * 2.0;
     }
-    if (innerRef.current) {
-      const mat = innerRef.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = 0.12 + Math.sin(t * 2.4) * 0.07;
+    if (membraneRef.current) {
+      (membraneRef.current.material as THREE.MeshBasicMaterial).opacity =
+        0.20 + pulse * 0.08;
     }
     if (ringRef.current) {
-      const mat = ringRef.current.material as THREE.MeshStandardMaterial;
-      mat.emissiveIntensity = 0.6 + Math.sin(t * 2.4) * 0.3;
+      (ringRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        0.70 + pulse * 0.30;
+    }
+
+    // Orbit particles in the ring plane (local XY = the ring plane)
+    if (particlesRef.current) {
+      particlesRef.current.children.forEach((child, i) => {
+        const angle = t * 0.50 + phases[i];
+        const r     = 0.86 + Math.sin(t * 0.9 + i * 1.3) * 0.05;
+        child.position.set(Math.cos(angle) * r, Math.sin(angle) * r, 0);
+      });
     }
   });
 
   return (
-    <group position={position} rotation={[tiltX, yRotation, 0]}>
-      {/* Outer ring */}
-      <mesh ref={ringRef} castShadow>
-        <torusGeometry args={[1.1, 0.1, 8, 48]} />
+    <group position={position} quaternion={quaternion}>
+      {/* Dimensional ring */}
+      <mesh ref={ringRef}>
+        <torusGeometry args={[0.80, 0.060, 14, 80]} />
         <meshStandardMaterial
           color={color}
           emissive={color}
-          emissiveIntensity={0.7}
-          roughness={0.2}
-          metalness={0.8}
+          emissiveIntensity={0.70}
+          roughness={0.15}
+          metalness={0.80}
         />
       </mesh>
 
-      {/* Inner glow disc */}
-      <mesh ref={innerRef}>
-        <circleGeometry args={[1.0, 48]} />
-        <meshBasicMaterial color={color} transparent opacity={0.15} side={THREE.DoubleSide} />
+      {/* Portal membrane — translucent disc simulating the dimensional surface */}
+      <mesh ref={membraneRef}>
+        <circleGeometry args={[0.80, 56]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.22}
+          side={THREE.DoubleSide}
+          depthWrite={false}
+        />
       </mesh>
 
-      {/* Base pedestal */}
-      <mesh position={[0, -1.1, 0]} castShadow>
-        <cylinderGeometry args={[0.25, 0.35, 0.15, 8]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.3} roughness={0.3} metalness={0.7} />
-      </mesh>
-
-      {/* Pillar */}
-      <mesh position={[0, -0.65, 0]} castShadow>
-        <cylinderGeometry args={[0.08, 0.08, 0.9, 6]} />
-        <meshStandardMaterial color={color} emissive={color} emissiveIntensity={0.2} roughness={0.4} metalness={0.6} />
-      </mesh>
+      {/* Orbiting particles — stay in the ring plane (local XY) */}
+      <group ref={particlesRef}>
+        {phases.map((_, i) => (
+          <mesh key={i}>
+            <sphereGeometry args={[0.040, 7, 7]} />
+            <meshBasicMaterial color={color} />
+          </mesh>
+        ))}
+      </group>
 
       {/* Point light */}
       <pointLight ref={lightRef} color={color} intensity={5} distance={10} decay={2} />
 
-      {/* Billboard label */}
+      {/* Floating label above the portal (along surface normal = local +Y) */}
       <Html
         center
         distanceFactor={10}
-        position={[0, 1.8, 0]}
+        position={[0, 1.4, 0]}
         style={{ pointerEvents: "none" }}
       >
         <div
           style={{
             color: "white",
-            background: "rgba(8, 8, 16, 0.75)",
-            border: `1px solid ${color}40`,
+            background: "rgba(8, 8, 16, 0.78)",
+            border: `1px solid ${color}44`,
             padding: "3px 10px",
             borderRadius: "6px",
             fontSize: "11px",

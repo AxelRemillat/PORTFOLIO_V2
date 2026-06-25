@@ -7,6 +7,7 @@ export interface Project {
   result: string;
   stack: string[];
   demoUrl?: string;
+  directUrl?: string; // override link target (e.g. direct experience pages)
   githubUrl?: string;
   featured: boolean;
 }
@@ -49,6 +50,17 @@ export const projects: Project[] = [
     result:
       "[À compléter — gains mesurés]",
     stack: ["N8N", "OpenAI", "Webhooks", "Python", "Make"],
+    featured: false,
+  },
+  {
+    slug: "music",
+    directUrl: "/projets/music",
+    title: "La Planète qui Chante",
+    tagline: "Planète musicale interactive — plante des instruments, génère de la musique",
+    problem: "Explorer la créativité à travers l'interaction spatiale et sonore en temps réel.",
+    solution: "Planète 3D low-poly (React Three Fiber) sur laquelle tu places jusqu'à 8 instruments parmi 6 types (Baobab, Cristal, Renard, Rose, Mouton, Étoile). Chaque instrument joue sa note via Web Audio API et s'intègre à un arpège génératif continu. Double-clic pour retirer.",
+    result: "Expérience interactive et sonore. 6 timbres distincts (sine, triangle, sawtooth…), placement perpendiculaire à la surface via quaternion, glow au survol.",
+    stack: ["Three.js", "React Three Fiber", "Web Audio API", "Next.js", "TypeScript"],
     featured: false,
   },
   {
