@@ -1,12 +1,52 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-const STAR_COUNT     = 700;
-const POOL_SIZE      = 4;
-const ASTEROID_COLORS = ["#3a3a5c", "#4a4a6a", "#2a2a4a", "#5a4a6a"];
+const STAR_COUNT    = 700;
+const ASTEROID_COUNT = 10;
+
+// The spec authors asteroid sizes/speeds for a ~1-unit viewport, but this scene
+// works in large world units (camera at z=10, stars span ±40, the previous
+// asteroids used radius 0.3–1.2). SIZE_SCALE lifts the spec's base radii into
+// this scene's scale while preserving the tier ratios; BASE_SPEED is the
+// near/small world-units-per-second speed (reduced for larger / farther
+// asteroids to drive the parallax). On/off-screen bounds are derived from the
+// real camera frustum so "off-screen" and "full height" stay correct.
+const SIZE_SCALE  = 10;
+const BASE_SPEED  = 3.8;
+
+// Share of asteroids that "approach" — flying straight toward the camera from
+// deep space, looming larger until they pass close by. The rest cross laterally.
+const APPROACH_PROB = 0.3;
+
+const ASTEROID_PALETTE = ["#5a5060", "#6a6040", "#7a6850", "#4a4858"];
+
+// Build an irregular "rock" geometry: start from a subdivided icosahedron, then
+// push every vertex in/out along its direction by a sum-of-waves noise. The noise
+// is a pure function of the vertex direction, so the duplicated vertices that
+// share a corner move together (no cracks). With flat shading the faceted result
+// reads as a craggy asteroid rather than a smooth Platonic solid.
+function makeRockGeometry(detail: number, seed: number) {
+  const geo = new THREE.IcosahedronGeometry(1, detail);
+  const pos = geo.attributes.position as THREE.BufferAttribute;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i).normalize();
+    const n =
+      0.42 * Math.sin(2.0 * v.x + 1.3 * v.y + seed) +
+      0.26 * Math.sin(2.7 * v.y + 1.9 * v.z + seed * 1.7) +
+      0.20 * Math.sin(3.3 * v.z + 2.1 * v.x + seed * 0.7) +
+      0.14 * Math.sin(5.1 * v.x + 4.0 * v.z + seed * 2.3) +
+      0.10 * Math.sin(6.3 * v.y + 5.2 * v.x + seed * 0.4);
+    v.multiplyScalar(1 + n * 0.34);
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+  pos.needsUpdate = true;
+  geo.computeVertexNormals();
+  return geo;
+}
 
 // ─── Stars ───────────────────────────────────────────────────────────────────
 
@@ -66,183 +106,220 @@ function Stars() {
   );
 }
 
-// ─── AsteroidPool ─────────────────────────────────────────────────────────────
+// ─── AsteroidField ────────────────────────────────────────────────────────────
 
 type AsteroidSlot = {
-  active: boolean;
-  pos: THREE.Vector3;
-  vel: THREE.Vector3;
-  velNorm: THREE.Vector3;
-  rotX: number;
-  rotZ: number;
-  rotSpeedX: number;
-  rotSpeedZ: number;
-  depth: number;
+  mesh:     THREE.Mesh;
+  material: THREE.MeshStandardMaterial;
+  mode:     "cross" | "approach";
+  vel:      THREE.Vector3;  // world units / second
+  axis:     THREE.Vector3;  // normalized tumble axis
+  rotSpeed: number;         // radians / second
+  z:        number;
+  halfW:    number;         // frustum half-width at this asteroid's z (cross)
+  halfH:    number;         // frustum half-height at this asteroid's z (cross)
+  scaleMax: number;         // largest scale component (for off-screen margin)
 };
 
-function AsteroidPool() {
-  const gr0 = useRef<THREE.Group>(null);
-  const gr1 = useRef<THREE.Group>(null);
-  const gr2 = useRef<THREE.Group>(null);
-  const gr3 = useRef<THREE.Group>(null);
-  const groupRefs = [gr0, gr1, gr2, gr3];
-
-  const trailRefs = useRef<Array<THREE.Mesh | null>>(Array(POOL_SIZE * 2).fill(null));
-
-  const poolProps = useMemo(
+function AsteroidField() {
+  // A small pool of distinct unit "rock" shapes (varied seeds + subdivision).
+  // Per-asteroid size/stretch comes from scale and rotation from the quaternion,
+  // so this handful of base shapes yields plenty of variety.
+  const geometries = useMemo(
     () =>
-      Array.from({ length: POOL_SIZE }, () => ({
-        radius: 0.3 + Math.random() * 0.9,
-        color: ASTEROID_COLORS[Math.floor(Math.random() * ASTEROID_COLORS.length)],
-      })),
+      Array.from({ length: 6 }, (_, i) =>
+        makeRockGeometry(i < 4 ? 1 : 2, i * 12.7 + 3.1)
+      ),
     []
   );
 
-  const slotsRef = useRef<AsteroidSlot[]>(
-    Array.from({ length: POOL_SIZE }, () => ({
-      active:     false,
-      pos:        new THREE.Vector3(),
-      vel:        new THREE.Vector3(),
-      velNorm:    new THREE.Vector3(),
-      rotX:       0,
-      rotZ:       0,
-      rotSpeedX:  0.01,
-      rotSpeedZ:  0.01,
-      depth:      0,
-    }))
+  const slots = useMemo<AsteroidSlot[]>(
+    () =>
+      Array.from({ length: ASTEROID_COUNT }, () => {
+        const material = new THREE.MeshStandardMaterial({
+          roughness: 0.95,
+          flatShading: true,
+        });
+        const mesh = new THREE.Mesh(geometries[0], material);
+        mesh.visible = false;
+        return {
+          mesh,
+          material,
+          mode:     "cross" as const,
+          vel:      new THREE.Vector3(),
+          axis:     new THREE.Vector3(0, 1, 0),
+          rotSpeed: 0,
+          z:        -5,
+          halfW:    0,
+          halfH:    0,
+          scaleMax: 0,
+        };
+      }),
+    [geometries]
   );
 
-  const timer     = useRef(0);
-  const nextSpawn = useRef(1 + Math.random() * 2);
+  useEffect(() => {
+    return () => {
+      geometries.forEach((g) => g.dispose());
+      slots.forEach((s) => s.material.dispose());
+    };
+  }, [geometries, slots]);
 
-  const spawnAt = (i: number) => {
-    const s     = slotsRef.current[i];
-    const edge  = Math.floor(Math.random() * 4);
-    const depth = (Math.random() - 0.5) * 6;
-    const speed = 2.5 + Math.random() * 3.5;
-    let vx = 0, vy = 0;
+  const initialized = useRef(false);
+  const scratch = useMemo(() => new THREE.Vector3(), []);
 
-    if (edge === 0) {
-      s.pos.set(-25, (Math.random() - 0.5) * 16, depth);
-      vx = speed; vy = (Math.random() - 0.5) * 2;
-    } else if (edge === 1) {
-      s.pos.set(25, (Math.random() - 0.5) * 16, depth);
-      vx = -speed; vy = (Math.random() - 0.5) * 2;
-    } else if (edge === 2) {
-      s.pos.set((Math.random() - 0.5) * 30, 15, depth);
-      vx = (Math.random() - 0.5) * 2; vy = -speed;
-    } else {
-      s.pos.set((Math.random() - 0.5) * 30, -15, depth);
-      vx = (Math.random() - 0.5) * 2; vy = speed;
-    }
-
-    s.vel.set(vx, vy, 0);
-    s.velNorm.set(vx, vy, 0).normalize();
-    s.rotX = 0;
-    s.rotZ = 0;
-    s.rotSpeedX = (0.005 + Math.random() * 0.015) * (Math.random() < 0.5 ? 1 : -1);
-    s.rotSpeedZ = (0.005 + Math.random() * 0.015) * (Math.random() < 0.5 ? 1 : -1);
-    s.depth = depth;
-    s.active = true;
-
-    const gr = groupRefs[i].current;
-    if (gr) { gr.position.copy(s.pos); gr.visible = true; }
+  const frustumAt = (camera: THREE.PerspectiveCamera, z: number) => {
+    const d     = camera.position.z - z;
+    const halfH = Math.tan((camera.fov * Math.PI) / 360) * d;
+    const halfW = halfH * camera.aspect;
+    return { halfW, halfH };
   };
 
-  useFrame((_, delta) => {
-    timer.current += delta;
-    if (timer.current >= nextSpawn.current) {
-      timer.current     = 0;
-      nextSpawn.current = 3 + Math.random() * 5;
-      const free = slotsRef.current.findIndex((s) => !s.active);
-      if (free !== -1) spawnAt(free);
+  // Apply a (non-uniform) scale from a spec base radius and remember the largest
+  // component so off-screen margins can clear the whole rock.
+  const applySize = (s: AsteroidSlot, base: number) => {
+    const sized = base * SIZE_SCALE;
+    const sx = sized * THREE.MathUtils.randFloat(0.6, 1.4);
+    const sy = sized * THREE.MathUtils.randFloat(0.5, 1.3);
+    const sz = sized * THREE.MathUtils.randFloat(0.7, 1.2);
+    s.mesh.scale.set(sx, sy, sz);
+    s.scaleMax = Math.max(sx, sy, sz);
+  };
+
+  // (Re)randomize every property of a slot. `initial` spreads asteroids across
+  // the scene so it's populated immediately; `respawn` re-enters them fresh.
+  const configure = (
+    s: AsteroidSlot,
+    camera: THREE.PerspectiveCamera,
+    mode: "initial" | "respawn"
+  ) => {
+    // Geometry, colour, self-rotation and a touch of emissive glow are shared by
+    // both modes (emissive lets the dark rocks read against deep space).
+    s.mesh.geometry = geometries[Math.floor(Math.random() * geometries.length)];
+    const color = ASTEROID_PALETTE[Math.floor(Math.random() * ASTEROID_PALETTE.length)];
+    s.material.color.set(color);
+    s.material.emissive.set(color);
+    s.material.emissiveIntensity = 0.12; // low, so flat-shaded facets keep contrast
+
+    s.axis.set(Math.random(), Math.random(), Math.random()).normalize();
+    s.rotSpeed = THREE.MathUtils.randFloat(0.003, 0.012) * 60; // rad/frame → rad/s
+    s.mesh.quaternion
+      .set(Math.random(), Math.random(), Math.random(), Math.random())
+      .normalize();
+
+    if (Math.random() < APPROACH_PROB) {
+      // ── Approach: a big rock flying straight out of deep space toward the
+      // camera. Perspective makes it loom; a little lateral drift means it sweeps
+      // past instead of staying pinned dead-centre.
+      s.mode = "approach";
+      applySize(s, THREE.MathUtils.randFloat(0.06, 0.14));
+
+      const { halfW, halfH } = frustumAt(camera, -6);
+      const offX = THREE.MathUtils.randFloatSpread(halfW * 0.45);
+      const offY = THREE.MathUtils.randFloatSpread(halfH * 0.45);
+      // `initial` ones are staggered along the path so a few are already mid-loom.
+      const z =
+        mode === "initial"
+          ? THREE.MathUtils.randFloat(-26, -2)
+          : THREE.MathUtils.randFloat(-26, -18);
+      s.mesh.position.set(offX, offY, z);
+      s.z = z;
+      s.vel.set(
+        THREE.MathUtils.randFloatSpread(1.2),  // drift x
+        THREE.MathUtils.randFloatSpread(1.0),  // drift y
+        THREE.MathUtils.randFloat(2.5, 5.0)    // toward camera (+z)
+      );
+      s.mesh.visible = true;
+      return;
     }
 
-    for (let i = 0; i < POOL_SIZE; i++) {
-      const s  = slotsRef.current[i];
-      const gr = groupRefs[i].current;
+    // ── Cross: drifts laterally across the field at a fixed depth.
+    s.mode = "cross";
+    const z = THREE.MathUtils.randFloat(-14, -2); // deeper range → big slow backdrops
+    const { halfW, halfH } = frustumAt(camera, z);
 
-      if (!s.active) {
-        if (gr) gr.visible = false;
-        for (let t = 0; t < 2; t++) {
-          const tm = trailRefs.current[i * 2 + t];
-          if (tm) tm.visible = false;
-        }
-        continue;
+    // Size tier: small 55% / medium 30% / large 15%, with non-uniform scale.
+    const tier = Math.random();
+    let base: number;
+    let tierFactor: number; // speed multiplier — larger asteroids move slower
+    if (tier < 0.55) {
+      base = THREE.MathUtils.randFloat(0.01, 0.03);
+      tierFactor = 1.0;
+    } else if (tier < 0.85) {
+      base = THREE.MathUtils.randFloat(0.035, 0.07);
+      tierFactor = 0.8;
+    } else {
+      base = THREE.MathUtils.randFloat(0.08, 0.16);
+      tierFactor = 0.55;
+    }
+    applySize(s, base);
+
+    // Trajectory: enter from a random side, angle within ±35° of horizontal,
+    // speed scaled down for larger asteroids and for distant ones (parallax).
+    const fromLeft    = Math.random() < 0.5;
+    const angle       = THREE.MathUtils.degToRad(THREE.MathUtils.randFloat(-35, 35));
+    const depthFactor = THREE.MathUtils.mapLinear(z, -14, -2, 0.7, 1.0);
+    const speed       = BASE_SPEED * tierFactor * depthFactor;
+    const dirX        = fromLeft ? 1 : -1;
+    s.vel.set(dirX * speed * Math.cos(angle), speed * Math.sin(angle), 0);
+
+    s.z     = z;
+    s.halfW = halfW;
+    s.halfH = halfH;
+
+    const margin = s.scaleMax + 0.5;
+    const y = THREE.MathUtils.randFloat(-halfH, halfH);
+    const x =
+      mode === "initial"
+        ? THREE.MathUtils.randFloat(-halfW, halfW)
+        : fromLeft
+        ? -halfW - margin
+        : halfW + margin;
+    s.mesh.position.set(x, y, z);
+    s.mesh.visible = true;
+  };
+
+  useFrame((state, delta) => {
+    const camera = state.camera as THREE.PerspectiveCamera;
+    const dt = Math.min(delta, 0.05); // clamp so a backgrounded tab doesn't jump
+
+    if (!initialized.current) {
+      slots.forEach((s) => configure(s, camera, "initial"));
+      initialized.current = true;
+    }
+
+    for (const s of slots) {
+      const m = s.mesh;
+      m.position.addScaledVector(s.vel, dt);
+      m.rotateOnAxis(s.axis, s.rotSpeed * dt);
+
+      let off: boolean;
+      if (s.mode === "approach") {
+        // Cull once it passes the camera, or once its on-screen projection leaves
+        // the view (it has drifted past). NDC is used because the frustum shrinks
+        // to nothing at the camera, so world bounds don't work here.
+        scratch.copy(m.position).project(camera);
+        off =
+          m.position.z > camera.position.z - 0.8 ||
+          Math.abs(scratch.x) > 1.35 ||
+          Math.abs(scratch.y) > 1.35;
+      } else {
+        const margin     = s.scaleMax + 1;
+        const goingRight = s.vel.x > 0;
+        const exitX      = goingRight ? s.halfW + margin : -s.halfW - margin;
+        const offX       = goingRight ? m.position.x > exitX : m.position.x < exitX;
+        off = offX || Math.abs(m.position.y) > s.halfH + margin;
       }
-      if (!gr) continue;
-
-      s.pos.addScaledVector(s.vel, delta);
-      gr.position.copy(s.pos);
-      s.rotX += s.rotSpeedX;
-      s.rotZ += s.rotSpeedZ;
-      gr.rotation.set(s.rotX, 0, s.rotZ);
-
-      if (Math.abs(s.pos.x) > 32 || Math.abs(s.pos.y) > 22) {
-        s.active = false;
-        gr.visible = false;
-        for (let t = 0; t < 2; t++) {
-          const tm = trailRefs.current[i * 2 + t];
-          if (tm) tm.visible = false;
-        }
-        continue;
-      }
-
-      // Motion blur trail — only for close asteroids (depth > 1)
-      const isClose = s.depth > 1;
-      for (let t = 0; t < 2; t++) {
-        const tm = trailRefs.current[i * 2 + t];
-        if (!tm) continue;
-        if (!isClose) { tm.visible = false; continue; }
-        const off = -(t + 1) * 0.45;
-        tm.position.set(
-          s.pos.x + s.velNorm.x * off,
-          s.pos.y + s.velNorm.y * off,
-          s.pos.z
-        );
-        tm.rotation.set(s.rotX, 0, s.rotZ);
-        tm.visible = true;
-      }
+      if (off) configure(s, camera, "respawn");
     }
   });
 
   return (
-    <>
-      {Array.from({ length: POOL_SIZE }, (_, i) => (
-        <group key={i} ref={groupRefs[i]} visible={false}>
-          <mesh>
-            <icosahedronGeometry args={[poolProps[i].radius, 0]} />
-            <meshStandardMaterial
-              color={poolProps[i].color}
-              emissive={poolProps[i].color}
-              emissiveIntensity={0.15}
-              roughness={0.9}
-            />
-          </mesh>
-        </group>
+    <group>
+      {slots.map((s, i) => (
+        <primitive key={i} object={s.mesh} />
       ))}
-
-      {Array.from({ length: POOL_SIZE * 2 }, (_, i) => {
-        const slot = Math.floor(i / 2);
-        const ti   = i % 2;
-        const trailRadius = poolProps[slot].radius * (ti === 0 ? 0.65 : 0.45);
-        return (
-          <mesh
-            key={`trail-${i}`}
-            ref={(el) => { trailRefs.current[i] = el; }}
-            visible={false}
-          >
-            <icosahedronGeometry args={[trailRadius, 0]} />
-            <meshStandardMaterial
-              color={poolProps[slot].color}
-              transparent
-              opacity={ti === 0 ? 0.28 : 0.10}
-              depthWrite={false}
-            />
-          </mesh>
-        );
-      })}
-    </>
+    </group>
   );
 }
 
@@ -254,7 +331,7 @@ function Scene() {
       <ambientLight intensity={0.5} />
       <pointLight position={[10, 10, 5]} intensity={1.5} color="#4466ff" />
       <Stars />
-      <AsteroidPool />
+      <AsteroidField />
     </>
   );
 }

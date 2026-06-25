@@ -2,7 +2,6 @@
 
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html } from "@react-three/drei";
 import * as THREE from "three";
 
 // Sphere constants — must match GameCanvas.tsx (A_XZ = A_Y = 7, perfect sphere)
@@ -19,12 +18,12 @@ const _m4portal  = new THREE.Matrix4();
 interface PortalProps {
   position: [number, number, number];
   color: string;
-  label: string;
+  isVisited: boolean;
 }
 
 const PARTICLE_COUNT = 5;
 
-export function Portal({ position, color, label }: PortalProps) {
+export function Portal({ position, color, isVisited }: PortalProps) {
   const ringRef      = useRef<THREE.Mesh>(null);
   const membraneRef  = useRef<THREE.Mesh>(null);
   const lightRef     = useRef<THREE.PointLight>(null);
@@ -70,18 +69,23 @@ export function Portal({ position, color, label }: PortalProps) {
 
   useFrame((state) => {
     const t = state.clock.elapsedTime;
-    const pulse = Math.sin(t * 2.4);
 
-    if (lightRef.current) {
-      lightRef.current.intensity = 5.0 + pulse * 2.0;
-    }
-    if (membraneRef.current) {
-      (membraneRef.current.material as THREE.MeshBasicMaterial).opacity =
-        0.20 + pulse * 0.08;
-    }
-    if (ringRef.current) {
-      (ringRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
-        0.70 + pulse * 0.30;
+    const ringMat     = ringRef.current?.material as THREE.MeshStandardMaterial | undefined;
+    const membraneMat = membraneRef.current?.material as THREE.MeshBasicMaterial | undefined;
+
+    if (isVisited) {
+      // Portail déjà exploré : émissif fixe, disque discret, halo léger.
+      if (ringMat)     ringMat.emissiveIntensity = 0.3;
+      if (membraneMat) membraneMat.opacity = 0.1;
+      if (lightRef.current) lightRef.current.intensity = 1.2;
+      if (particlesRef.current) particlesRef.current.scale.setScalar(1);
+    } else {
+      // Non visité : clignotement net pour attirer le joueur (~période 1.5s).
+      const pulse = Math.abs(Math.sin(t * 2.0)); // 0 → 1, rapide et net
+      if (ringMat)     ringMat.emissiveIntensity = 0.4 + pulse * 1.6; // 0.4 → 2.0
+      if (membraneMat) membraneMat.opacity = 0.15 + pulse * 0.20;     // 0.15 → 0.35
+      if (lightRef.current) lightRef.current.intensity = 3.0 + pulse * 4.0;
+      if (particlesRef.current) particlesRef.current.scale.setScalar(1 + pulse * 0.15);
     }
 
     // Orbit particles in the ring plane (local XY = the ring plane)
@@ -132,31 +136,6 @@ export function Portal({ position, color, label }: PortalProps) {
 
       {/* Point light */}
       <pointLight ref={lightRef} color={color} intensity={5} distance={10} decay={2} />
-
-      {/* Floating label above the portal (along surface normal = local +Y) */}
-      <Html
-        center
-        distanceFactor={10}
-        position={[0, 1.4, 0]}
-        style={{ pointerEvents: "none" }}
-      >
-        <div
-          style={{
-            color: "white",
-            background: "rgba(8, 8, 16, 0.78)",
-            border: `1px solid ${color}44`,
-            padding: "3px 10px",
-            borderRadius: "6px",
-            fontSize: "11px",
-            fontFamily: "monospace",
-            whiteSpace: "nowrap",
-            letterSpacing: "0.05em",
-            backdropFilter: "blur(4px)",
-          }}
-        >
-          {label}
-        </div>
-      </Html>
     </group>
   );
 }

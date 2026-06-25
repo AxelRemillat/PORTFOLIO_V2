@@ -8,19 +8,28 @@ import { useSphericalMovement }  from "./hooks/useSphericalMovement";
 import { usePortalDetection }    from "./hooks/usePortalDetection";
 import { Background }        from "./Background";
 import { SpaceObjects }      from "./SpaceObjects";
+import { ShootingStars }     from "./ShootingStars";
 import { Lighting }          from "./Lighting";
+import { SunMoon }           from "./SunMoon";
 import { PlanetSurface }     from "./PlanetSurface";
+import { PlanetObjects }     from "./PlanetObjects";
+import { NPCs }              from "./NPCs";
 import { Portals }           from "./Portals";
+import { PortalHUD }         from "./PortalHUD";
 import { OrbitalObjects }    from "./OrbitalObjects";
 import { ClickIndicator }    from "./ClickIndicator";
 import { PortalFlash }       from "./PortalFlash";
 import { CameraController }  from "./CameraController";
-import { Robot }             from "./Robot";
+import { LittlePrince }      from "./LittlePrince";
+
+// Spawn beside the Rose (south pole), offset tangentially so the Prince is next
+// to it rather than on top of the Baobab (which sits at the north pole = old spawn).
+const SPAWN = new THREE.Vector3(0.38, -0.925, 0).normalize().multiplyScalar(SURFACE_Y);
 
 export function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void }) {
   // ── Shared refs ──────────────────────────────────────────────────────────────
-  const posRef        = useRef(new THREE.Vector3(0, SURFACE_Y, 0));
-  const prevPosRef    = useRef(new THREE.Vector3(0, SURFACE_Y, 0));
+  const posRef        = useRef(SPAWN.clone());
+  const prevPosRef    = useRef(SPAWN.clone());
   const movingRef     = useRef(false);
   const rotRef        = useRef(0);
   const quatRef       = useRef(new THREE.Quaternion());
@@ -54,13 +63,18 @@ export function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void
     <>
       <Background />
       <SpaceObjects />
+      <ShootingStars />
+      <SunMoon />
       <Lighting />
       <PlanetSurface onSurfaceClick={handleSurfaceClick} />
+      <PlanetObjects />
+      <NPCs playerPosRef={posRef} />
       <OrbitalObjects />
       <Portals />
+      <PortalHUD />
       <ClickIndicator infoRef={clickIndicRef} />
       <PortalFlash    infoRef={flashRef} />
-      <Robot posRef={posRef} movingRef={movingRef} rotRef={rotRef} quatRef={quatRef} scaleRef={robotScaleRef} />
+      <LittlePrince posRef={posRef} movingRef={movingRef} quatRef={quatRef} scaleRef={robotScaleRef} jumpRef={jumpRef} />
       <CameraController posRef={posRef} faceRef={faceRef} />
     </>
   );

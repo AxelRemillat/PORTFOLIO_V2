@@ -4,6 +4,10 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { usePendingPortal } from "@/components/game/hooks/usePortalDetection";
+import { PortalConfirmation } from "@/components/game/PortalConfirmation";
+import { QuestLog } from "@/components/game/QuestLog";
+import { useGameAudio } from "@/components/game/audio/useGameAudio";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/GameCanvas").then((m) => m.GameCanvas),
@@ -26,9 +30,17 @@ const PORTAL_LABELS: Record<string, string> = {
   "/projets/music":   "Planète qui Chante",
 };
 
+// Ligne de contrôle (panneau bas-gauche)
+const CTRL_ROW: React.CSSProperties = {
+  display: "flex", alignItems: "center", gap: 8,
+  margin: "5px 0", fontSize: 13, color: "#CCB8EE", fontFamily: "monospace",
+};
+
 export default function GamePage() {
   const router = useRouter();
   const [entering, setEntering] = useState<string | null>(null);
+  const { pendingPortal, confirmPortal, cancelPortal } = usePendingPortal();
+  useGameAudio(); // init audio au 1er geste + ambiance spatiale
 
   const handlePortalEnter = useCallback(
     (href: string) => {
@@ -48,87 +60,86 @@ export default function GamePage() {
       </div>
 
       {/* Quit button */}
-      <div className="absolute top-4 right-4 z-10">
-        <Link
-          href="/projets"
-          className="flex items-center gap-2 px-3 py-2 text-xs font-mono text-muted hover:text-white border border-border hover:border-white/20 rounded-lg bg-bg/70 backdrop-blur transition-colors"
-        >
-          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-          </svg>
-          Quitter
-        </Link>
-      </div>
+      <Link href="/projets" className="game-quit">
+        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+        </svg>
+        Quitter
+      </Link>
 
       {/* Controls overlay */}
-      <div className="absolute bottom-5 left-5 z-10 pointer-events-none">
-        <div className="flex flex-col gap-1.5 px-3 py-2.5 rounded-lg bg-bg/60 border border-border/40 backdrop-blur">
-          <p className="text-[10px] font-mono text-muted/70 uppercase tracking-widest mb-0.5">
-            Contrôles
-          </p>
+      <div
+        style={{
+          position: "fixed", bottom: 24, left: 24, zIndex: 10, pointerEvents: "none",
+          background: "rgba(8, 6, 25, 0.80)",
+          border: "1px solid rgba(255, 255, 255, 0.12)",
+          borderRadius: 14, padding: "14px 18px",
+          backdropFilter: "blur(12px)",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
+          minWidth: 220,
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10, letterSpacing: 3, color: "#FFE080",
+            textTransform: "uppercase", marginBottom: 10,
+            borderBottom: "1px solid rgba(255,224,128,0.2)", paddingBottom: 6,
+            fontFamily: "monospace",
+          }}
+        >
+          Contrôles
+        </div>
 
-          {/* Movement row */}
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col items-center gap-0.5">
-              <kbd className="px-2 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">Z</kbd>
-              <div className="flex gap-0.5">
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">Q</kbd>
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">S</kbd>
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">D</kbd>
-              </div>
-            </div>
-            <span className="text-muted/40 text-[10px]">ou</span>
-            <div className="flex flex-col items-center gap-0.5">
-              <kbd className="px-2 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">↑</kbd>
-              <div className="flex gap-0.5">
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">←</kbd>
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">↓</kbd>
-                <kbd className="px-1.5 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">→</kbd>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono text-muted/60">Déplacer</span>
-          </div>
-
-          {/* Other actions */}
-          <div className="flex flex-col gap-0.5 mt-0.5">
-            <div className="flex items-center gap-2">
-              <kbd className="px-2 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">Espace</kbd>
-              <span className="text-[10px] font-mono text-muted/60">Sauter</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <kbd className="px-2 py-0.5 text-[9px] font-mono bg-surface border border-border rounded text-muted">R</kbd>
-              <span className="text-[10px] font-mono text-muted/60">Interagir (ou clic objet)</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-muted/50">Clic sol → déplacement auto</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-muted/50">Portail → visite le projet</span>
+        {/* Movement row */}
+        <div style={CTRL_ROW}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <kbd className="game-kbd">Z</kbd>
+            <div style={{ display: "flex", gap: 3 }}>
+              <kbd className="game-kbd">Q</kbd>
+              <kbd className="game-kbd">S</kbd>
+              <kbd className="game-kbd">D</kbd>
             </div>
           </div>
+          <span style={{ opacity: 0.5 }}>ou</span>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+            <kbd className="game-kbd">↑</kbd>
+            <div style={{ display: "flex", gap: 3 }}>
+              <kbd className="game-kbd">←</kbd>
+              <kbd className="game-kbd">↓</kbd>
+              <kbd className="game-kbd">→</kbd>
+            </div>
+          </div>
+          <span>Déplacer</span>
+        </div>
+
+        {/* Other actions */}
+        <div style={CTRL_ROW}>
+          <kbd className="game-kbd">Espace</kbd>
+          <span>Sauter</span>
+        </div>
+        <div style={CTRL_ROW}>
+          <kbd className="game-kbd">R</kbd>
+          <span>Interagir (ou clic objet)</span>
+        </div>
+        <div style={CTRL_ROW}>
+          <span>Clic sol → déplacement auto</span>
+        </div>
+        <div style={CTRL_ROW}>
+          <span>Portail → visite le projet</span>
         </div>
       </div>
 
-      {/* Portal legend */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <div className="flex flex-col gap-1.5 px-3 py-2.5 rounded-lg bg-bg/60 border border-border/40 backdrop-blur">
-          <p className="text-[10px] font-mono text-muted/70 uppercase tracking-widest mb-0.5">
-            Portails
-          </p>
-          {[
-            { color: "#FF8C00", label: "CV Interactif RAG",  n: "1" },
-            { color: "#FFFFFF", label: "RISE",                n: "2" },
-            { color: "#00BFFF", label: "SEACO Pipeline",      n: "3" },
-            { color: "#CC44FF", label: "Automatisations N8N", n: "4" },
-            { color: "#FFD700", label: "Planète qui Chante",  n: "5" },
-          ].map(({ color, label, n }) => (
-            <div key={label} className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full" style={{ background: color, boxShadow: `0 0 4px ${color}` }} />
-              <span className="text-[10px] font-mono text-muted">{n} — {label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* Journal de quêtes (remplace l'ancienne légende des portails) */}
+      <QuestLog />
+
+      {/* Portal confirmation dialog */}
+      {pendingPortal && (
+        <PortalConfirmation
+          portal={pendingPortal}
+          onConfirm={confirmPortal}
+          onCancel={cancelPortal}
+        />
+      )}
 
       {/* Portal enter transition */}
       {entering && (
@@ -151,6 +162,34 @@ export default function GamePage() {
 
       <style>{`
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+
+        .game-quit {
+          position: fixed; top: 20px; right: 20px; z-index: 10;
+          display: inline-flex; align-items: center; gap: 8px;
+          background: rgba(8, 6, 25, 0.80);
+          border: 1px solid rgba(255, 80, 80, 0.35);
+          border-radius: 10px; padding: 10px 20px;
+          color: #FF8080; font-size: 14px; font-weight: 600;
+          font-family: monospace; cursor: pointer;
+          backdrop-filter: blur(12px); letter-spacing: 1px;
+          transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .game-quit:hover {
+          background: rgba(180, 40, 40, 0.35);
+          border-color: rgba(255, 80, 80, 0.7);
+          color: #FFAAAA;
+        }
+
+        .game-kbd {
+          display: inline-block;
+          background: rgba(255,255,255,0.10);
+          border: 1px solid rgba(255,255,255,0.25);
+          border-radius: 5px; padding: 2px 7px;
+          font-size: 12px; color: #FFFFFF; font-weight: 600;
+          font-family: monospace;
+          box-shadow: 0 2px 0 rgba(0,0,0,0.4);
+          min-width: 22px; text-align: center;
+        }
       `}</style>
     </div>
   );

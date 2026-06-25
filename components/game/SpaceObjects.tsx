@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useMemo } from "react";
+import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
@@ -53,48 +53,11 @@ function LaserBeams() {
   );
 }
 
-function SunObject() {
-  return (
-    <group position={[35,18,28]}>
-      <mesh><sphereGeometry args={[3.2,24,24]} /><meshBasicMaterial color="#fffbe0" fog={false} /></mesh>
-      <mesh><sphereGeometry args={[3.9,16,16]} /><meshBasicMaterial color="#ffcc00" transparent opacity={0.45} depthWrite={false} fog={false} /></mesh>
-      <mesh><sphereGeometry args={[5.0,16,16]} /><meshBasicMaterial color="#ff8800" transparent opacity={0.15} depthWrite={false} fog={false} /></mesh>
-    </group>
-  );
-}
-
-function MoonObject() {
-  const shape = useMemo(() => {
-    const s = new THREE.Shape();
-    s.absarc(0, 0, 2.2, 0, Math.PI * 2, false);
-    const hole = new THREE.Path();
-    hole.absarc(0.58, 0, 1.96, 0, Math.PI * 2, true);
-    s.holes.push(hole);
-    return s;
-  }, []);
-  return (
-    <>
-      <mesh position={[-28,6,-22]}>
-        <sphereGeometry args={[4.2,10,10]} />
-        <meshBasicMaterial color="#3355bb" transparent opacity={0.09} depthWrite={false} fog={false} />
-      </mesh>
-      <group position={[-28,6,-22]} rotation={[0.12,-0.18,0.56]}>
-        <mesh>
-          <shapeGeometry args={[shape, 64]} />
-          <meshBasicMaterial color="#ddeeff" side={THREE.DoubleSide} fog={false} />
-        </mesh>
-      </group>
-    </>
-  );
-}
-
 export function SpaceObjects() {
   return (
     <>
       <Rocket />
       <LaserBeams />
-      <SunObject />
-      <MoonObject />
     </>
   );
 }

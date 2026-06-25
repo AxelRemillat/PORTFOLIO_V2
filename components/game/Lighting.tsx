@@ -3,16 +3,16 @@
 export function Lighting() {
   return (
     <>
-      {/* Ambient — garantit qu'aucune face n'est dans le noir complet */}
-      <ambientLight intensity={1.5} color="#99aabb" />
-      {/* Soleil — côté +X/+Z, lumière principale chaude */}
-      <directionalLight position={[35, 18, 28]}  intensity={2.8} color="#ffe060" />
-      <pointLight       position={[22, 10, 16]}  intensity={1.4} color="#ffcc44" distance={70} decay={1.4} />
-      {/* Lune — côté −X/−Z, lumière froide */}
-      <directionalLight position={[-28, 6, -22]} intensity={1.2} color="#7799dd" />
-      <pointLight       position={[-16, 4, -13]} intensity={0.7} color="#5566bb" distance={55} decay={1.4} />
-      {/* Fill sous la planète */}
-      <directionalLight position={[0, -14, 0]}   intensity={0.8} color="#aabbcc" />
+      {/* Ambient de base — plancher lumineux pour que rien ne soit jamais noir */}
+      <ambientLight color="#5a567e" intensity={1.3} />
+
+      {/* Hemisphere — enveloppe TOUTE la sphère (ciel au-dessus, sol en-dessous).
+          C'est elle qui rend la planète lisible partout, y compris la face
+          opposée au soleil et le dessous où les directionnelles n'arrivent pas. */}
+      <hemisphereLight color="#cac8da" groundColor="#6e5a74" intensity={1.7} />
+
+      {/* Fill froid côté opposé au soleil — adoucit les zones mortes */}
+      <directionalLight color="#3a4a8a" intensity={0.8} position={[-20, 5, 0]} />
     </>
   );
 }

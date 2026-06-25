@@ -10,7 +10,7 @@ import { Planet } from "./Planet";
 export function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Vector3) => void }) {
   const groupRef = useRef<THREE.Group>(null);
 
-  const { rocks, grasses, bushes } = useMemo(() => {
+  const { rocks, grasses, bushes, water } = useMemo(() => {
     const h = (n: number) => Math.abs(Math.sin(n * 127.1) * 43758.5453) % 1;
     const localUp = new THREE.Vector3(0, 1, 0);
 
@@ -89,7 +89,19 @@ export function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Ve
       bi++;
     }
 
-    return { rocks, grasses, bushes };
+    // Zones d'eau : disques posés à plat sur la surface, perpendiculaires à la normale
+    const planetRadius = 7;
+    const water = [
+      new THREE.Vector3(0.3, -0.6, 0.7),
+      new THREE.Vector3(-0.7, -0.4, -0.5),
+    ].map((v) => {
+      const n = v.clone().normalize();
+      const quat = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
+      const p = n.clone().multiplyScalar(planetRadius + 0.02); // légèrement au-dessus de la surface
+      return { pos: [p.x, p.y, p.z] as [number, number, number], quat };
+    });
+
+    return { rocks, grasses, bushes, water };
   }, []);
 
   useFrame((state) => {
@@ -101,6 +113,13 @@ export function PlanetSurface({ onSurfaceClick }: { onSurfaceClick: (p: THREE.Ve
   return (
     <group ref={groupRef}>
       <Planet onPointerDown={(e: ThreeEvent<PointerEvent>) => { if (e.button !== 0) return; onSurfaceClick(e.point); }} />
+
+      {water.map((w, i) => (
+        <mesh key={`w${i}`} position={w.pos} quaternion={w.quat}>
+          <circleGeometry args={[0.45, 8]} />
+          <meshStandardMaterial color="#1a3a6a" metalness={0.8} roughness={0.1} transparent opacity={0.85} />
+        </mesh>
+      ))}
 
       {rocks.map((r, i) => (
         <mesh key={`r${i}`} position={r.pos} rotation={[r.rx, r.ry, r.rz]} scale={r.scale}>
