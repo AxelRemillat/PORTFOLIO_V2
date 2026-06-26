@@ -63,12 +63,12 @@ let lastCompleted: QuestId | null = null;
 let resetTimer: ReturnType<typeof setTimeout> | null = null;
 const listeners = new Set<() => void>();
 
-function build(): Snapshot {
-  const main = quests.filter((q) => q.type === "main");
-  const secret = quests.filter((q) => q.type === "secret");
+function buildFrom(qs: Quest[], last: QuestId | null): Snapshot {
+  const main = qs.filter((q) => q.type === "main");
+  const secret = qs.filter((q) => q.type === "secret");
   return {
-    quests,
-    lastCompleted,
+    quests: qs,
+    lastCompleted: last,
     progress: {
       main: main.filter((q) => q.completed).length,
       total: main.length,
@@ -78,8 +78,16 @@ function build(): Snapshot {
   };
 }
 
+function build(): Snapshot {
+  return buildFrom(quests, lastCompleted);
+}
+
 let snapshot = build();
-const SERVER_SNAPSHOT = snapshot;
+
+// IMPORTANT : getServerSnapshot doit refléter ce que le SERVEUR rend (état par
+// défaut, sans localStorage). On le bâtit depuis QUESTS_DEF — sinon, sur le client,
+// le module charge déjà localStorage et l'hydratation casserait (texte 1 vs 0).
+const SERVER_SNAPSHOT = buildFrom(QUESTS_DEF.map((q) => ({ ...q })), null);
 
 function commit() {
   snapshot = build();
@@ -118,6 +126,17 @@ export function completeQuest(id: QuestId) {
   if (resetTimer) clearTimeout(resetTimer);
   resetTimer = setTimeout(() => { lastCompleted = null; resetTimer = null; commit(); }, 3000);
   persist();
+  commit();
+}
+
+/** Réinitialise toutes les quêtes à leur état de départ + efface le localStorage. */
+export function resetQuests() {
+  quests = QUESTS_DEF.map((q) => ({ ...q }));
+  lastCompleted = null;
+  if (resetTimer) { clearTimeout(resetTimer); resetTimer = null; }
+  if (typeof window !== "undefined") {
+    try { window.localStorage.removeItem(KEY); } catch { /* localStorage indisponible */ }
+  }
   commit();
 }
 

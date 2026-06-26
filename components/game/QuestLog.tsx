@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useQuestSystem, type Quest } from "./hooks/useQuestSystem";
+import { useQuestSystem, resetQuests, type Quest } from "./hooks/useQuestSystem";
+import { resetVisited } from "./hooks/useVisitedPortals";
 
 const HEADER: React.CSSProperties = {
   fontSize: 10, letterSpacing: 2, color: "#8880aa",
@@ -103,18 +104,37 @@ export function QuestLog() {
           100% { transform: translate(-50%, -8px); opacity: 0 } }
       `}</style>
 
-      {/* Bouton toggle */}
-      <button
-        onClick={() => setOpen((v) => !v)}
-        style={{
-          pointerEvents: "auto", cursor: "pointer",
-          background: "rgba(10,8,30,0.85)", border: "1px solid rgba(255,220,100,0.4)",
-          color: "#FFE080", borderRadius: 8, padding: "8px 14px",
-          fontSize: 13, fontFamily: "monospace",
-        }}
-      >
-        📜 Quêtes ({doneTotal}/{grandTotal})
-      </button>
+      {/* Bouton toggle + bouton reset */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          style={{
+            pointerEvents: "auto", cursor: "pointer",
+            background: "rgba(10,8,30,0.85)", border: "1px solid rgba(255,220,100,0.4)",
+            color: "#FFE080", borderRadius: 8, padding: "8px 14px",
+            fontSize: 13, fontFamily: "monospace",
+          }}
+        >
+          📜 Quêtes ({doneTotal}/{grandTotal})
+        </button>
+        <button
+          onClick={() => {
+            if (window.confirm("Réinitialiser toutes les quêtes ?")) {
+              resetQuests();
+              resetVisited(); // les portails redeviennent "non découverts"
+            }
+          }}
+          title="Réinitialiser les quêtes"
+          style={{
+            pointerEvents: "auto", cursor: "pointer",
+            background: "rgba(10,8,30,0.85)", border: "1px solid rgba(255,120,120,0.4)",
+            color: "#FF9090", borderRadius: 8, padding: "8px 10px",
+            fontSize: 13, fontFamily: "monospace", lineHeight: 1,
+          }}
+        >
+          ↺
+        </button>
+      </div>
 
       {/* Panneau */}
       {open && (

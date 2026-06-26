@@ -8,22 +8,55 @@ function seeded(i: number) {
   return x - Math.floor(x);
 }
 
-// Dessine un cratère sur le canvas couleur : bord plus clair + centre plus sombre
-function drawCraterColor(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number) {
-  const center = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-  center.addColorStop(0, "rgba(58,54,46,0.55)");
-  center.addColorStop(0.7, "rgba(80,75,64,0.2)");
-  center.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.fillStyle = center;
+// Cratère réaliste : ombre portée + intérieur enfoncé sombre + bord lumineux + reflet
+function drawCrater(ctx: CanvasRenderingContext2D, x: number, y: number, r: number) {
+  // 1. OMBRE EXTÉRIEURE — halo sombre autour du cratère
+  const outerShadow = ctx.createRadialGradient(x, y, r * 0.7, x, y, r * 1.4);
+  outerShadow.addColorStop(0, "rgba(0,0,0,0)");
+  outerShadow.addColorStop(1, "rgba(0,0,0,0.35)");
   ctx.beginPath();
-  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  ctx.arc(x, y, r * 1.4, 0, Math.PI * 2);
+  ctx.fillStyle = outerShadow;
   ctx.fill();
 
-  ctx.strokeStyle = "rgba(196,186,164,0.45)";
-  ctx.lineWidth = Math.max(1, r * 0.12);
+  // 2. INTÉRIEUR — dégradé radial sombre au centre, plus clair vers le bord
+  const interior = ctx.createRadialGradient(
+    x - r * 0.2, y - r * 0.2, 0, // centre décalé (lumière haut-gauche)
+    x, y, r * 0.95,
+  );
+  interior.addColorStop(0, "rgba(30, 28, 22, 0.85)");
+  interior.addColorStop(0.6, "rgba(55, 50, 40, 0.70)");
+  interior.addColorStop(1, "rgba(80, 72, 58, 0.40)");
   ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.92, 0, Math.PI * 2);
+  ctx.arc(x, y, r * 0.95, 0, Math.PI * 2);
+  ctx.fillStyle = interior;
+  ctx.fill();
+
+  // 3. BORD DU CRATÈRE — anneau lumineux (rim) côté éclairé
+  const rim = ctx.createRadialGradient(x, y, r * 0.8, x, y, r * 1.05);
+  rim.addColorStop(0, "rgba(0,0,0,0)");
+  rim.addColorStop(0.5, "rgba(180, 165, 130, 0.55)");
+  rim.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.beginPath();
+  ctx.arc(x, y, r * 1.05, 0, Math.PI * 2);
+  ctx.fillStyle = rim;
+  ctx.fill();
+
+  // 4. REFLET — arc lumineux en haut-gauche du bord (source lumière)
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.92, Math.PI * 1.1, Math.PI * 1.7);
+  ctx.strokeStyle = "rgba(220, 200, 160, 0.45)";
+  ctx.lineWidth = r * 0.12;
   ctx.stroke();
+
+  // 5. POINT CENTRAL — légère surbrillance au fond du cratère (albedo)
+  const centralGlow = ctx.createRadialGradient(x, y, 0, x, y, r * 0.25);
+  centralGlow.addColorStop(0, "rgba(100, 92, 75, 0.30)");
+  centralGlow.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.25, 0, Math.PI * 2);
+  ctx.fillStyle = centralGlow;
+  ctx.fill();
 }
 
 // Même cratère en niveaux de gris pour la roughnessMap (centre lisse, bord rugueux)
@@ -102,13 +135,13 @@ export function generateMoonTextures(): {
   ctx.restore();
   ctx.globalAlpha = 1;
 
-  // 3. Cratères : 30 cercles de tailles variées, positions seedées (sin/cos)
-  const craterCount = 30;
+  // 3. Cratères réalistes : tailles variées (18–55px), positions seedées (sin/cos)
+  const craterCount = 22;
   for (let i = 0; i < craterCount; i++) {
     const cx = (Math.sin(i * 12.9898) * 0.5 + 0.5) * SIZE;
     const cy = (Math.cos(i * 78.233) * 0.5 + 0.5) * SIZE;
-    const r = 4 + (Math.sin(i * 3.7) * 0.5 + 0.5) * 36;
-    drawCraterColor(ctx, cx, cy, r);
+    const r = 18 + (Math.sin(i * 3.7) * 0.5 + 0.5) * 37; // 18 → 55
+    drawCrater(ctx, cx, cy, r);
     drawCraterRough(rctx, cx, cy, r);
   }
 

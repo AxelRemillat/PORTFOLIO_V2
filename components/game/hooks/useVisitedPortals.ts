@@ -35,6 +35,15 @@ export function markVisited(portalName: string) {
   listeners.forEach((l) => l());
 }
 
+/** Efface tous les portails visités (utilisé lors du reset des quêtes). */
+export function resetVisited() {
+  snapshot = new Set();
+  if (typeof window !== "undefined") {
+    try { window.localStorage.removeItem(KEY); } catch { /* localStorage indisponible */ }
+  }
+  listeners.forEach((l) => l());
+}
+
 export function useVisitedPortals() {
   const visitedPortals = useSyncExternalStore(
     (l) => {

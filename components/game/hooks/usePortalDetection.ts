@@ -130,7 +130,9 @@ export function usePortalDetection({ posRef, prevPosRef, enteredRef, enterAnim, 
                   awaiting.current = false;
                 },
                 () => {
-                  // NON → on reprend le jeu, petit délai pour éviter un re-déclenchement
+                  // NON → même bruitage que l'interaction avec un objet/animal
+                  gameAudio.playInteraction();
+                  // on reprend le jeu, petit délai pour éviter un re-déclenchement
                   spawnCooldown.current = SPAWN_COOLDOWN;
                   awaiting.current = false;
                 },

@@ -60,7 +60,7 @@ export default function GamePage() {
       </div>
 
       {/* Quit button */}
-      <Link href="/projets" className="game-quit">
+      <Link href="/" className="game-quit">
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
           <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
         </svg>
@@ -118,8 +118,7 @@ export default function GamePage() {
           <span>Sauter</span>
         </div>
         <div style={CTRL_ROW}>
-          <kbd className="game-kbd">R</kbd>
-          <span>Interagir (ou clic objet)</span>
+          <span>Clic sur un objet → interagir</span>
         </div>
         <div style={CTRL_ROW}>
           <span>Clic sol → déplacement auto</span>
