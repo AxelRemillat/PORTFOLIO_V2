@@ -3,11 +3,16 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { usePendingPortal } from "@/components/game/hooks/usePortalDetection";
 import { PortalConfirmation } from "@/components/game/PortalConfirmation";
 import { QuestLog } from "@/components/game/QuestLog";
+import { resetQuests } from "@/components/game/hooks/useQuestSystem";
+import { resetVisited } from "@/components/game/hooks/useVisitedPortals";
 import { useGameAudio } from "@/components/game/audio/useGameAudio";
+import { IntroSequence } from "@/components/game/IntroSequence";
+import { GameLoader } from "@/components/game/GameLoader";
+import { setIntroMode } from "@/components/game/introState";
 
 const GameCanvas = dynamic(
   () => import("@/components/game/GameCanvas").then((m) => m.GameCanvas),
@@ -36,11 +41,27 @@ const CTRL_ROW: React.CSSProperties = {
   margin: "5px 0", fontSize: 13, color: "#CCB8EE", fontFamily: "monospace",
 };
 
+type GamePhase = "loading" | "warp" | "zoom" | "playing";
+
 export default function GamePage() {
   const router = useRouter();
+  const [phase, setPhase] = useState<GamePhase>("loading");
   const [entering, setEntering] = useState<string | null>(null);
   const { pendingPortal, confirmPortal, cancelPortal } = usePendingPortal();
   useGameAudio(); // init audio au 1er geste + ambiance spatiale
+
+  // Phase 'zoom' : la caméra part de loin et glisse (ease-out-cubic) via introState.
+  // La fin du glissé (notifyIntroComplete → callback) fait passer en 'playing'.
+  useEffect(() => {
+    if (phase !== "zoom") return;
+    setIntroMode(true, () => setPhase("playing"));
+    const safety = setTimeout(() => setPhase("playing"), 4000); // secours
+    return () => clearTimeout(safety);
+  }, [phase]);
+
+  useEffect(() => () => setIntroMode(false), []); // sécurité à la sortie du jeu
+
+  const playing = phase === "playing";
 
   const handlePortalEnter = useCallback(
     (href: string) => {
@@ -54,18 +75,49 @@ export default function GamePage() {
     <div
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "#080810" }}
     >
-      {/* 3D Canvas */}
-      <div style={{ width: "100%", height: "100%" }}>
+      {/* 3D Canvas — toujours monté (précharge en arrière-plan). Visible dès 'zoom'. */}
+      <div
+        style={{
+          position: "absolute", inset: 0,
+          opacity: phase === "loading" || phase === "warp" ? 0 : 1,
+          transition: "opacity 0.5s ease",
+          pointerEvents: playing ? "auto" : "none",
+        }}
+      >
         <GameCanvas onPortalEnter={handlePortalEnter} />
       </div>
 
-      {/* Quit button */}
-      <Link href="/" className="game-quit">
-        <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
-        </svg>
-        Quitter
-      </Link>
+      {/* Phase 1 — écran de chargement */}
+      {phase === "loading" && <GameLoader onReady={() => setPhase("warp")} />}
+
+      {/* Phase 2 — warp (étoiles + B-612) */}
+      {phase === "warp" && <IntroSequence onComplete={() => setPhase("zoom")} />}
+
+      {/* HUD — visible uniquement en 'playing' (fade in) */}
+      <div style={{ opacity: playing ? 1 : 0, transition: "opacity 0.5s ease", pointerEvents: playing ? "auto" : "none" }}>
+
+      {/* Top-right : Quitter + Réinitialiser les quêtes */}
+      <div style={{ position: "fixed", top: 20, right: 20, zIndex: 10, display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+        <Link href="/" className="game-quit">
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" />
+          </svg>
+          Quitter
+        </Link>
+        <button
+          onClick={() => { resetQuests(); resetVisited(); }}
+          title="Remettre toutes les quêtes à zéro"
+          style={{
+            background: "rgba(8,6,25,0.80)", border: "1px solid rgba(255,255,255,0.12)",
+            borderRadius: 8, padding: "7px 14px", color: "#887799", fontSize: 11,
+            cursor: "pointer", letterSpacing: 0.5, backdropFilter: "blur(8px)", transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = "#FF8080"; e.currentTarget.style.borderColor = "rgba(255,80,80,0.4)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = "#887799"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.12)"; }}
+        >
+          ↺ Réinitialiser les quêtes
+        </button>
+      </div>
 
       {/* Controls overlay */}
       <div
@@ -131,6 +183,8 @@ export default function GamePage() {
       {/* Journal de quêtes (remplace l'ancienne légende des portails) */}
       <QuestLog />
 
+      </div>{/* fin HUD */}
+
       {/* Portal confirmation dialog */}
       {pendingPortal && (
         <PortalConfirmation
@@ -163,7 +217,6 @@ export default function GamePage() {
         @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
 
         .game-quit {
-          position: fixed; top: 20px; right: 20px; z-index: 10;
           display: inline-flex; align-items: center; gap: 8px;
           background: rgba(8, 6, 25, 0.80);
           border: 1px solid rgba(255, 80, 80, 0.35);

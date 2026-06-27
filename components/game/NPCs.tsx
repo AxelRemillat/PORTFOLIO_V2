@@ -23,14 +23,14 @@ const FOX_INFO: ActiveObject = {
   name: "Le Renard",
   emoji: "🦊",
   quote:
-    "On ne connaît que les choses que l'on apprivoise… Tu es responsable pour toujours de ce que tu as apprivoisé.",
+    "Apprivoiser, c'est créer des liens. Ou, dans mon cas, t'avoir à l'œil en permanence.",
 };
 
 const SHEEP_INFO: ActiveObject = {
   type: "sheep",
   name: "Le Mouton",
   emoji: "🐑",
-  quote: "S'il vous plaît… dessine-moi un mouton.",
+  quote: "S'il vous plaît... dessine-moi un mouton. Et pas dans une boîte. Je sais ce que tu penses.",
 };
 
 export function NPCs({ playerPosRef }: { playerPosRef: React.MutableRefObject<THREE.Vector3> }) {

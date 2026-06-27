@@ -6,12 +6,15 @@ import { SURFACE_Y, ellipsoidProject } from "./constants/game";
 import { useKeyboardControls }   from "./hooks/useKeyboardControls";
 import { useSphericalMovement }  from "./hooks/useSphericalMovement";
 import { usePortalDetection }    from "./hooks/usePortalDetection";
+import { useQuestSystem }        from "./hooks/useQuestSystem";
+import { FireflyPath }           from "./FireflyPath";
 import { Background }        from "./Background";
 import { SpaceObjects }      from "./SpaceObjects";
 import { ShootingStars }     from "./ShootingStars";
 import { Lighting }          from "./Lighting";
 import { SunMoon }           from "./SunMoon";
 import { PlanetSurface }     from "./PlanetSurface";
+import { WindParticles }     from "./WindParticles";
 import { PlanetObjects }     from "./PlanetObjects";
 import { NPCs }              from "./NPCs";
 import { Portals }           from "./Portals";
@@ -43,6 +46,7 @@ export function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void
 
   // ── Hooks ─────────────────────────────────────────────────────────────────────
   const { keysRef, jumpRef } = useKeyboardControls();
+  const { guidedPortalId } = useQuestSystem();
 
   useSphericalMovement({
     posRef, faceRef, movingRef, quatRef,
@@ -67,10 +71,12 @@ export function Scene({ onPortalEnter }: { onPortalEnter: (href: string) => void
       <SunMoon />
       <Lighting />
       <PlanetSurface onSurfaceClick={handleSurfaceClick} />
+      <WindParticles />
       <PlanetObjects />
       <NPCs playerPosRef={posRef} />
       <OrbitalObjects />
       <Portals />
+      <FireflyPath playerPosRef={posRef} targetPortalId={guidedPortalId} planetRadius={SURFACE_Y} />
       <PortalHUD />
       <ClickIndicator infoRef={clickIndicRef} />
       <PortalFlash    infoRef={flashRef} />

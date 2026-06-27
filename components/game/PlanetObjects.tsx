@@ -7,6 +7,7 @@ import * as THREE from "three";
 import { SURFACE_Y } from "./constants/game";
 import { Rose } from "./Rose";
 import { Baobab } from "./Baobab";
+import { Volcano } from "./Volcano";
 import { ObjectInteraction, type ActiveObject } from "./ObjectInteraction";
 import { discoverQuest, completeQuest } from "./hooks/useQuestSystem";
 import { gameAudio } from "./audio/GameAudioEngine";
@@ -26,6 +27,9 @@ function placement(dir: THREE.Vector3) {
 // Pôles — loin de tous les portails.
 const ROSE_DIR   = new THREE.Vector3(0, -1, 0); // pôle sud
 const BAOBAB_DIR = new THREE.Vector3(0, 1, 0);  // pôle nord
+// Volcan — région dégagée (> 55° de tous les portails/objets).
+const VOLCANO_DIR = new THREE.Vector3(-0.6, 0.45, 0.66);
+const VOLCANO_SCALE = 2.5;
 
 // Échelles relatives à la taille du Petit Prince (~1.3 unité, pieds → sommet tête).
 // La base des objets est à y=0 (= point de placement), donc l'échelle les fait
@@ -41,7 +45,7 @@ const ROSE_INFO: ActiveObject = {
   name: "La Rose",
   emoji: "🌹",
   quote:
-    "Il faut que j'endure la présence de deux ou trois chenilles si je veux connaître les papillons…",
+    "Je suis unique en mon genre. Enfin... à quelques millions de roses près.",
 };
 
 const BAOBAB_INFO: ActiveObject = {
@@ -49,14 +53,23 @@ const BAOBAB_INFO: ActiveObject = {
   name: "Le Baobab",
   emoji: "🌳",
   quote:
-    "C'est une question de discipline. Quand on a terminé sa toilette du matin, il faut faire soigneusement la toilette de la planète.",
+    "On m'a dit d'arracher les baobabs quand ils sont petits. Comme tu peux le voir, personne n'a écouté.",
+};
+
+const VOLCANO_INFO: ActiveObject = {
+  type: "volcano",
+  name: "Le Volcan",
+  emoji: "🌋",
+  quote:
+    "Félicitations. Tu t'es approché d'un volcan en activité. Darwin a pris note.",
 };
 
 export function PlanetObjects() {
   const [active, setActive] = useState<ActiveObject | null>(null);
 
-  const rose   = useMemo(() => placement(ROSE_DIR), []);
-  const baobab = useMemo(() => placement(BAOBAB_DIR), []);
+  const rose    = useMemo(() => placement(ROSE_DIR), []);
+  const baobab  = useMemo(() => placement(BAOBAB_DIR), []);
+  const volcano = useMemo(() => placement(VOLCANO_DIR), []);
 
   // Empêche le clic sur l'objet de déclencher le déplacement (onPointerDown du sol)
   const stop = (e: ThreeEvent<PointerEvent>) => e.stopPropagation();
@@ -64,8 +77,9 @@ export function PlanetObjects() {
     e.stopPropagation();
     gameAudio.playInteraction(); // "ding" doux au clic
     // Quêtes secrètes : révélées + complétées au contact.
-    if (info.type === "rose")   { discoverQuest("touch_rose");   completeQuest("touch_rose"); }
-    if (info.type === "baobab") { discoverQuest("touch_baobab"); completeQuest("touch_baobab"); }
+    if (info.type === "rose")    { discoverQuest("touch_rose");    completeQuest("touch_rose"); }
+    if (info.type === "baobab")  { discoverQuest("touch_baobab");  completeQuest("touch_baobab"); }
+    if (info.type === "volcano") { discoverQuest("touch_volcano"); completeQuest("touch_volcano"); }
     setActive(info);
   };
 
@@ -77,6 +91,10 @@ export function PlanetObjects() {
 
       <group position={baobab.position} quaternion={baobab.quaternion} scale={BAOBAB_SCALE} onPointerDown={stop} onClick={open(BAOBAB_INFO)}>
         <Baobab />
+      </group>
+
+      <group position={volcano.position} quaternion={volcano.quaternion} scale={VOLCANO_SCALE}>
+        <Volcano onClick={open(VOLCANO_INFO)} />
       </group>
 
       {/* Html sert de pont R3F → DOM ; ObjectInteraction se portale ensuite sur <body> */}

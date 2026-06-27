@@ -70,8 +70,8 @@ export default function SplashPage() {
         {isMobile !== null && (
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             {!isMobile && (
-              <Link
-                href="/game"
+              <button
+                onClick={() => router.push("/game")}
                 className="group relative px-8 py-4 rounded-xl bg-orange text-white font-semibold text-sm hover:bg-orange/90 transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
               >
                 <span className="flex items-center gap-2">
@@ -81,7 +81,7 @@ export default function SplashPage() {
                   </svg>
                   Explorer en 3D
                 </span>
-              </Link>
+              </button>
             )}
             <Link
               href="/projets"
