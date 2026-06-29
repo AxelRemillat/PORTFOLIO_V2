@@ -1,70 +1,101 @@
-import Link from "next/link";
+import StarField from "@/components/contact/StarField";
+import FreqRow from "@/components/contact/FreqRow";
+import ContactForm from "@/components/contact/ContactForm";
 
+// Server component : conserve le SEO (metadata). StarField & ContactForm sont
+// 'use client', FreqRow est statique.
 export const metadata = {
   title: "Contact — Axel Remillat",
-  description: "Contacter Axel Remillat — email, LinkedIn, GitHub.",
+  description: "Contacter Axel Remillat — email, LinkedIn, téléphone, CV et formulaire.",
 };
 
-const links = [
-  {
-    label: "Email",
-    value: "axelremillat@netcourrier.com",
-    href: "mailto:axelremillat@netcourrier.com",
-    icon: "✉",
-  },
-  {
-    label: "LinkedIn",
-    value: "axel-remillatesmelyon",
-    href: "https://www.linkedin.com/in/axel-remillatesmelyon",
-    icon: "in",
-  },
-  {
-    label: "GitHub",
-    value: "@axelremillat",
-    href: "https://github.com/",
-    icon: "GH",
-  },
-];
+const PAD = "clamp(1.5rem, 4vw, 3rem)";
 
 export default function ContactPage() {
   return (
-    <div className="max-w-2xl mx-auto px-6 py-16">
-      <p className="text-sm font-mono text-orange mb-3 tracking-[0.12em] uppercase">Contact</p>
-      <h1 className="text-4xl font-bold text-white mb-4">Parlons-en</h1>
-      <p className="text-muted mb-12">
-        Projet data, mission IA, collaboration ou juste une question — je lis tout.
-      </p>
+    <main style={{ background: "var(--color-bg)", position: "relative", minHeight: "100vh" }}>
+      <StarField />
 
-      <div className="space-y-4 mb-12">
-        {links.map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            target={link.href.startsWith("http") ? "_blank" : undefined}
-            rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}
-            className="flex items-center gap-5 p-5 bg-surface border border-border rounded-xl hover:border-orange/40 transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-lg bg-border flex items-center justify-center text-sm font-mono text-muted group-hover:bg-orange/10 group-hover:text-orange transition-colors shrink-0">
-              {link.icon}
-            </div>
-            <div className="min-w-0">
-              <p className="text-xs text-muted mb-0.5">{link.label}</p>
-              <p className="text-white text-sm font-medium truncate">{link.value}</p>
-            </div>
-            <span className="ml-auto text-muted group-hover:text-white transition-colors shrink-0">
-              →
-            </span>
-          </Link>
-        ))}
-      </div>
-
-      <div className="p-5 bg-orange/5 border border-orange/20 rounded-xl">
-        <p className="text-sm text-muted leading-relaxed">
-          <span className="text-text font-medium">Disponibilité :</span> Alternance chez{" "}
-          <span className="text-text">Andra Learning</span> depuis juillet 2026.
-          Ouvert aux collaborations et missions IA complémentaires.
+      {/* HERO */}
+      <section
+        style={{
+          minHeight: "55vh",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          padding: PAD,
+          paddingBottom: "2.5rem",
+          position: "relative",
+        }}
+      >
+        <p
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontFamily: "var(--font-mono)",
+            fontSize: 11,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            color: "#94a3b8",
+            marginBottom: "1.5rem",
+          }}
+        >
+          <span className="contact-ring" />
+          Disponible — réponse sous 48h
         </p>
-      </div>
-    </div>
+
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "clamp(3rem, 9vw, 7rem)",
+            fontWeight: 800,
+            lineHeight: 0.95,
+            letterSpacing: "-0.03em",
+            color: "var(--color-text)",
+          }}
+        >
+          Construisons{" "}
+          <em style={{ color: "var(--color-orange)", fontStyle: "italic" }}>
+            quelque chose.
+          </em>
+        </h1>
+
+        <p
+          style={{
+            marginTop: "2rem",
+            fontFamily: "var(--font-mono)",
+            fontSize: 15,
+            letterSpacing: "0.08em",
+            color: "#8a9aab",
+          }}
+        >
+          ─── COORDONNÉES + FORMULAIRE
+        </p>
+      </section>
+
+      {/* COORDONNÉES */}
+      <section style={{ padding: `0 ${PAD}`, borderTop: "1px solid var(--color-border)" }}>
+        <FreqRow num="01" type="Email" value="axelremillat@netcourrier.com" href="mailto:axelremillat@netcourrier.com" />
+        <FreqRow num="02" type="LinkedIn" value="axel-remillatesmelyon" href="https://linkedin.com/in/axel-remillatesmelyon" />
+        <FreqRow num="03" type="Téléphone" value="+33 7 49 72 71 92" href="tel:+33749727192" />
+        <FreqRow num="04" type="CV" value="Télécharger mon CV" href="/cv-axel-remillat.pdf" download badge="PDF 2026" />
+      </section>
+
+      {/* FORMULAIRE — fond distinct (surface) + liseré orange pour séparer
+          visuellement la page en deux : coordonnées en haut / formulaire en bas */}
+      <section
+        style={{
+          padding: PAD,
+          marginTop: "clamp(2.5rem, 6vw, 5rem)",
+          background: "var(--color-surface)",
+          borderTop: "2px solid var(--color-orange)",
+          boxShadow: "inset 0 24px 48px -32px rgba(249,115,22,0.18)",
+          position: "relative",
+        }}
+      >
+        <ContactForm />
+      </section>
+    </main>
   );
 }

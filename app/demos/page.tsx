@@ -1,37 +1,42 @@
-import RagChat from "@/components/demos/RagChat";
+"use client";
 
-export const metadata = {
-  title: "Démos — Axel Remillat",
-  description: "Chatbot RAG live qui répond sur le profil et les projets d'Axel Remillat.",
-};
+import dynamic from "next/dynamic";
+import FloatingText from "@/components/demos/FloatingText";
+import FloatingInput from "@/components/demos/FloatingInput";
+import { useAXChat } from "@/components/demos/useAXChat";
+
+// L'orbe R3F est chargé côté client uniquement (WebGL — pas de SSR).
+const OrbScene = dynamic(() => import("@/components/demos/OrbScene"), { ssr: false });
 
 export default function DemosPage() {
+  const ax = useAXChat();
+
   return (
-    <div className="max-w-4xl mx-auto px-6 py-16">
-      <div className="mb-10">
-        <p className="text-sm font-mono text-orange mb-3 tracking-[0.12em] uppercase">
-          Démo live
-        </p>
-        <h1 className="text-4xl font-bold text-white mb-4">CV Interactif RAG</h1>
-        <p className="text-muted max-w-2xl">
-          Pose n&apos;importe quelle question sur Axel — projets, compétences, parcours.
-          Le chatbot interroge une base de connaissances vectorielle et répond en temps réel.
+    <>
+      {/* Fond sombre fixe */}
+      <div style={{ position: "fixed", inset: 0, background: "#080810", zIndex: -1 }} />
+
+      {/* Orbe 3D plein écran en arrière-plan */}
+      <OrbScene state={ax.orbState} />
+
+      {/* Titre discret en haut (sous la navbar) */}
+      <div style={{ position: "fixed", top: 76, width: "100%", textAlign: "center", zIndex: 20, pointerEvents: "none" }}>
+        <p style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(255,100,0,0.5)", letterSpacing: "0.2em" }}>
+          VEGA — IA DE PRÉSENTATION // AXEL REMILLAT
         </p>
       </div>
 
-      <RagChat />
+      {/* Texte IA flottant */}
+      <FloatingText text={ax.displayText} isStreaming={ax.isStreaming} isVisible={ax.showText} />
 
-      <div className="mt-6 rounded-lg border border-border bg-surface p-5">
-        <p className="text-xs font-mono text-orange mb-2 uppercase tracking-wide">Sous le capot</p>
-        <p className="text-sm text-muted leading-relaxed">
-          <span className="text-text font-medium">text-embedding-3-large</span> (1536 dim) →
-          retrieval cosinus dans{" "}
-          <span className="text-text font-medium">Supabase pgvector</span> →
-          génération avec{" "}
-          <span className="text-text font-medium">GPT-4o-mini</span>.
-          Rate-limité à 10 req/heure · 50k tokens/jour.
-        </p>
-      </div>
-    </div>
+      {/* Input + suggestions */}
+      <FloatingInput
+        onSubmit={ax.submit}
+        isVoiceOn={ax.isVoiceOn}
+        onToggleVoice={ax.toggleVoice}
+        showSuggestions={!ax.started}
+        disabled={ax.orbState !== "idle"}
+      />
+    </>
   );
 }

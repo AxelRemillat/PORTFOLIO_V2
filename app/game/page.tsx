@@ -31,7 +31,7 @@ const PORTAL_LABELS: Record<string, string> = {
   "/demos/rag":       "CV Interactif RAG",
   "/projets/seaco":   "SEACO Pipeline",
   "/projets/n8n":     "Automatisations N8N",
-  "/projets/rise":    "RISE",
+  "/projets/rise/site": "RISE",
   "/projets/music":   "Planète qui Chante",
 };
 

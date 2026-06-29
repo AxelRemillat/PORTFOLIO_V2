@@ -10,6 +10,8 @@ export interface Project {
   directUrl?: string; // override link target (e.g. direct experience pages)
   githubUrl?: string;
   featured: boolean;
+  hook?: string;          // phrase d'accroche mise en avant sur la vignette
+  highlights?: string[];  // mots / infos clés affichés sur la vignette
 }
 
 export const projects: Project[] = [
@@ -17,6 +19,8 @@ export const projects: Project[] = [
     slug: "rise",
     title: "RISE",
     tagline: "Plateforme de mobilité internationale étudiante",
+    hook: "De l'idée étudiante à la startup EdTech qui rafle les concours.",
+    highlights: ["🏆 3× primé", "💰 4 500 € de dotations", "🎓 Startup B2B", "🚀 Bêta en cours"],
     problem:
       "Les étudiants manquent d'informations fiables et personnalisées sur leurs destinations de semestre à l'international. Les données des bureaux des relations internationales (BRI) sont fragmentées et inaccessibles.",
     solution:

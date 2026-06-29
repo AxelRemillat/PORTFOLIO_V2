@@ -53,6 +53,9 @@ function chunkText(text: string, source: string): Array<{ content: string; sourc
 function collectMarkdownFiles(dir: string): string[] {
   const files: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    // La base de connaissances A.X a son propre script (ingest-ax → ax_documents).
+    // On l'exclut ici pour ne pas polluer le RAG portfolio (portfolio_chunks).
+    if (entry.name === "ax-knowledge") continue;
     const fullPath = path.join(dir, entry.name);
     if (entry.isDirectory()) files.push(...collectMarkdownFiles(fullPath));
     else if (entry.name.endsWith(".md")) files.push(fullPath);

@@ -26,6 +26,58 @@ export default function SplashPage() {
   return (
     <div className="relative min-h-[calc(100vh-64px)] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
       <SpaceBackground />
+
+      <style>{`
+        @keyframes vegaDot {
+          0%, 100% { opacity: 1; box-shadow: 0 0 6px #67e8f9, 0 0 12px #67e8f9; }
+          50%      { opacity: 0.4; box-shadow: 0 0 2px #67e8f9; }
+        }
+        @keyframes vegaGlitch {
+          0%,90%,100% { clip-path: none; transform: none; }
+          92%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); }
+          94%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); }
+          96%  { clip-path: none; transform: none; }
+        }
+        .vega-cta-dot {
+          width: 7px; height: 7px; border-radius: 50%;
+          background: #67e8f9;
+          animation: vegaDot 2s ease-in-out infinite;
+          flex-shrink: 0;
+        }
+        .vega-cta {
+          border: 1px solid rgba(103,232,249,0.35);
+          border-radius: 40px;
+          padding: 11px 22px;
+          background: rgba(103,232,249,0.05);
+          box-shadow: 0 0 18px rgba(103,232,249,0.12);
+          transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .vega-cta:hover {
+          background: rgba(103,232,249,0.12);
+          border-color: #67e8f9;
+          box-shadow: 0 0 30px rgba(103,232,249,0.35);
+          transform: translateY(-2px);
+        }
+        .vega-cta-text {
+          color: rgba(255,255,255,0.78);
+          font-weight: 600;
+          transition: color 0.3s ease;
+        }
+        .vega-cta-keyword {
+          color: #67e8f9;
+          font-weight: 700;
+          text-shadow: 0 0 10px rgba(103,232,249,0.6);
+          animation: vegaGlitch 5s ease-in-out infinite;
+        }
+        .vega-cta-arrow {
+          color: #67e8f9; opacity: 0;
+          transform: translateX(-6px);
+          transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .vega-cta:hover .vega-cta-text { color: #ffffff; }
+        .vega-cta:hover .vega-cta-arrow { opacity: 1; transform: translateX(0); }
+      `}</style>
+
       {/* Grid background */}
       <div
         className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -97,6 +149,30 @@ export default function SplashPage() {
           <p className="text-xs text-muted/50 font-mono mt-2">
             Navigue jusqu'aux portails pour découvrir chaque projet
           </p>
+        )}
+
+        {/* CTA VEGA */}
+        {isMobile === false && (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '14px', marginTop: '24px' }}>
+            {/* Séparateur fondu */}
+            <div style={{
+              width: '120px', height: '1px',
+              background: 'linear-gradient(90deg, transparent, rgba(103,232,249,0.3), transparent)'
+            }} />
+
+            {/* CTA */}
+            <Link
+              href="/demos"
+              className="vega-cta"
+              style={{ display: 'flex', alignItems: 'center', gap: '10px', textDecoration: 'none' }}
+            >
+              <span className="vega-cta-dot" />
+              <span className="font-mono text-sm tracking-widest vega-cta-text" style={{ letterSpacing: '0.15em' }}>
+                Ce site <span className="vega-cta-keyword">pense</span>. Parle-lui.
+              </span>
+              <span className="vega-cta-arrow" style={{ fontSize: '15px' }}>→</span>
+            </Link>
+          </div>
         )}
       </div>
     </div>

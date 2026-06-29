@@ -51,7 +51,7 @@ function dirToPortalPos(nx: number, ny: number, nz: number): [number, number, nu
 
 export const PORTALS = [
   { id: "rag",   position: dirToPortalPos( 0.62,  0.55,  0.56), color: "#FF8C00", label: "CV Interactif RAG",  href: "/demos/rag"     },
-  { id: "rise",  position: dirToPortalPos(-0.71,  0.38, -0.59), color: "#FFFFFF", label: "RISE",               href: "/projets/rise"  },
+  { id: "rise",  position: dirToPortalPos(-0.71,  0.38, -0.59), color: "#FFFFFF", label: "RISE",               href: "/projets/rise/site" },
   { id: "seaco", position: dirToPortalPos(-0.48, -0.52,  0.71), color: "#00BFFF", label: "SEACO Pipeline",     href: "/projets/seaco" },
   { id: "n8n",   position: dirToPortalPos( 0.35, -0.78, -0.52), color: "#CC44FF", label: "Automatisations N8N",href: "/projets/n8n"   },
   { id: "music", position: dirToPortalPos( 0.80,  0.42, -0.43), color: "#FFD700", label: "Planète qui Chante", href: "/projets/music" },

@@ -4,8 +4,8 @@ import { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 
-const STAR_COUNT    = 700;
-const ASTEROID_COUNT = 10;
+const STAR_COUNT    = 400;
+const ASTEROID_COUNT = 7;
 
 // The spec authors asteroid sizes/speeds for a ~1-unit viewport, but this scene
 // works in large world units (camera at z=10, stars span ±40, the previous
@@ -347,7 +347,8 @@ export default function SpaceBackground() {
     <Canvas
       camera={{ position: [0, 0, 10], fov: 75 }}
       frameloop="always"
-      gl={{ antialias: false, alpha: true }}
+      dpr={1}
+      gl={{ antialias: false, alpha: true, powerPreference: "low-power" }}
       style={{
         position: "fixed",
         top: 0,

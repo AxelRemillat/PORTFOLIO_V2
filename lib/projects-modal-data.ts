@@ -46,7 +46,7 @@ export const PROJECT_MODALS: Record<string, ProjectModalDetail> = {
       { label: "Incubateur", value: "ESME" },
     ],
     stack: ["React", "Firebase", "TypeScript", "Figma"],
-    ctaLabel: "🌐 Ouvrir le site RISE",
+    ctaLabel: "📂 Voir le projet en détail",
     ctaUrl: "/projets/rise",
   },
   seaco: {
