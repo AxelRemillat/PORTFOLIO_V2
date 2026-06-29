@@ -4,7 +4,8 @@ import Badge from "@/components/ui/Badge";
 import { getProjectBySlug, projects } from "@/lib/projects-data";
 
 export async function generateStaticParams() {
-  return projects.map((p) => ({ slug: p.slug }));
+  // "rise" est servi par la route statique app/projets/rise (site RISE en iframe).
+  return projects.filter((p) => p.slug !== "rise").map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({

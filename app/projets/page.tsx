@@ -1,15 +1,43 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
+import { useState, useRef, useEffect } from "react";
 import { projects } from "@/lib/projects-data";
 import type { Project } from "@/lib/projects-data";
+import ProjectModal from "@/components/projects/ProjectModal";
+import { PROJECT_MODALS } from "@/lib/projects-modal-data";
 
 const SpaceBackground  = dynamic(() => import("@/components/ui/SpaceBackground"),  { ssr: false });
 const RobotModel       = dynamic(() => import("@/components/projects/RobotModel"),     { ssr: false });
 const PlaneModel       = dynamic(() => import("@/components/projects/PlaneModel"),     { ssr: false });
 const SatelliteModel   = dynamic(() => import("@/components/projects/SatelliteModel"), { ssr: false });
 const GearsModel       = dynamic(() => import("@/components/projects/GearsModel"),     { ssr: false });
+
+// Ne monte le canvas 3D d'une carte que lorsqu'elle approche du viewport, et le
+// démonte (libère son contexte WebGL + sa boucle de rendu) quand elle s'en
+// éloigne. Évite de faire tourner plusieurs contextes WebGL en `frameloop=always`
+// hors écran simultanément — cause principale du lag au scroll sur cette page.
+function InViewModel({ Model }: { Model: React.ComponentType }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      ([entry]) => setShow(entry.isIntersecting),
+      { rootMargin: "300px 0px" }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} style={{ position: "absolute", inset: 0 }}>
+      {show && <Model />}
+    </div>
+  );
+}
 
 // ─── Music planet visual (CSS — no Three.js canvas needed for the card) ──────
 
@@ -69,7 +97,8 @@ function MusicPlanetVisual() {
       {/* Pulsing note */}
       <div className="music-note-pulse" style={{
         position: "absolute", top: "16%", right: "18%",
-        fontSize: 22, color: "rgba(196,181,253,0.7)",
+        fontSize: 30, color: "#ddd6fe",
+        textShadow: "0 0 12px #a78bfa, 0 0 24px rgba(139,92,246,0.8)",
         userSelect: "none", zIndex: 4,
       }}>♪</div>
     </div>
@@ -82,12 +111,13 @@ type ProjectTheme = {
   accent:      string;
   borderIdle:  string;
   cardBg:      string;
-  glowAnim:    string;
+  glowShadow:  string;
   descColor:   string;
   tagBg:       string;
   tagBorder:   string;
   tagColor:    string;
   demoStyle:   React.CSSProperties;
+  badge:       string;
   Model:       React.ComponentType;
 };
 
@@ -96,63 +126,81 @@ const THEMES: Record<string, ProjectTheme> = {
     accent:     "#ff6b35",
     borderIdle: "#ff6b35",
     cardBg:     "linear-gradient(120deg, #1a0500 0%, #3d0e00 40%, #5a1500 100%)",
-    glowAnim:   "breatheOrange 3s ease-in-out infinite",
+    glowShadow: "0 0 70px rgba(255,107,53,0.60), 0 0 120px rgba(255,107,53,0.30)",
     descColor:  "rgba(255,200,150,0.85)",
     tagBg:      "rgba(255,107,53,0.15)",
     tagBorder:  "rgba(255,107,53,0.35)",
     tagColor:   "#ff9966",
     demoStyle:  { background: "#ff6b35", color: "#fff", fontWeight: 700, border: "none" },
+    badge:      "🚀 Démo live",
     Model:      RobotModel,
   },
   rise: {
     accent:     "#38bdf8",
     borderIdle: "#38bdf8",
     cardBg:     "linear-gradient(120deg, #000814 0%, #001d3d 45%, #003566 100%)",
-    glowAnim:   "breatheBlue 4s ease-in-out infinite",
+    glowShadow: "0 0 80px rgba(56,189,248,0.55), 0 0 140px rgba(56,189,248,0.25)",
     descColor:  "rgba(150,225,255,0.85)",
     tagBg:      "rgba(56,189,248,0.15)",
     tagBorder:  "rgba(56,189,248,0.35)",
     tagColor:   "#7dd3fc",
     demoStyle:  { background: "#38bdf8", color: "#000", fontWeight: 700, border: "none" },
+    badge:      "🏆 3× primé",
     Model:      PlaneModel,
   },
   seaco: {
     accent:     "#a855f7",
     borderIdle: "#a855f7",
     cardBg:     "radial-gradient(ellipse at 60% 40%, #3d0f72 0%, #1c0540 45%, #080118 100%)",
-    glowAnim:   "breathePurple 3.5s ease-in-out infinite",
+    glowShadow: "0 0 75px rgba(168,85,247,0.60), 0 0 130px rgba(168,85,247,0.28)",
     descColor:  "rgba(210,160,255,0.85)",
     tagBg:      "rgba(168,85,247,0.15)",
     tagBorder:  "rgba(168,85,247,0.35)",
     tagColor:   "#c084fc",
     demoStyle:  { background: "#a855f7", color: "#fff", fontWeight: 700, border: "none" },
+    badge:      "⚡ En production",
     Model:      SatelliteModel,
   },
   "n8n-automations": {
     accent:     "#10b981",
     borderIdle: "#10b981",
     cardBg:     "linear-gradient(135deg, #010a04 0%, #021508 50%, #033014 100%)",
-    glowAnim:   "breatheGreen 3s ease-in-out infinite",
+    glowShadow: "0 0 70px rgba(16,185,129,0.55), 0 0 120px rgba(16,185,129,0.26)",
     descColor:  "rgba(150,255,200,0.85)",
     tagBg:      "rgba(16,185,129,0.15)",
     tagBorder:  "rgba(16,185,129,0.35)",
     tagColor:   "#34d399",
     demoStyle:  { background: "#10b981", color: "#000", fontWeight: 700, border: "none" },
+    badge:      "🤖 Agents IA",
     Model:      GearsModel,
   },
   music: {
     accent:     "#a78bfa",
     borderIdle: "#7c3aed",
     cardBg:     "radial-gradient(ellipse at 28% 65%, #0e0025 0%, #060018 45%, #020008 100%)",
-    glowAnim:   "breatheViolet 3.5s ease-in-out infinite",
+    glowShadow: "0 0 72px rgba(139,92,246,0.58), 0 0 130px rgba(124,58,237,0.25)",
     descColor:  "rgba(210,190,255,0.85)",
     tagBg:      "rgba(167,139,250,0.15)",
     tagBorder:  "rgba(167,139,250,0.35)",
     tagColor:   "#c4b5fd",
     demoStyle:  { background: "#7c3aed", color: "#fff", fontWeight: 700, border: "none" },
+    badge:      "🎮 Jouable",
     Model:      MusicPlanetVisual,
   },
 };
+
+// Forme « sticker étoile » 2D — sceau à 12 pointes (rayon intérieur large => le
+// texte reste lisible au centre). Utilisé en clip-path sur les badges de statut.
+const STICKER_STAR =
+  "polygon(50.00% 0.00%, 60.35% 11.36%, 75.00% 6.70%, 78.28% 21.72%, 93.30% 25.00%, 88.64% 39.65%, 100.00% 50.00%, 88.64% 60.35%, 93.30% 75.00%, 78.28% 78.28%, 75.00% 93.30%, 60.35% 88.64%, 50.00% 100.00%, 39.65% 88.64%, 25.00% 93.30%, 21.72% 78.28%, 6.70% 75.00%, 11.36% 60.35%, 0.00% 50.00%, 11.36% 39.65%, 6.70% 25.00%, 21.72% 21.72%, 25.00% 6.70%, 39.65% 11.36%)";
+
+// Contour blanc « die-cut » lissé : 12 drop-shadow répartis à 2.5px tout autour
+// de la forme (box-shadow ne suit pas un clip-path, d'où le filter).
+const STICKER_OUTLINE =
+  "drop-shadow(2.5px 0 0 #fff) drop-shadow(2.17px 1.25px 0 #fff) drop-shadow(1.25px 2.17px 0 #fff) " +
+  "drop-shadow(0 2.5px 0 #fff) drop-shadow(-1.25px 2.17px 0 #fff) drop-shadow(-2.17px 1.25px 0 #fff) " +
+  "drop-shadow(-2.5px 0 0 #fff) drop-shadow(-2.17px -1.25px 0 #fff) drop-shadow(-1.25px -2.17px 0 #fff) " +
+  "drop-shadow(0 -2.5px 0 #fff) drop-shadow(1.25px -2.17px 0 #fff) drop-shadow(2.17px -1.25px 0 #fff)";
 
 // ─── Decorators ───────────────────────────────────────────────────────────────
 
@@ -410,11 +458,15 @@ function N8nDecorator() {
 
 function MusicDecorator() {
   const notes = [
-    { text: "♪", left: "5%",  delay: "0s",   dur: "3.8s" },
-    { text: "♫", left: "12%", delay: "1.3s", dur: "4.4s" },
-    { text: "♩", left: "19%", delay: "2.6s", dur: "3.5s" },
-    { text: "♪", left: "27%", delay: "0.7s", dur: "4.8s" },
-    { text: "♬", left: "34%", delay: "3.1s", dur: "3.2s" },
+    { text: "♪", left: "6%",  delay: "0s",   dur: "5.6s", size: 30, color: "#c4b5fd" },
+    { text: "♫", left: "16%", delay: "1.6s", dur: "6.4s", size: 38, color: "#a78bfa" },
+    { text: "♩", left: "27%", delay: "3.2s", dur: "5.0s", size: 28, color: "#ddd6fe" },
+    { text: "♪", left: "38%", delay: "0.8s", dur: "6.9s", size: 34, color: "#a78bfa" },
+    { text: "♬", left: "49%", delay: "2.4s", dur: "5.4s", size: 42, color: "#c4b5fd" },
+    { text: "♫", left: "61%", delay: "4.0s", dur: "6.1s", size: 32, color: "#ddd6fe" },
+    { text: "♪", left: "72%", delay: "1.2s", dur: "7.0s", size: 30, color: "#a78bfa" },
+    { text: "♩", left: "83%", delay: "3.6s", dur: "5.7s", size: 36, color: "#c4b5fd" },
+    { text: "♬", left: "92%", delay: "2.0s", dur: "6.5s", size: 28, color: "#ddd6fe" },
   ];
   return (
     <>
@@ -424,9 +476,10 @@ function MusicDecorator() {
       }} />
       {notes.map((n, i) => (
         <div key={i} className="music-note-float" style={{
-          position: "absolute", bottom: "8%", left: n.left,
-          fontSize: 16 + (i % 3) * 3,
-          color: `rgba(167,139,250,${0.28 + (i % 3) * 0.08})`,
+          position: "absolute", bottom: "4%", left: n.left,
+          fontSize: n.size,
+          color: n.color,
+          textShadow: `0 0 8px ${n.color}, 0 0 16px rgba(139,92,246,0.5)`,
           pointerEvents: "none", zIndex: 0,
           animationDelay: n.delay, animationDuration: n.dur,
           userSelect: "none",
@@ -458,29 +511,69 @@ const DECORATORS: Record<string, React.ReactNode> = {
 
 // ─── ProjectCard3D ────────────────────────────────────────────────────────────
 
-function ProjectCard3D({ project, index }: { project: Project; index: number }) {
+function ProjectCard3D({
+  project,
+  index,
+  onOpen,
+}: {
+  project: Project;
+  index: number;
+  onOpen: (slug: string) => void;
+}) {
   const theme = THEMES[project.slug];
   if (!theme) return null;
-  const { accent, borderIdle, cardBg, glowAnim, descColor, tagBg, tagBorder, tagColor, demoStyle, Model } = theme;
+  const { accent, borderIdle, cardBg, glowShadow, descColor, tagBg, tagBorder, tagColor, demoStyle, badge, Model } = theme;
 
   return (
     <div
       className="project-card"
       style={{
-        border: `2px solid ${borderIdle}`,
-        background: cardBg,
-        borderRadius: 16,
         minHeight: 280,
         position: "relative",
-        overflow: "hidden",
-        animation: `fadeInUp 0.55s ease ${index * 120}ms both, ${glowAnim}`,
+        animation: `fadeInUp 0.55s ease ${index * 120}ms both`,
       }}
     >
-      {DECORATORS[project.slug]}
+      {/* Halo « breathe » : ombre statique dont on anime seulement l'opacité
+          (composité GPU), au lieu d'animer box-shadow → plus de repaint/frame. */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          borderRadius: 16,
+          boxShadow: glowShadow,
+          pointerEvents: "none",
+          zIndex: 0,
+          animation: "cardGlowPulse 3.5s ease-in-out infinite",
+        }}
+      />
 
-      <Link
-        href={project.directUrl ?? `/projets/${project.slug}`}
-        className="flex flex-col sm:flex-row h-full"
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          height: "100%",
+          border: `2px solid ${borderIdle}`,
+          background: cardBg,
+          borderRadius: 16,
+          minHeight: 280,
+          overflow: "hidden",
+        }}
+      >
+        {DECORATORS[project.slug]}
+
+        <div
+          role="button"
+        tabIndex={0}
+        aria-label={`Voir le projet ${project.title}`}
+        onClick={() => onOpen(project.slug)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            onOpen(project.slug);
+          }
+        }}
+        className="project-card-inner flex flex-col sm:flex-row h-full"
         style={{ position: "relative", zIndex: 1 }}
       >
         {/* Left — 60% text */}
@@ -495,16 +588,31 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
               <h3 style={{ color: "#ffffff", fontSize: "1.8rem", fontWeight: 800, lineHeight: 1.2, margin: 0 }}>
                 {project.title}
               </h3>
-              {project.demoUrl && (
-                <span style={{
-                  ...demoStyle,
+              {badge && (
+                <span className="project-sticker" style={{
+                  background: accent,        // couleur du liseré (rim) visible sur les bords
+                  color: "#1a1228",          // texte sombre, lisible sur l'intérieur blanc
                   flexShrink: 0,
-                  fontSize: "0.75rem",
+                  fontSize: "0.82rem",
                   fontFamily: "monospace",
-                  padding: "6px 16px",
-                  borderRadius: 20,
+                  fontWeight: 800,
+                  letterSpacing: "0.2px",
+                  whiteSpace: "nowrap",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  lineHeight: 1,
+                  // padding généreux : texte au centre de l'intérieur blanc, loin des pointes
+                  padding: "18px 30px",
+                  clipPath: STICKER_STAR,
+                  WebkitClipPath: STICKER_STAR,
+                  // contour blanc die-cut + ombre portée + halo néon (couleur accent)
+                  filter:
+                    STICKER_OUTLINE +
+                    ` drop-shadow(0 7px 10px rgba(0,0,0,0.50)) drop-shadow(0 0 14px ${accent}) drop-shadow(0 0 26px ${accent}aa)`,
                 }}>
-                  Démo live
+                  <span style={{ position: "relative", zIndex: 3 }}>{badge}</span>
                 </span>
               )}
             </div>
@@ -553,11 +661,10 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
           minHeight: 200,
           position: "relative",
         }}>
-          <div style={{ position: "absolute", inset: 0 }}>
-            <Model />
-          </div>
+          <InViewModel Model={Model} />
         </div>
-      </Link>
+      </div>
+      </div>
     </div>
   );
 }
@@ -571,6 +678,9 @@ export default function ProjetsPage() {
     .map((slug) => projects.find((p) => p.slug === slug))
     .filter(Boolean) as Project[];
 
+  const [selectedSlug, setSelectedSlug] = useState<string | null>(null);
+  const selectedProject = selectedSlug ? PROJECT_MODALS[selectedSlug] : null;
+
   return (
     <>
       <style>{`
@@ -578,22 +688,9 @@ export default function ProjetsPage() {
           from { opacity: 0; transform: translateY(28px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes breatheOrange {
-          0%   { box-shadow: 0 0 40px rgba(255,107,53,0.30), 0 0 80px rgba(255,107,53,0.15), inset 0 0 40px rgba(255,107,53,0.08); }
-          50%  { box-shadow: 0 0 70px rgba(255,107,53,0.60), 0 0 120px rgba(255,107,53,0.30), inset 0 0 80px rgba(255,107,53,0.15); }
-          100% { box-shadow: 0 0 40px rgba(255,107,53,0.30), 0 0 80px rgba(255,107,53,0.15), inset 0 0 40px rgba(255,107,53,0.08); }
-        }
-        @keyframes breatheBlue {
-          0%,100% { box-shadow: 0 0 40px rgba(56,189,248,0.30), 0 0 80px rgba(56,189,248,0.12), inset 0 0 50px rgba(56,189,248,0.06); }
-          50%     { box-shadow: 0 0 80px rgba(56,189,248,0.55), 0 0 140px rgba(56,189,248,0.25), inset 0 0 90px rgba(56,189,248,0.12); }
-        }
-        @keyframes breathePurple {
-          0%,100% { box-shadow: 0 0 40px rgba(168,85,247,0.30), 0 0 80px rgba(168,85,247,0.12), inset 0 0 50px rgba(168,85,247,0.06); }
-          50%     { box-shadow: 0 0 75px rgba(168,85,247,0.60), 0 0 130px rgba(168,85,247,0.28), inset 0 0 90px rgba(168,85,247,0.14); }
-        }
-        @keyframes breatheGreen {
-          0%,100% { box-shadow: 0 0 35px rgba(16,185,129,0.28), 0 0 70px rgba(16,185,129,0.12), inset 0 0 45px rgba(16,185,129,0.06); }
-          50%     { box-shadow: 0 0 70px rgba(16,185,129,0.55), 0 0 120px rgba(16,185,129,0.26), inset 0 0 80px rgba(16,185,129,0.13); }
+        @keyframes cardGlowPulse {
+          0%,100% { opacity: 0.5; }
+          50%     { opacity: 1; }
         }
         @keyframes twinkle {
           from { opacity: 0.15; }
@@ -639,6 +736,34 @@ export default function ProjetsPage() {
         @keyframes gearCw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes gearCcw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
         .project-card  { opacity: 0; }
+        .project-card-inner { cursor: pointer; transition: transform 0.2s ease, filter 0.2s ease; outline: none; }
+        .project-card-inner:hover { transform: translateY(-3px); filter: brightness(1.06); }
+        .project-card-inner:focus-visible { box-shadow: 0 0 0 2px rgba(255,255,255,0.4); border-radius: 14px; }
+        @keyframes stickerPulse {
+          0%, 100% { transform: scale(1) rotate(0deg); }
+          25%      { transform: scale(1.07) rotate(-2deg); }
+          50%      { transform: scale(1.07) rotate(2deg); }
+          75%      { transform: scale(1.07) rotate(-2deg); }
+        }
+        .project-sticker { position: relative; isolation: isolate; animation: stickerPulse 4s ease-in-out infinite; transform-origin: center; }
+        /* Intérieur blanc glossy ; laisse apparaître un liseré accent sur les bords */
+        .project-sticker::before {
+          content: ""; position: absolute; inset: 5px; z-index: 1; pointer-events: none;
+          clip-path: ${STICKER_STAR}; -webkit-clip-path: ${STICKER_STAR};
+          background:
+            radial-gradient(58% 42% at 33% 20%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0) 60%),
+            linear-gradient(165deg, #ffffff 0%, #ffffff 55%, #e9edf3 100%);
+        }
+        /* Coin qui se décolle (page-curl) en bas à droite => effet sticker réel */
+        .project-sticker::after {
+          content: ""; position: absolute; right: 7px; bottom: 7px; width: 24px; height: 24px; z-index: 2; pointer-events: none;
+          background: linear-gradient(135deg, #ffffff 0%, #f0f0f3 36%, #c2c2c7 60%, #8c8c91 100%);
+          clip-path: polygon(100% 0, 100% 100%, 0 100%);
+          border-radius: 0 0 7px 0;
+          transform: rotate(6deg);
+          box-shadow: -4px -4px 7px rgba(0,0,0,0.33);
+        }
+        .project-card-inner:hover .project-sticker { animation-duration: 1.4s; }
         .star-twinkle  { animation: twinkle ease-in-out infinite alternate; }
         .speed-streak  { animation: speedStreak linear infinite; }
         .pulse-ring    { animation: pulseRing 3s ease-in-out infinite; }
@@ -647,15 +772,12 @@ export default function ProjetsPage() {
         .seaco-draw-v  { animation: seacoDrawV ease-in-out infinite; transform-origin: top center; }
         .circuit-flow  { animation: circuitFlow linear infinite; }
         .scroll-code   { animation: scrollCode 8s linear infinite; }
-        @keyframes breatheViolet {
-          0%,100% { box-shadow: 0 0 38px rgba(124,58,237,0.28), 0 0 70px rgba(109,40,217,0.12), inset 0 0 45px rgba(124,58,237,0.06); }
-          50%     { box-shadow: 0 0 72px rgba(139,92,246,0.58), 0 0 130px rgba(124,58,237,0.25), inset 0 0 85px rgba(109,40,217,0.14); }
-        }
         @keyframes musicNoteFloat {
-          0%   { transform: translateY(0) rotate(-6deg); opacity: 0; }
-          8%   { opacity: 0.65; }
-          90%  { opacity: 0.3; }
-          100% { transform: translateY(-88px) rotate(8deg); opacity: 0; }
+          0%   { transform: translateY(0) rotate(-8deg) scale(0.85); opacity: 0; }
+          15%  { opacity: 0.5; }
+          50%  { transform: translateY(-55px) rotate(6deg) scale(1.05); opacity: 0.55; }
+          80%  { opacity: 0.35; }
+          100% { transform: translateY(-100px) rotate(10deg) scale(0.9); opacity: 0; }
         }
         @keyframes musicOrbit1 {
           from { transform: rotate(0deg)   translateX(54px); }
@@ -666,8 +788,8 @@ export default function ProjetsPage() {
           to   { transform: rotate(540deg) translateX(38px); }
         }
         @keyframes musicNotePulse {
-          0%,100% { opacity: 0.35; transform: scale(0.9); }
-          50%     { opacity: 0.78; transform: scale(1.15); }
+          0%,100% { opacity: 0.55; transform: scale(0.92); }
+          50%     { opacity: 1;    transform: scale(1.25); }
         }
         .music-note-float { animation: musicNoteFloat ease-in-out infinite; }
         .music-orbit-1    { animation: musicOrbit1 4s linear infinite; transform-origin: 0 0; }
@@ -696,10 +818,19 @@ export default function ProjetsPage() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
           {ordered.map((project, i) => (
-            <ProjectCard3D key={project.slug} project={project} index={i} />
+            <ProjectCard3D
+              key={project.slug}
+              project={project}
+              index={i}
+              onOpen={setSelectedSlug}
+            />
           ))}
         </div>
       </div>
+
+      {selectedProject && (
+        <ProjectModal project={selectedProject} onClose={() => setSelectedSlug(null)} />
+      )}
     </>
   );
 }

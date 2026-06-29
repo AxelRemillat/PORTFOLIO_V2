@@ -53,6 +53,7 @@ function makeRockGeometry(detail: number, seed: number) {
 function Stars() {
   const groupRef = useRef<THREE.Group>(null);
   const geomRef  = useRef<THREE.BufferGeometry>(null);
+  const tick     = useRef(0);
 
   const { positions, colors, phases, speeds } = useMemo(() => {
     const pos    = new Float32Array(STAR_COUNT * 3);
@@ -73,6 +74,9 @@ function Stars() {
 
   useFrame((state) => {
     if (groupRef.current) groupRef.current.rotation.y += 0.00005;
+    // Le scintillement recalcule 700 couleurs + ré-uploade le buffer GPU : on le
+    // limite à ~1 frame sur 3 (≈20 fps), invisible à l'œil mais ~3× moins de CPU.
+    if (++tick.current % 3 !== 0) return;
     const geo = geomRef.current;
     if (!geo) return;
     const col = geo.getAttribute("color");
