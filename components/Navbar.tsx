@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -143,7 +143,6 @@ export default function Navbar() {
 
         @media (max-width: 768px) {
           .nv-center { display: none; }
-          .nv-vega { display: none; }
           .nv-burger { display: flex; }
         }
       `}</style>
@@ -155,21 +154,26 @@ export default function Navbar() {
           </Link>
 
           <nav className="nv-center">
-            {LINKS.map((l) => {
+            {LINKS.map((l, idx) => {
               const active = l.match(pathname);
               return (
-                <Link key={l.href} href={l.href} className={`nv-link nv-link-${l.key}${active ? " nv-active" : ""}`}>
-                  {l.label}
-                  {active && <span className="nv-underline" />}
-                </Link>
+                <Fragment key={l.href}>
+                  <Link href={l.href} className={`nv-link nv-link-${l.key}${active ? " nv-active" : ""}`}>
+                    {l.label}
+                    {active && <span className="nv-underline" />}
+                  </Link>
+                  {/* Pill VEGA insérée entre Projets et Parcours */}
+                  {idx === 0 && (
+                    <Link href="/demos" className={`nv-vega${vegaActive ? " nv-vega-active" : ""}`}>
+                      VEGA 1.0 <span className="nv-dot" />
+                    </Link>
+                  )}
+                </Fragment>
               );
             })}
           </nav>
 
           <div className="nv-right">
-            <Link href="/demos" className={`nv-vega${vegaActive ? " nv-vega-active" : ""}`}>
-              VEGA 1.0 <span className="nv-dot" />
-            </Link>
             <button
               className="nv-burger"
               onClick={() => setOpen((o) => !o)}
@@ -190,19 +194,22 @@ export default function Navbar() {
 
         {open && (
           <div className="nv-mobile">
-            {LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={l.match(pathname) ? "nv-active" : ""}
-                onClick={() => setOpen(false)}
-              >
-                {l.label}
-              </Link>
+            {LINKS.map((l, idx) => (
+              <Fragment key={l.href}>
+                <Link
+                  href={l.href}
+                  className={l.match(pathname) ? "nv-active" : ""}
+                  onClick={() => setOpen(false)}
+                >
+                  {l.label}
+                </Link>
+                {idx === 0 && (
+                  <Link href="/demos" className={vegaActive ? "nv-active" : ""} onClick={() => setOpen(false)}>
+                    VEGA 1.0
+                  </Link>
+                )}
+              </Fragment>
             ))}
-            <Link href="/demos" className={vegaActive ? "nv-active" : ""} onClick={() => setOpen(false)}>
-              VEGA 1.0
-            </Link>
           </div>
         )}
       </header>

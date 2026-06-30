@@ -1,122 +1,134 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useEffect, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { EffectComposer, Bloom, ChromaticAberration } from "@react-three/postprocessing";
 import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
-import NeuralField from "./NeuralField";
+import NeuralField     from "./NeuralField";
 import NeuralFilaments from "./NeuralFilaments";
-import EnergyRays from "./EnergyRays";
+import { useSpeakingAmplitude } from "./useSpeakingAmplitude";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
-const RINGS = [
-  { r: 0.42, tube: 0.006, rot: [Math.PI / 2, 0, 0] as [number, number, number], opacity: 0.9, color: "#66eeff", speed: 0.003 },
-  { r: 0.72, tube: 0.007, rot: [Math.PI / 2, 0.3, 0] as [number, number, number], opacity: 0.65, color: "#44ccff", speed: -0.002 },
-  { r: 1.05, tube: 0.005, rot: [Math.PI / 2.2, 0, Math.PI / 5] as [number, number, number], opacity: 0.45, color: "#2299ff", speed: 0.0018 },
-  { r: 1.38, tube: 0.004, rot: [Math.PI / 2, Math.PI / 4, 0] as [number, number, number], opacity: 0.28, color: "#1166dd", speed: -0.0012 },
-  { r: 1.65, tube: 0.003, rot: [Math.PI / 3, 0, Math.PI / 3] as [number, number, number], opacity: 0.16, color: "#7733ff", speed: 0.0009 },
+// ── Constantes réglables à l'œil ──────────────────────────────────────────
+const GLOBAL_SCALE = 0.72; // Objectif 1 : rayon global de l'orbe (1.0 = ancienne taille)
+const SPEAK_AMP    = 0.12; // Objectif 2 : dilatation max en "speaking" (±12% du rayon)
+const SPEAK_GROW   = 12;   // vitesse de gonflement (rapide) — lerp = min(dt*SPEAK_GROW, 0.4)
+const SPEAK_FALL   = 5;    // vitesse de retour au repos (plus mou)
+// ──────────────────────────────────────────────────────────────────────────
+
+const DISC = [
+  { r:0.18, tube:0.008, rot:[Math.PI/2, 0,    0   ] as [number,number,number], color:"#ffffff", op:1.00 },
+  { r:0.32, tube:0.006, rot:[Math.PI/2, 0,    0.18] as [number,number,number], color:"#aaddff", op:0.80 },
+  { r:0.50, tube:0.005, rot:[Math.PI/2, 0.12, 0   ] as [number,number,number], color:"#66aaff", op:0.62 },
+  { r:0.70, tube:0.004, rot:[Math.PI/2, 0,    0.28] as [number,number,number], color:"#3366bb", op:0.46 },
+  { r:0.94, tube:0.003, rot:[Math.PI/2, 0.20, 0.12] as [number,number,number], color:"#2255aa", op:0.33 },
+  { r:1.22, tube:0.002, rot:[Math.PI/2, 0.08, 0.22] as [number,number,number], color:"#1133aa", op:0.20 },
+  { r:1.62, tube:0.0015,rot:[Math.PI/2, 0.15, 0.10] as [number,number,number], color:"#0a2288", op:0.13 },
 ];
 
-// Opacités de base des 5 couches du noyau reactor (layer 0 = noyau dur opaque).
-const CORE_BASE_OP = [1, 0.85, 0.95, 0.18, 0.07];
+// Pendant "speaking" : anneaux pairs se rétractent (vers l'intérieur),
+// anneaux impairs s'extraient (vers l'extérieur) + décalage Y
+const RING_SCALE_SPK = [0.80, 1.40, 0.74, 1.46, 0.68, 1.54, 0.62];
+const RING_Y_SPK     = [-0.13, 0.11, -0.09, 0.07, -0.05, 0.03, -0.02];
 
 export default function AIOrb({ state }: { state: OrbState }) {
-  const ringRefs = useRef<(THREE.Mesh | null)[]>([]);
-  const coreRefs = useRef<(THREE.Mesh | null)[]>([]);
-  const caOffset = useMemo(() => new THREE.Vector2(0.0012, 0.0012), []);
-  const timeRef = useRef(0);
+  const groupRef   = useRef<THREE.Group>(null);
+  const reactorRef = useRef<THREE.Group>(null);
+  const plasmaRef  = useRef<THREE.Mesh>(null);
+  const discRefs   = useRef<(THREE.Mesh | null)[]>([]);
+  const tRef       = useRef(0);
+  const gl         = useThree(s => s.gl);
+  const [fx, setFx] = useState(false);
+  const caOff      = useMemo(() => new THREE.Vector2(0.0005, 0.0005), []);
+  const ampRef     = useSpeakingAmplitude(state); // amplitude voix [0..1] (0 hors speaking)
 
-  const gl = useThree((s) => s.gl);
-  const [fxReady, setFxReady] = useState(false);
   useEffect(() => {
-    const check = () => {
-      const ctx = gl.getContext();
-      setFxReady(!!ctx && !ctx.isContextLost() && !!ctx.getContextAttributes());
-    };
-    const id = requestAnimationFrame(check);
+    const id = requestAnimationFrame(() => { const c = gl.getContext(); setFx(!!c && !c.isContextLost()); });
     const c = gl.domElement;
-    const onLost = () => setFxReady(false);
-    c.addEventListener("webglcontextlost", onLost);
-    c.addEventListener("webglcontextrestored", check);
-    return () => {
-      cancelAnimationFrame(id);
-      c.removeEventListener("webglcontextlost", onLost);
-      c.removeEventListener("webglcontextrestored", check);
-    };
+    const on = () => setFx(true), off = () => setFx(false);
+    c.addEventListener("webglcontextrestored", on); c.addEventListener("webglcontextlost", off);
+    return () => { cancelAnimationFrame(id); c.removeEventListener("webglcontextrestored", on); c.removeEventListener("webglcontextlost", off); };
   }, [gl]);
 
-  useFrame((_, delta) => {
-    timeRef.current += delta;
-    const t = timeRef.current;
-    const spd = state === "speaking" ? 2.2 : state === "thinking" ? 1.4 : 0.8;
+  useFrame((_, dt) => {
+    tRef.current += dt;
+    const t   = tRef.current;
+    const spd = state === "speaking" ? 2.2 : state === "thinking" ? 1.3 : 0.6;
+    const lrp = Math.min(dt * 2.8, 0.13); // lerp — transition ~1s
 
-    RINGS.forEach((ring, i) => {
-      const m = ringRefs.current[i];
-      if (!m) return;
-      m.rotation.z += ring.speed * spd;
-      m.rotation.x += ring.speed * 0.6 * spd;
-    });
+    if (groupRef.current)   groupRef.current.rotation.y   += 0.0012 * spd;
+    if (reactorRef.current) reactorRef.current.rotation.y += 0.004  * spd;
 
-    coreRefs.current.forEach((m, i) => {
+    // Scale racine = taille globale (Obj.1) × pulse "parle" (Obj.2), multiplicatif.
+    // amp 0..1 mappé sur [-SPEAK_AMP, +SPEAK_AMP] : voix faible → compression,
+    // voix forte → expansion (effet bouche/voix numérique). Hors speaking : pulse=1.
+    if (groupRef.current) {
+      const speakMult = state === "speaking" ? 1 + SPEAK_AMP * (2 * ampRef.current - 1) : 1;
+      const target = GLOBAL_SCALE * speakMult;
+      const cur = groupRef.current.scale.x;
+      // gonflement rapide, retour plus mou (pas de saccade)
+      const k = target > cur ? Math.min(dt * SPEAK_GROW, 0.4) : Math.min(dt * SPEAK_FALL, 0.4);
+      groupRef.current.scale.setScalar(cur + (target - cur) * k);
+    }
+
+    // Plasma heartbeat
+    if (plasmaRef.current) plasmaRef.current.scale.setScalar(1 + 0.14 * Math.sin(t * spd * 2.8));
+
+    // Anneaux : extraction/rétraction alternée + déplacement Y → "blossoming"
+    discRefs.current.forEach((m, i) => {
       if (!m) return;
-      if (i === 2) m.rotation.z += 0.002 * spd; // anneau cyan tourne lentement
-      if (i === 0) return; // noyau dur opaque : pas de pulsation
-      const mat = m.material as THREE.MeshBasicMaterial;
-      const pulse = Math.sin(t * spd * (1.0 + i * 0.2) + i * 1.2) * 0.12;
-      mat.opacity = Math.min(1, Math.max(0, CORE_BASE_OP[i] + pulse));
+      const tScale = state === "speaking" ? RING_SCALE_SPK[i] : 1.0;
+      const tY     = state === "speaking" ? RING_Y_SPK[i]     : 0.0;
+      m.scale.setScalar(m.scale.x + (tScale - m.scale.x) * lrp);
+      m.position.y += (tY - m.position.y) * lrp;
+      (m.material as THREE.MeshBasicMaterial).opacity =
+        DISC[i].op * (0.48 + 0.52 * Math.sin(t * spd * 1.3 + i * 1.1));
     });
   });
 
   return (
     <>
-      {/* Noyau reactor — point dur + halo + anneau cyan + halos diffus */}
-      <mesh ref={(m) => { coreRefs.current[0] = m; }}>
-        <sphereGeometry args={[0.055, 16, 16]} />
-        <meshBasicMaterial color="#ffffff" />
-      </mesh>
-      <mesh ref={(m) => { coreRefs.current[1] = m; }}>
-        <sphereGeometry args={[0.13, 16, 16]} />
-        <meshBasicMaterial color="#e8f8ff" transparent opacity={0.85} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <mesh rotation={[Math.PI / 2, 0, 0]} ref={(m) => { coreRefs.current[2] = m; }}>
-        <torusGeometry args={[0.24, 0.022, 8, 80]} />
-        <meshBasicMaterial color="#00eeff" transparent opacity={0.95} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <mesh ref={(m) => { coreRefs.current[3] = m; }}>
-        <sphereGeometry args={[0.44, 20, 20]} />
-        <meshBasicMaterial color="#3377ff" transparent opacity={0.18} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
-      <mesh ref={(m) => { coreRefs.current[4] = m; }}>
-        <sphereGeometry args={[0.82, 20, 20]} />
-        <meshBasicMaterial color="#0a1a55" transparent opacity={0.07} blending={THREE.AdditiveBlending} depthWrite={false} />
-      </mesh>
+      <group ref={groupRef}>
+        <NeuralField     state={state} />
+        <NeuralFilaments state={state} />
 
-      {/* Anneaux orbitaux */}
-      {RINGS.map((ring, i) => (
-        <mesh key={i} rotation={ring.rot} ref={(m) => { ringRefs.current[i] = m; }}>
-          <torusGeometry args={[ring.r, ring.tube, 8, 200]} />
-          <meshBasicMaterial color={ring.color} transparent opacity={ring.opacity} blending={THREE.AdditiveBlending} depthWrite={false} />
-        </mesh>
-      ))}
+        <group ref={reactorRef}>
+          {DISC.map((d, i) => (
+            <mesh key={i} rotation={d.rot} ref={m => { discRefs.current[i] = m; }}>
+              <torusGeometry args={[d.r, d.tube, 12, 180]} />
+              <meshBasicMaterial color={d.color} transparent opacity={d.op}
+                blending={THREE.AdditiveBlending} depthWrite={false} />
+            </mesh>
+          ))}
 
-      <NeuralField state={state} />
-      <NeuralFilaments state={state} />
-      <EnergyRays state={state} />
+          {/* Plasma central — petit point + halo */}
+          <mesh ref={plasmaRef}>
+            <sphereGeometry args={[0.022, 8, 8]} />
+            <meshBasicMaterial color="#ffffff" />
+          </mesh>
+          <mesh>
+            <sphereGeometry args={[0.048, 8, 8]} />
+            <meshBasicMaterial color="#cceeff" transparent opacity={0.42}
+              blending={THREE.AdditiveBlending} depthWrite={false} />
+          </mesh>
+          <mesh>
+            <sphereGeometry args={[0.09, 8, 8]} />
+            <meshBasicMaterial color="#2255ff" transparent opacity={0.07}
+              blending={THREE.AdditiveBlending} depthWrite={false} />
+          </mesh>
+        </group>
 
-      <pointLight color="#5599ff" intensity={state === "speaking" ? 8 : 4} distance={10} />
-      <pointLight color="#00ddff" intensity={3} distance={6} position={[1.5, 1, 1.5]} />
-      <pointLight color="#ffffff" intensity={2} distance={3} />
+        <pointLight color="#3366ff" intensity={state === "speaking" ? 3.2 : 1.8} distance={8} />
+        <pointLight color="#ffffff" intensity={1.8} distance={2} />
+        <pointLight color="#0077ff" intensity={1.0} distance={10} position={[3,2,3]} />
+      </group>
 
-      {fxReady && (
+      {fx && (
         <EffectComposer>
-          <Bloom
-            intensity={state === "speaking" ? 2.8 : state === "thinking" ? 1.8 : 1.2}
-            luminanceThreshold={0.25}
-            luminanceSmoothing={0.6}
-            blendFunction={BlendFunction.ADD}
-          />
-          <ChromaticAberration offset={caOffset} blendFunction={BlendFunction.NORMAL} />
+          <Bloom intensity={state === "speaking" ? 2.4 : state === "thinking" ? 1.7 : 1.1}
+            luminanceThreshold={0.18} luminanceSmoothing={0.6} blendFunction={BlendFunction.ADD} />
+          <ChromaticAberration offset={caOff} blendFunction={BlendFunction.NORMAL} />
         </EffectComposer>
       )}
     </>
