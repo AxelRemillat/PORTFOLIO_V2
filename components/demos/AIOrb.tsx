@@ -5,7 +5,9 @@ import { EffectComposer, Bloom, ChromaticAberration } from "@react-three/postpro
 import { BlendFunction } from "postprocessing";
 import * as THREE from "three";
 import NeuralField     from "./NeuralField";
-import NeuralFilaments from "./NeuralFilaments";
+import CoreRays        from "./CoreRays";
+import SurfaceField    from "./SurfaceField";
+import SurfaceWaves    from "./SurfaceWaves";
 import { useSpeakingAmplitude } from "./useSpeakingAmplitude";
 
 type OrbState = "idle" | "thinking" | "speaking";
@@ -17,26 +19,10 @@ const SPEAK_GROW   = 12;   // vitesse de gonflement (rapide) — lerp = min(dt*S
 const SPEAK_FALL   = 5;    // vitesse de retour au repos (plus mou)
 // ──────────────────────────────────────────────────────────────────────────
 
-const DISC = [
-  { r:0.18, tube:0.008, rot:[Math.PI/2, 0,    0   ] as [number,number,number], color:"#ffffff", op:1.00 },
-  { r:0.32, tube:0.006, rot:[Math.PI/2, 0,    0.18] as [number,number,number], color:"#aaddff", op:0.80 },
-  { r:0.50, tube:0.005, rot:[Math.PI/2, 0.12, 0   ] as [number,number,number], color:"#66aaff", op:0.62 },
-  { r:0.70, tube:0.004, rot:[Math.PI/2, 0,    0.28] as [number,number,number], color:"#3366bb", op:0.46 },
-  { r:0.94, tube:0.003, rot:[Math.PI/2, 0.20, 0.12] as [number,number,number], color:"#2255aa", op:0.33 },
-  { r:1.22, tube:0.002, rot:[Math.PI/2, 0.08, 0.22] as [number,number,number], color:"#1133aa", op:0.20 },
-  { r:1.62, tube:0.0015,rot:[Math.PI/2, 0.15, 0.10] as [number,number,number], color:"#0a2288", op:0.13 },
-];
-
-// Pendant "speaking" : anneaux pairs se rétractent (vers l'intérieur),
-// anneaux impairs s'extraient (vers l'extérieur) + décalage Y
-const RING_SCALE_SPK = [0.80, 1.40, 0.74, 1.46, 0.68, 1.54, 0.62];
-const RING_Y_SPK     = [-0.13, 0.11, -0.09, 0.07, -0.05, 0.03, -0.02];
-
 export default function AIOrb({ state }: { state: OrbState }) {
   const groupRef   = useRef<THREE.Group>(null);
   const reactorRef = useRef<THREE.Group>(null);
   const plasmaRef  = useRef<THREE.Mesh>(null);
-  const discRefs   = useRef<(THREE.Mesh | null)[]>([]);
   const tRef       = useRef(0);
   const gl         = useThree(s => s.gl);
   const [fx, setFx] = useState(false);
@@ -55,7 +41,6 @@ export default function AIOrb({ state }: { state: OrbState }) {
     tRef.current += dt;
     const t   = tRef.current;
     const spd = state === "speaking" ? 2.2 : state === "thinking" ? 1.3 : 0.6;
-    const lrp = Math.min(dt * 2.8, 0.13); // lerp — transition ~1s
 
     if (groupRef.current)   groupRef.current.rotation.y   += 0.0012 * spd;
     if (reactorRef.current) reactorRef.current.rotation.y += 0.004  * spd;
@@ -74,53 +59,49 @@ export default function AIOrb({ state }: { state: OrbState }) {
 
     // Plasma heartbeat
     if (plasmaRef.current) plasmaRef.current.scale.setScalar(1 + 0.14 * Math.sin(t * spd * 2.8));
-
-    // Anneaux : extraction/rétraction alternée + déplacement Y → "blossoming"
-    discRefs.current.forEach((m, i) => {
-      if (!m) return;
-      const tScale = state === "speaking" ? RING_SCALE_SPK[i] : 1.0;
-      const tY     = state === "speaking" ? RING_Y_SPK[i]     : 0.0;
-      m.scale.setScalar(m.scale.x + (tScale - m.scale.x) * lrp);
-      m.position.y += (tY - m.position.y) * lrp;
-      (m.material as THREE.MeshBasicMaterial).opacity =
-        DISC[i].op * (0.48 + 0.52 * Math.sin(t * spd * 1.3 + i * 1.1));
-    });
   });
 
   return (
     <>
       <group ref={groupRef}>
         <NeuralField     state={state} />
-        <NeuralFilaments state={state} />
+        <CoreRays        state={state} />
+        <SurfaceField    state={state} />
+        <SurfaceWaves    state={state} />
 
         <group ref={reactorRef}>
-          {DISC.map((d, i) => (
-            <mesh key={i} rotation={d.rot} ref={m => { discRefs.current[i] = m; }}>
-              <torusGeometry args={[d.r, d.tube, 12, 180]} />
-              <meshBasicMaterial color={d.color} transparent opacity={d.op}
-                blending={THREE.AdditiveBlending} depthWrite={false} />
-            </mesh>
-          ))}
+          {/* Sphère creuse semi-transparente autour du noyau (confinement réacteur) :
+              coque additive très faible + rim wireframe → on "voit à travers", creux. */}
+          <mesh>
+            <sphereGeometry args={[0.34, 32, 24]} />
+            <meshBasicMaterial color="#66ccff" transparent opacity={0.09}
+              side={THREE.DoubleSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+          </mesh>
+          <mesh>
+            <sphereGeometry args={[0.345, 18, 12]} />
+            <meshBasicMaterial color="#4499ff" wireframe transparent opacity={0.14}
+              blending={THREE.AdditiveBlending} depthWrite={false} />
+          </mesh>
 
-          {/* Plasma central — petit point + halo */}
+          {/* Plasma central — petit point + halo (atténué : moins de lumière au centre) */}
           <mesh ref={plasmaRef}>
-            <sphereGeometry args={[0.022, 8, 8]} />
+            <sphereGeometry args={[0.018, 8, 8]} />
             <meshBasicMaterial color="#ffffff" />
           </mesh>
           <mesh>
             <sphereGeometry args={[0.048, 8, 8]} />
-            <meshBasicMaterial color="#cceeff" transparent opacity={0.42}
+            <meshBasicMaterial color="#cceeff" transparent opacity={0.24}
               blending={THREE.AdditiveBlending} depthWrite={false} />
           </mesh>
           <mesh>
             <sphereGeometry args={[0.09, 8, 8]} />
-            <meshBasicMaterial color="#2255ff" transparent opacity={0.07}
+            <meshBasicMaterial color="#2255ff" transparent opacity={0.045}
               blending={THREE.AdditiveBlending} depthWrite={false} />
           </mesh>
         </group>
 
         <pointLight color="#3366ff" intensity={state === "speaking" ? 3.2 : 1.8} distance={8} />
-        <pointLight color="#ffffff" intensity={1.8} distance={2} />
+        <pointLight color="#ffffff" intensity={0.9} distance={1.6} />
         <pointLight color="#0077ff" intensity={1.0} distance={10} position={[3,2,3]} />
       </group>
 

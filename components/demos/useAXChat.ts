@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { setSpeechAudioEl } from "./speechAudioBus";
 import { playAudioSynced, speakSynced, revealByTimer } from "./revealSync";
 import { getRate, getPaused, setPaused as setCtrlPaused } from "./speechControl";
+import { hasIntroPlayed, markIntroPlayed } from "./useIntroOnce";
 
 type OrbState = "idle" | "thinking" | "speaking";
 interface Msg { role: "user" | "assistant"; content: string; }
@@ -42,6 +43,7 @@ export function useAXChat() {
   const [showText, setShowText]       = useState(false);
   const [isVoiceOn, setIsVoiceOn]     = useState(true);      // voix active par défaut
   const [started, setStarted]         = useState(false);
+  const [introDone, setIntroDone]     = useState(false);     // intro terminée OU sautée (session) → banter autorisé
   const [conversation, setConversation] = useState<Msg[]>([]); // tours courants (exposés pour la persistance)
 
   const history    = useRef<Msg[]>([]);
@@ -49,6 +51,8 @@ export function useAXChat() {
   const voiceRef   = useRef<SpeechSynthesisVoice | null>(null);
   const spokenIdx  = useRef(0);
   const greetedRef = useRef(false);
+  const orbStateRef = useRef<OrbState>("idle"); // lecture fraîche de l'état (guard de speak)
+  orbStateRef.current = orbState;
 
   // File audio ordonnée + contrôle d'interruption
   const ttsChain      = useRef<Promise<void>>(Promise.resolve());
@@ -181,21 +185,37 @@ export function useAXChat() {
     }
   }
 
-  // Salutation au PREMIER geste utilisateur (le navigateur interdit l'audio
-  // automatique sans interaction). C'est le plus tôt possible autorisé.
+  // Fait dire une réplique autonome à VEGA via LE MÊME pipeline (orbe + texte
+  // synchronisé + TTS/repli). Utilisé par l'intro et par les répliques d'inactivité.
+  // Si la voix est coupée, le texte défile quand même (géré par ttsEnqueue).
+  function sayLine(text: string) {
+    resetReveal();
+    setDisplayText("");
+    setFullText(text); // taille de police calculée sur le texte complet
+    ttsEnqueue(text);
+    // Retour idle = retour au "cockpit" HUD (ne coexiste jamais avec l'input).
+    ttsChain.current.then(() => { setOrbState("idle"); setShowText(false); });
+  }
+
+  // Exposé : ne parle que si l'orbe est LIBRE (ne coupe jamais thinking/speaking).
+  const speak = useCallback((text: string) => {
+    if (orbStateRef.current !== "idle") return;
+    sayLine(text);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Intro au PREMIER geste utilisateur (le navigateur interdit l'audio auto sans
+  // interaction). Jouée UNE SEULE FOIS par session : si le flag sessionStorage est
+  // déjà là (retour dans la même session), on saute l'intro → idle direct.
   useEffect(() => {
+    if (hasIntroPlayed()) { setIntroDone(true); return; } // déjà présentée cette session
     const greet = () => {
       cleanup();
-      if (greetedRef.current || !isVoiceRef.current) return;
+      if (greetedRef.current) return;
       greetedRef.current = true;
-      // Le texte s'affiche au moment où la voix démarre (onFirstSpeak), pas avant.
-      resetReveal();
-      setDisplayText("");
-      setFullText(GREETING); // taille de police calculée sur le texte complet
-      ttsEnqueue(GREETING);
-      // Retour idle = retour au "cockpit" HUD : on masque la réponse pour qu'elle
-      // ne coexiste jamais avec l'input/suggestions (le cas d'erreur garde showText).
-      ttsChain.current.then(() => { setOrbState("idle"); setShowText(false); });
+      markIntroPlayed();                 // marque le flag de session
+      sayLine(GREETING);
+      ttsChain.current.then(() => setIntroDone(true)); // intro terminée → banter autorisé
     };
     const cleanup = () => {
       window.removeEventListener("pointerdown", greet);
@@ -204,6 +224,7 @@ export function useAXChat() {
     window.addEventListener("pointerdown", greet);
     window.addEventListener("keydown", greet);
     return cleanup;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function submit(input: string) {
@@ -277,8 +298,10 @@ export function useAXChat() {
     setIsVoiceOn(v => {
       const next = !v;
       isVoiceRef.current = next;
-      if (!next) stopAudio();                  // coupe immédiatement
-      else window.speechSynthesis?.resume();   // ré-active
+      // MUTE RÉEL : on coupe seulement la SORTIE audio, on NE stoppe PAS le monologue.
+      // OpenAI → audio.muted (le texte continue, piloté par currentTime ; re-clic → son revient).
+      // Les segments suivants pendant le mute se révèlent au timer (silencieux), sans appel TTS.
+      if (audioElRef.current) audioElRef.current.muted = !next;
       return next;
     });
   }, []);
@@ -307,6 +330,6 @@ export function useAXChat() {
 
   return {
     orbState, displayText, fullText, isStreaming, showText, isVoiceOn, started,
-    conversation, submit, toggleVoice, loadConversation, newConversation,
+    introDone, conversation, submit, speak, toggleVoice, loadConversation, newConversation,
   };
 }

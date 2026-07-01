@@ -47,7 +47,7 @@ export default function SidePanel({ side, open, onOpenChange, title, label, icon
     const onDown = (e: PointerEvent) => {
       const t = e.target as HTMLElement;
       if (panelRef.current?.contains(t)) return;
-      if (t.closest(".ax-handle")) return;
+      if (t.closest(".ax-handle") || t.closest(".ax-brace-hit")) return;
       onOpenChange(false);
     };
     window.addEventListener("pointerdown", onDown);
@@ -82,6 +82,7 @@ export default function SidePanel({ side, open, onOpenChange, title, label, icon
         icon={icon}
         open={open}
         offset={visible}
+        frac={frac}
         dragging={dragging}
         reduced={reduced}
         intro={intro}

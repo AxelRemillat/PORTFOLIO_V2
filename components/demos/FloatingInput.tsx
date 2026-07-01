@@ -13,8 +13,6 @@ type OrbState = "idle" | "thinking" | "speaking";
 interface Props {
   state: OrbState;
   onSubmit: (text: string) => void;
-  isVoiceOn: boolean;
-  onToggleVoice: () => void;
   // Contrôles affichés uniquement pendant "speaking"
   paused: boolean;
   speed: number;
@@ -32,7 +30,7 @@ const TRANSITION_MS = 320; // durée du fade/blur entre états
 // ──────────────────────────────────────────────────────────────────────────
 
 export default function FloatingInput({
-  state, onSubmit, isVoiceOn, onToggleVoice,
+  state, onSubmit,
   paused, speed, onTogglePause, onCycleSpeed, onDeleteConversation,
 }: Props) {
   // Respect de prefers-reduced-motion (coupe typewriter/blur)
@@ -71,12 +69,7 @@ export default function FloatingInput({
           inert quand masqué → sort du focus clavier et des lecteurs d'écran. */}
       <div style={layer(state === "idle")} aria-hidden={state !== "idle"} inert={state !== "idle"}>
         <SuggestionTicker items={SUGGESTIONS} onPick={onSubmit} reduced={reduced} />
-        <HudInput
-          disabled={state !== "idle"}
-          isVoiceOn={isVoiceOn}
-          onToggleVoice={onToggleVoice}
-          onSubmit={onSubmit}
-        />
+        <HudInput disabled={state !== "idle"} onSubmit={onSubmit} />
       </div>
 
       {/* thinking : indicateur d'activité, aucune saisie attendue */}

@@ -2,6 +2,7 @@
 import { useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { FieldCfg, genSeeds, genShellLayer, genNodeLayer } from "./neuralFieldGen";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
@@ -10,12 +11,28 @@ const SHELLS = [0.55, 0.75, 0.98, 1.28, 1.55, 1.78, 1.95];
 const R_MAX  = 2.05;
 const R_DEAD = 0.48;
 
-// Spread très serré → shells visuellement lisibles (structure sphérique)
-function sphPt(r: number, spread = 0.022): THREE.Vector3 {
-  const phi = Math.acos(2 * Math.random() - 1), th = Math.random() * Math.PI * 2;
-  const rj  = r + (Math.random() - 0.5) * spread;
-  return new THREE.Vector3(rj*Math.sin(phi)*Math.cos(th), rj*Math.cos(phi), rj*Math.sin(phi)*Math.sin(th));
-}
+// ── Réglages du "grain" et de la géométrie douce (itère à l'œil) ────────────
+// Amas    : clusterCount, clusterSigmaMin/Max (taille), clusterFrac (proportion)
+// Filaments: lineCount/lineFrac, lineJitter (flou → ligne suggérée), aniso (veines)
+// Enveloppe: envFrac (densité), envPatches (nb de plaques → porosité), envSpread
+//            (taille des plaques), envDepth (épaisseur sous la surface), envBright
+// Radiaux  : radialCount, radialFrac, radialJitter, radialBright
+// Arcs     : arcCount, arcFrac, arcSpanMin/Max (portion d'anneau), arcJitter, arcBright
+// Les *Bright < 1 atténuent la structure (fond additif) → géométrie SUGGÉRÉE.
+const FIELD: FieldCfg = {
+  shells: SHELLS, rMax: R_MAX, rDead: R_DEAD,
+  n2: 10000, n3: 200,
+  // amas : nuage clusterisé (amas + vides). Les seeds sont biaisés vers l'extérieur
+  // (genSeeds) → moins de densité au centre.
+  clusterCount: 22, clusterSigmaMin: 0.05, clusterSigmaMax: 0.17, clusterFrac: 0.55,
+  lineCount: 8, lineFrac: 0.15, lineJitter: 0.07, aniso: 1.0,
+  // Enveloppe / radiaux / arcs désormais gérés par des COMPOSANTS DÉDIÉS
+  // (SurfaceField.tsx, CoreRays.tsx) → désactivés ici pour ne pas toucher le nuage.
+  envFrac: 0, envPatches: 12, envSpread: 0.34, envDepth: 0.09, envBright: 0.85,
+  radialFrac: 0, radialCount: 16, radialJitter: 0.03, radialBright: 0.55,
+  arcFrac: 0, arcCount: 5, arcSpanMin: 1.4, arcSpanMax: 3.4, arcJitter: 0.03, arcBright: 0.75,
+};
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function NeuralField({ state }: { state: OrbState }) {
   const ambRef  = useRef<THREE.Points>(null);
@@ -24,8 +41,9 @@ export default function NeuralField({ state }: { state: OrbState }) {
   const tRef    = useRef(0);
 
   const geos = useMemo(() => {
-    // Couche 1 — poussière ambiante éparse (4 000 pts) — donne la profondeur, pas le volume
-    const N1 = 4000;
+    // Couche 1 — poussière ambiante éparse (uniforme : profondeur). Réduite pour
+    // atténuer l'effet "champ d'étoiles" et laisser ressortir la structure.
+    const N1 = 1700;
     const p1 = new Float32Array(N1 * 3), c1 = new Float32Array(N1 * 3);
     for (let i = 0; i < N1; i++) {
       const r = R_DEAD + Math.pow(Math.random(), 0.42) * (R_MAX - R_DEAD);
@@ -38,35 +56,19 @@ export default function NeuralField({ state }: { state: OrbState }) {
     g1.setAttribute("position", new THREE.BufferAttribute(p1, 3));
     g1.setAttribute("color",    new THREE.BufferAttribute(c1, 3));
 
-    // Couche 2 — particules sur shells (13 000 pts, spread 0.022 = anneaux bien définis)
-    const N2 = 13000;
-    const p2 = new Float32Array(N2 * 3), c2 = new Float32Array(N2 * 3);
-    for (let i = 0; i < N2; i++) {
-      const sh = SHELLS[Math.floor(Math.random() * SHELLS.length)];
-      const pt = sphPt(sh, 0.022);
-      p2[i*3]=pt.x; p2[i*3+1]=pt.y; p2[i*3+2]=pt.z;
-      const t = sh / R_MAX, rnd = Math.random();
-      if (rnd < 0.06)       { c2[i*3]=1;   c2[i*3+1]=1;   c2[i*3+2]=1;  }
-      else if (rnd < 0.28)  { c2[i*3]=0.2+(1-t)*0.6; c2[i*3+1]=0.85; c2[i*3+2]=1; }
-      else                  { c2[i*3]=0.03; c2[i*3+1]=0.20+(1-t)*0.33; c2[i*3+2]=0.72+(1-t)*0.22; }
-    }
-    const g2 = new THREE.BufferGeometry();
-    g2.setAttribute("position", new THREE.BufferAttribute(p2, 3));
-    g2.setAttribute("color",    new THREE.BufferAttribute(c2, 3));
+    // Graines d'amas partagées → couche shells (amas + traits + diffus) ET nœuds
+    // (cœurs lumineux au centre des amas) restent cohérents.
+    const seeds = genSeeds(FIELD);
 
-    // Couche 3 — nœuds brillants rares (400 pts)
-    const N3 = 400;
-    const p3 = new Float32Array(N3 * 3), c3 = new Float32Array(N3 * 3);
-    for (let i = 0; i < N3; i++) {
-      const sh = SHELLS[Math.floor(Math.random() * SHELLS.length)];
-      const pt = sphPt(sh, 0.010);
-      p3[i*3]=pt.x; p3[i*3+1]=pt.y; p3[i*3+2]=pt.z;
-      const t = sh / R_MAX;
-      c3[i*3]=0.85+(1-t)*0.15; c3[i*3+1]=0.95; c3[i*3+2]=1;
-    }
+    const s2 = genShellLayer(FIELD, seeds);
+    const g2 = new THREE.BufferGeometry();
+    g2.setAttribute("position", new THREE.BufferAttribute(s2.pos, 3));
+    g2.setAttribute("color",    new THREE.BufferAttribute(s2.col, 3));
+
+    const s3 = genNodeLayer(FIELD, seeds);
     const g3 = new THREE.BufferGeometry();
-    g3.setAttribute("position", new THREE.BufferAttribute(p3, 3));
-    g3.setAttribute("color",    new THREE.BufferAttribute(c3, 3));
+    g3.setAttribute("position", new THREE.BufferAttribute(s3.pos, 3));
+    g3.setAttribute("color",    new THREE.BufferAttribute(s3.col, 3));
 
     return { g1, g2, g3 };
   }, []);
@@ -86,14 +88,14 @@ export default function NeuralField({ state }: { state: OrbState }) {
       {/* Poussière ambiante — éparse, sombre, donne la profondeur */}
       <points ref={ambRef} geometry={geos.g1}>
         <pointsMaterial size={0.008} vertexColors sizeAttenuation
-          blending={THREE.AdditiveBlending} depthWrite={false} transparent opacity={0.65} />
+          blending={THREE.AdditiveBlending} depthWrite={false} transparent opacity={0.5} />
       </points>
-      {/* Shell particles — spread serré = structure sphérique visible */}
+      {/* Shell particles — densité organique : amas + vides + filaments doux */}
       <points ref={shRef} geometry={geos.g2}>
         <pointsMaterial size={0.018} vertexColors sizeAttenuation
           blending={THREE.AdditiveBlending} depthWrite={false} transparent />
       </points>
-      {/* Nœuds brillants — grands, rares, pulsants */}
+      {/* Nœuds brillants — grands, rares, pulsants (cœurs d'amas) */}
       <points ref={nodeRef} geometry={geos.g3}>
         <pointsMaterial size={0.055} vertexColors sizeAttenuation
           blending={THREE.AdditiveBlending} depthWrite={false} transparent opacity={0.82} />

@@ -168,6 +168,36 @@ body {
 }
 .vega-ctrl-speed:hover { color: #ff8800; border-color: rgba(255, 140, 0, 0.9); box-shadow: 0 0 18px -4px rgba(255, 100, 0, 0.55); }
 
+/* Bouton son flottant (sinusoïde animée) — hors de la barre de saisie */
+.vega-sound {
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 100, 0, 0.12);
+  border: 1.5px solid rgba(255, 120, 0, 0.65);
+  cursor: pointer; backdrop-filter: blur(6px);
+  box-shadow: 0 0 22px -3px rgba(255, 110, 0, 0.55); /* glow permanent quand actif */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, color 0.25s ease, background 0.2s ease, transform 0.15s ease;
+}
+.vega-sound:hover { border-color: #ff9a2e; background: rgba(255, 100, 0, 0.2); box-shadow: 0 0 30px -2px rgba(255, 130, 0, 0.8); transform: scale(1.06); }
+.vega-sound:focus-visible { outline: 2px solid rgba(255, 160, 0, 0.9); outline-offset: 3px; }
+.vega-sound:active { transform: scale(0.95); }
+/* Accolade lumineuse latérale (gauche/droite en miroir) : trait fin qui relie le
+   bord de l'écran à la poignée, avec halo orange (glow). Le bout passe derrière le
+   bouton (z-index < poignée). Pulse doux = léger battement du glow. */
+.ax-brace { filter: drop-shadow(0 0 5px rgba(255, 130, 0, 0.85)) drop-shadow(0 0 13px rgba(255, 110, 0, 0.45)); }
+.ax-brace-pulse { animation: axBracePulse 3.2s ease-in-out infinite; }
+@keyframes axBracePulse { 0%, 100% { opacity: 0.72; } 50% { opacity: 1; } }
+
+/* Coupé : atténué, sans glow */
+.vega-sound.muted { background: rgba(255, 255, 255, 0.05); border-color: rgba(255, 255, 255, 0.28); box-shadow: none; }
+.vega-sound.muted:hover { border-color: rgba(255, 255, 255, 0.5); box-shadow: 0 0 14px -4px rgba(255, 255, 255, 0.3); }
+/* VEGA parle : le bouton pulse et se met en valeur → invite à couper le son */
+.vega-sound.speaking { animation: vegaSoundPulse 1.4s ease-in-out infinite; }
+@keyframes vegaSoundPulse {
+  0%, 100% { box-shadow: 0 0 20px -3px rgba(255, 110, 0, 0.5); transform: scale(1); border-color: rgba(255, 120, 0, 0.65); }
+  50%      { box-shadow: 0 0 36px 1px rgba(255, 150, 0, 0.95); transform: scale(1.1); border-color: #ff9a2e; }
+}
+
 .hud-suggestion {
   background: none; border: none; cursor: pointer;
   font-family: var(--font-mono, monospace); font-size: 13px; letter-spacing: 0.03em;
@@ -193,6 +223,10 @@ body {
   .ax-cursor { animation: none; }
   .vega-ctrl { transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease; }
   .vega-ctrl:active { transform: none; }
+  /* Pas de clignotement : highlight statique fort quand VEGA parle */
+  .vega-sound.speaking { animation: none; border-color: #ff9a2e; box-shadow: 0 0 30px -2px rgba(255, 140, 0, 0.85); }
+  /* Accolade : on garde le glow statique, sans le battement */
+  .ax-brace-pulse { animation: none; opacity: 1; }
 }
 
 /* ── Parcours — frise chronologique ─────────────────────────────────────── */

@@ -52,10 +52,10 @@ export default function MobileDrawer(props: Props) {
 
   return (
     <>
-      <SidePanelHandle side="left" label="QUESTIONS" icon={QIcon} open={tab === "q"} offset={6}
+      <SidePanelHandle side="left" label="QUESTIONS" icon={QIcon} open={tab === "q"} offset={6} frac={0}
         dragging={leftDrag.dragFrac !== null} reduced={reduced} intro={intro} transMs={350}
         onPointerDown={leftDrag.onPointerDown} onToggleKey={() => setTab("q")} ariaLabel="Ouvrir les questions" />
-      <SidePanelHandle side="right" label="HISTORIQUE" icon={HIcon} open={tab === "h"} offset={6}
+      <SidePanelHandle side="right" label="HISTORIQUE" icon={HIcon} open={tab === "h"} offset={6} frac={0}
         dragging={rightDrag.dragFrac !== null} reduced={reduced} intro={intro} transMs={350}
         onPointerDown={rightDrag.onPointerDown} onToggleKey={() => setTab("h")} ariaLabel="Ouvrir l'historique" />
 

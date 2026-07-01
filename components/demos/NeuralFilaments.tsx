@@ -5,8 +5,9 @@ import * as THREE from "three";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
-const SHELLS   = [0.08, 0.22, 0.42, 0.68, 0.98, 1.28, 1.55, 1.78];
-const N_ACT    = 140;
+// Shells internes retirés (0.08/0.22/0.42) → plus de "mini-traits" au centre.
+const SHELLS   = [0.68, 0.98, 1.28, 1.55, 1.78];
+const N_ACT    = 100;
 const C_PTS    = 8;
 const SEG      = C_PTS - 1;
 const TOTAL_V  = N_ACT * SEG * 2;

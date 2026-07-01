@@ -4,11 +4,13 @@ import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import FloatingText from "@/components/demos/FloatingText";
 import FloatingInput from "@/components/demos/FloatingInput";
+import SoundToggle from "@/components/demos/SoundToggle";
 import SidePanel from "@/components/demos/SidePanel";
 import QuestionList from "@/components/demos/QuestionList";
 import HistoryContent from "@/components/demos/HistoryContent";
 import MobileDrawer from "@/components/demos/MobileDrawer";
 import { useAXChat } from "@/components/demos/useAXChat";
+import { useIdleBanter } from "@/components/demos/useIdleBanter";
 import { useConversationHistory } from "@/components/demos/useConversationHistory";
 import { useSpeechControls } from "@/components/demos/useSpeechControls";
 import type { Conversation } from "@/components/demos/useConversationHistory";
@@ -28,6 +30,10 @@ export default function DemosPage() {
   const ax = useAXChat();
   const hist = useConversationHistory();
   const ctrl = useSpeechControls();
+
+  // Répliques d'inactivité : uniquement une fois l'intro terminée, jamais pendant
+  // que VEGA parle/réfléchit ou que l'utilisateur tape (géré dans le hook).
+  useIdleBanter({ enabled: ax.introDone, orbState: ax.orbState, speak: ax.speak });
 
   // Suppression de la conversation en cours : retire de l'historique + reset chat (idle).
   const deleteConv = () => { if (hist.activeId) hist.remove(hist.activeId); ax.newConversation(); };
@@ -83,14 +89,16 @@ export default function DemosPage() {
       <FloatingInput
         state={ax.orbState}
         onSubmit={ax.submit}
-        isVoiceOn={ax.isVoiceOn}
-        onToggleVoice={ax.toggleVoice}
         paused={ctrl.paused}
         speed={ctrl.speed}
         onTogglePause={ctrl.togglePause}
         onCycleSpeed={ctrl.cycleSpeed}
         onDeleteConversation={deleteConv}
       />
+
+      {/* Indicateur audio du cockpit : sinusoïde animée (mute), visible dans tous les états.
+          Pulse/glow quand VEGA parle → invite l'utilisateur à couper le son s'il veut. */}
+      <SoundToggle isOn={ax.isVoiceOn} onToggle={ax.toggleVoice} speaking={ax.orbState === "speaking"} />
 
       {/* Desktop : 2 panneaux latéraux en miroir (un ouvert ferme l'autre) */}
       {!isMobile && (
