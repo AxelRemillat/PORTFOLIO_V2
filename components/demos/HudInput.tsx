@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 interface Props {
   disabled: boolean;
   onSubmit: (s: string) => void;
+  // Pré-remplissage (clic sur une suggestion) : `key` change à chaque clic pour
+  // ré-appliquer même si l'utilisateur reclique la même question.
+  prefill?: { text: string; key: number } | null;
 }
 
 // Glyphe filaire (outline)
@@ -13,12 +16,19 @@ const SendIcon = () => (
   </svg>
 );
 
-export default function HudInput({ disabled, onSubmit }: Props) {
+export default function HudInput({ disabled, onSubmit, prefill }: Props) {
   const [val, setVal] = useState("");
   const ref = useRef<HTMLInputElement>(null);
 
   // Redonne le focus à l'input dès le retour en idle (continuité clavier)
   useEffect(() => { if (!disabled) ref.current?.focus(); }, [disabled]);
+
+  // Suggestion cliquée → écrite dans la barre, focus : l'utilisateur n'a plus qu'à valider
+  useEffect(() => {
+    if (!prefill) return;
+    setVal(prefill.text);
+    ref.current?.focus();
+  }, [prefill]);
 
   const submit = () => {
     const t = val.trim();

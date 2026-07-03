@@ -5,7 +5,7 @@ import { Resend } from "resend";
 // (RESEND_API_KEY=re_XXXX). Le from utilise le domaine par défaut du free tier.
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const DEST = "axelremillat@netcourrier.com";
+const DEST = "atlas.flaeme@gmail.com";
 
 export async function POST(req: NextRequest) {
   try {

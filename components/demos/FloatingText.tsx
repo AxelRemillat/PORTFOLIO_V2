@@ -20,7 +20,9 @@ const CANVAS_TOP_PX    = 64;
 const CANVAS_BOTTOM_PX = 110;
 const ORB_RADIUS_FRAC  = 0.56; // rayon nuage / demi-hauteur visible (~0.55) + petite marge
 const GAP_PX           = 14;   // marge entre le bas de l'orbe et le texte
-const BOTTOM_VH        = 6;     // bord bas de la zone (le HUD est masqué pendant "speaking")
+// Bord bas de la zone : au-dessus du cluster SpeakingControls (bottom 5vh,
+// bouton pause 56px) + marge — le texte ne passe plus jamais derrière les boutons.
+const BOTTOM_CSS       = "calc(5vh + 74px)";
 const FONT_MAX_PX      = 26;    // réponses courtes/moyennes
 const FONT_MIN_PX      = 12;    // plancher lisible (absorbe les longues réponses)
 const BOX_MAX_WIDTH    = 760;
@@ -72,7 +74,7 @@ export default function FloatingText({ text, fullText, isStreaming, isVisible }:
         position: "fixed",
         left: "50%",
         top: `${topPx}px`,
-        bottom: `${BOTTOM_VH}vh`,
+        bottom: BOTTOM_CSS,
         transform: `translateX(-50%) translateY(${isVisible ? 0 : 12}px)`,
         zIndex: 20,
         width: `min(${BOX_MAX_WIDTH}px, ${BOX_WIDTH_VW}vw)`,

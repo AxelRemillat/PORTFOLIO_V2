@@ -7,14 +7,19 @@ interface Props {
   reduced: boolean; // prefers-reduced-motion → liste statique (pas de typewriter)
 }
 
-export default function SuggestionTicker({ items, onPick, reduced }: Props) {
-  const { text, current } = useRotatingSuggestions(items, { enabled: !reduced });
+// Type partagé avec HudInput (pré-remplissage de la barre de saisie)
+export type Prefill = { text: string; key: number } | null;
 
-  // Fallback statique (mouvement réduit) : liste basse opacité, cliquable
+export default function SuggestionTicker({ items, onPick, reduced }: Props) {
+  // Rythme ralenti (holdMs) : laisse le temps de lire ET de cliquer la question
+  const { text, current } = useRotatingSuggestions(items, { enabled: !reduced, holdMs: 4800, typeMs: 55 });
+
+  // Fallback statique (mouvement réduit) : liste basse opacité, cliquable.
+  // Bornée à 3 : le catalogue complet (50) vit dans le panneau QUESTIONS.
   if (reduced) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 16, alignItems: "center" }}>
-        {items.map((s) => (
+        {items.slice(0, 3).map((s) => (
           <button key={s} type="button" className="hud-suggestion" onClick={() => onPick(s)}>
             / {s}
           </button>

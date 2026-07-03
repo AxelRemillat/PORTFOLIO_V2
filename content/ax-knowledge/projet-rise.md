@@ -1,0 +1,7 @@
+# Projet — RISE
+
+RISE (Reach, Inspire, Study and Explore) est la startup EdTech cofondée par Axel avec 3 autres étudiants de l'ESME, lancée en début de 3e année. Le problème : choisir sa destination de semestre à l'international est un parcours du combattant informationnel. RISE centralise pour chaque université partenaire les témoignages d'anciens étudiants, les infos sur l'université et le pays, des conseils pratiques et des recommandations locales (hôtels, restaurants, services) — un Google Maps privé et personnalisé pour étudiants en mobilité. Business model : les universités paient un abonnement donnant accès à leurs étudiants (un compte unique par étudiant).
+
+Résultats en 1 an et demi : 3 concours gagnés — 1re place au concours ESME Calendrier de l'Avent 2025 (500 €), 1re place au concours IONIS sur plus de 400 projets étudiants de toutes les écoles du groupe (3 000 €), 2e place aux Galets du Rhône 2025 à Genève, concours régional récompensant startups et PME innovantes d'Auvergne-Rhône-Alpes (1 000 €). RISE a un statut officiel d'association, une protection juridique avec dépôt d'idée, un site bêta en déploiement, des négociations en cours avec l'école pour l'accès aux données des bureaux des relations internationales, et intègre l'incubateur de l'ESME. C'est le projet étudiant le plus avancé de l'école.
+
+Ce qu'Axel y a appris : monter une startup de A à Z — juridique, administratif, produit (front, back, BDD), marketing, business model, et pitcher devant des jurys.

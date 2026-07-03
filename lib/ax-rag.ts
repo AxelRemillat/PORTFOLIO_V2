@@ -12,25 +12,26 @@ import OpenAI from "openai";
 // Contexte de secours minimal : utilisé si la base vectorielle n'est pas
 // disponible (clés absentes, table/fonction Supabase pas encore créée, erreur
 // réseau) — on préfère un fallback plutôt que de faire crasher l'API chat.
+// ⚠️ Résumé condensé de content/ax-knowledge/*.md — garder ALIGNÉ avec ces docs.
 const FALLBACK_CONTEXT = `## Axel Remillat
-Étudiant ingénieur 4e année à l'ESME Paris, spécialité Big Data, IA & Marketing Digital. 22 ans, basé à Paris.
-Philosophie : construire et tester plutôt que faire des slides. Langues : français (natif), anglais (courant, semestre à Mapúa University, Philippines).
-Parcours : alternance Ingénieur IA Agentic chez Andra Learning (EdTech, Station F) depuis juillet 2026 (maître d'apprentissage : Ouriel Bettach, CTO) ; co-fondateur & Lead Tech de RISE depuis oct. 2024 ; stages chez ROSI Alpes (2024) et INOVALP (2023). ESME Paris 2022→2027 (prépa intégrée puis spé Big Data/IA).
-Objectifs : réussir son alternance, faire grandir RISE, puis CDI en data/AI engineering ou product IA, et freelance progressif en data/IA/automatisation.
-Compétences : Python, SQL, OpenAI API, RAG, embeddings, agents IA, LLM (GPT-4o, Claude, Llama, Qwen) ; N8N, Make, webhooks ; React, Next.js, TypeScript, Tailwind, Firebase ; Docker, Vercel, Supabase (pgvector), BigQuery, Cloud Run, Vertex AI. Ollama en local (Llama 3.2).
+Né en 2004. Étudiant ingénieur 4e année à l'ESME (groupe IONIS), spé Big Data, IA & marketing. 3 premières années à Lyon, 1er semestre de 4e année en échange à Mapua University (Manille, Philippines), puis campus d'Ivry-sur-Seine (Paris). 5e année en alternance. Anglais courant (C1). Mobile Paris / Lyon / Grenoble / Genève.
+Alternance : Ingénieur IA Agentic & gestion de données chez Andra Learning (EdTech, Station F), 14 mois à partir de juillet 2026, sous la direction du CTO Ouriel Bettach.
+Objectifs : CDI ingénieur IA/Data, missions freelance data/IA, à terme vivre de ses produits (RISE, SEACO). Vision : "un bon produit, c'est un produit qui aide un maximum de gens et qu'on comprend en une seconde".
+Compétences : Python, SQL, React, FastAPI, Supabase, Firebase, N8N, API OpenAI, Google Cloud (BigQuery, Cloud Run, Vertex AI), Docker, Power BI, Figma, Git. Profil hybride tech + marketing + produit ; utilise les IA génératives comme copilotes de dev en gardant l'architecture et les contraintes.
+Perso : tennis avec son père, très bon cuisinier (famille de gourmets), a grandi entouré d'animaux (grand-père au passé de cowboy), famille de musiciens et d'enseignants de lettres, passionné de cinéma, a joué le renard dans une pièce du Petit Prince enfant.
+Contact : UNIQUEMENT email axelremillat@netcourrier.com et LinkedIn linkedin.com/in/axel-remillatesmelyon.
 
 ## Projets
-- RISE : startup EdTech / plateforme de mobilité internationale étudiante (logement, communauté, ressources administratives). Stack React, Firebase, TypeScript. 3 concours remportés (IONIS 2025 2e prix 3000€, Galets du Rhône 2025, Concours ESME 1er prix 1500€), asso officielle, bêta en déploiement.
-- SEACO : projet de data engineering (pipeline RAG). Stack Python, SQL, BigQuery, Cloud Run, Vertex AI.
-- Automatisations N8N : agents IA pour automatiser des tâches métiers (workflows marketing, traitement de données, classification). Stack N8N, OpenAI API, webhooks, Make, Google Cloud.
-- CV interactif RAG (alias VEGA) : IA conversationnelle qui répond sur le profil d'Axel via RAG.
-- La Planète qui Chante : jeu 3D (React Three Fiber) où l'on plante des instruments pour générer de la musique.
+- RISE (Reach, Inspire, Study and Explore) : startup EdTech cofondée avec 3 étudiants ESME — centralise témoignages, infos et recommandations locales pour choisir sa destination de semestre à l'international. 3 concours gagnés : 1re place ESME Calendrier de l'Avent 2025 (500 €), 1re place concours IONIS sur 400+ projets (3 000 €), 2e place Galets du Rhône 2025 à Genève (1 000 €). Asso officielle, dépôt d'idée, bêta en déploiement, incubateur ESME.
+- SEACO : plateforme SaaS en développement — assistant de vie pour étudiants/jeunes actifs, 6 zones interconnectées (Études, Carrière, Réseaux, Budget, Entrepreneuriat) autour d'un Profil Vivant. Slogan : "Ton temps vaut mieux que ça." Stack React 18 + Vite, Tailwind, Supabase, OpenAI, N8N. Non lancé publiquement.
+- Automatisations N8N : page du portfolio avec automatisations testables en direct (workflows N8N réels + LLM) pour montrer aux PME des cas d'usage — 5 démos finales en sélection parmi 12. Rate-limiting et plafonds de tokens.
+- CV interactif RAG : c'est VEGA elle-même — RAG de bout en bout (embeddings OpenAI, Supabase pgvector, gpt-4o-mini, TTS synchronisé, orbe 3D).
 
 ## VEGA (toi)
-Tu es l'IA de présentation du site. Stack : Next.js sur Vercel, base vectorielle Supabase pgvector, embeddings OpenAI text-embedding-3-large, réponses par gpt-4o-mini en RAG, voix par TTS (ElevenLabs, repli OpenAI/navigateur). L'orbe 3D React Three Fiber "pense" puis "parle" en rythme avec la voix.
+Nommée d'après l'étoile Vega (constellation de la Lyre). Cerveau : pipeline RAG (Supabase pgvector + gpt-4o-mini). Voix : TTS OpenAI, repli navigateur. Corps : orbe React Three Fiber pilotée par ton état (idle/thinking/speaking). Mémoire multi-tours en localStorage. Coût : quelques centimes par conversation, infra du site 10-30 €/mois.
 
 ## Le site
-"Proof-of-work lab" : portfolio où les démos sont testables. Pages : accueil (splash spatial, thème Petit Prince), /projets (4 projets en 3D), /game (mini-jeu 3D façon Petit Prince), /demos (VEGA), /parcours (parcours & compétences), /contact. Thème espace / cinématique, couleurs orange et violet.`;
+Next.js (App Router, TypeScript) sur Vercel, Supabase (PostgreSQL + pgvector), OpenAI, React Three Fiber, GA4. Univers espace inspiré du Petit Prince (Axel a joué le renard enfant). Pages : accueil étoilé, /projets (modèles 3D : drone pour CV RAG, avion RISE, satellite SEACO, robot N8N), mini-jeu 3D (robot sur planète, 4 portails), /demos (VEGA). Construit avec des agents IA comme copilotes — démarche assumée. Pas open source. À venir : pages détail projets, parcours, contact, démos N8N.`;
 
 // Lazy init : évite l'erreur "supabaseUrl is required" au build Next.js et
 // permet de basculer proprement sur le fallback quand l'env n'est pas configuré.

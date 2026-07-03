@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import type { Prefill } from "./SuggestionTicker";
 import HudInput from "./HudInput";
 import SuggestionTicker from "./SuggestionTicker";
 import ThinkingIndicator from "./ThinkingIndicator";
 import SpeakingControls from "./SpeakingControls";
-import { TICKER_QUESTIONS } from "./questionsData";
+import { ALL_QUESTIONS } from "./questionsData";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
@@ -22,9 +23,9 @@ interface Props {
 }
 
 // ── Constantes réglables ──────────────────────────────────────────────────
-// Le ticker du bas n'est plus qu'une amorce (3 questions) : le catalogue complet
-// est dans le panneau gauche (QuestionMenu). Source unique : questionsData.ts.
-const SUGGESTIONS = TICKER_QUESTIONS;
+// Le ticker affiche les 50 questions du catalogue (source unique :
+// questionsData.ts), mélangées au montage → ordre aléatoire, sans répétition
+// avant d'avoir fait le tour.
 const THINKING_TEXT = "recherche dans la base vectorielle";
 const TRANSITION_MS = 320; // durée du fade/blur entre états
 // ──────────────────────────────────────────────────────────────────────────
@@ -33,6 +34,17 @@ export default function FloatingInput({
   state, onSubmit,
   paused, speed, onTogglePause, onCycleSpeed, onDeleteConversation,
 }: Props) {
+  // Suggestion cliquée → pré-remplit la barre (l'utilisateur valide lui-même)
+  const [prefill, setPrefill] = useState<Prefill>(null);
+  const pick = (s: string) => setPrefill((p) => ({ text: s, key: (p?.key ?? 0) + 1 }));
+
+  // Mélange des 50 questions APRÈS le montage (pas au rendu initial → pas de
+  // mismatch d'hydratation SSR/client avec un ordre aléatoire).
+  const [suggestions, setSuggestions] = useState<string[]>(ALL_QUESTIONS);
+  useEffect(() => {
+    setSuggestions([...ALL_QUESTIONS].sort(() => Math.random() - 0.5));
+  }, []);
+
   // Respect de prefers-reduced-motion (coupe typewriter/blur)
   const [reduced, setReduced] = useState(false);
   useEffect(() => {
@@ -68,8 +80,8 @@ export default function FloatingInput({
       {/* idle : cockpit d'accueil — suggestions qui défilent + ligne de saisie.
           inert quand masqué → sort du focus clavier et des lecteurs d'écran. */}
       <div style={layer(state === "idle")} aria-hidden={state !== "idle"} inert={state !== "idle"}>
-        <SuggestionTicker items={SUGGESTIONS} onPick={onSubmit} reduced={reduced} />
-        <HudInput disabled={state !== "idle"} onSubmit={onSubmit} />
+        <SuggestionTicker items={suggestions} onPick={pick} reduced={reduced} />
+        <HudInput disabled={state !== "idle"} onSubmit={onSubmit} prefill={prefill} />
       </div>
 
       {/* thinking : indicateur d'activité, aucune saisie attendue */}

@@ -3,6 +3,7 @@ import ManifestoSection from "@/components/parcours/ManifestoSection";
 import StatsSection from "@/components/parcours/StatsSection";
 import SkillsSection from "@/components/parcours/SkillsSection";
 import TimelineSection from "@/components/parcours/TimelineSection";
+import HorsEcranSection from "@/components/parcours/HorsEcranSection";
 import FormationSection from "@/components/parcours/FormationSection";
 
 // Server component : conserve le SEO (metadata). Chaque section est 'use client'
@@ -21,6 +22,7 @@ export default function ParcoursPage() {
       <StatsSection />
       <SkillsSection />
       <TimelineSection />
+      <HorsEcranSection />
       <FormationSection />
     </main>
   );

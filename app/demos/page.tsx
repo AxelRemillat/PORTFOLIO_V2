@@ -65,7 +65,12 @@ export default function DemosPage() {
   const selectConv = (c: Conversation) => {
     hist.setActiveId(c.id); ax.loadConversation(c.messages);
   };
-  const newConv = () => { hist.newConversation(); ax.newConversation(); };
+  // Nouvelle conversation → referme le panneau et place le curseur dans la barre
+  // de saisie (après le slide) : l'utilisateur peut écrire immédiatement.
+  const newConv = () => {
+    hist.newConversation(); ax.newConversation(); setOpenSide("none");
+    setTimeout(() => document.querySelector<HTMLInputElement>(".hud-field")?.focus(), 400);
+  };
 
   return (
     <>

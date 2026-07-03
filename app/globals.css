@@ -54,8 +54,57 @@ body {
 }
 .parcours-cta:hover { transform: scale(1.03); box-shadow: 0 0 45px rgba(249, 115, 22, 0.45); }
 
+.parcours-cta-outline {
+  display: inline-block; background: transparent; color: var(--color-orange);
+  border: 1px solid rgba(249, 115, 22, 0.45);
+  padding: calc(1rem - 1px) calc(2rem - 1px); border-radius: 9999px; font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+.parcours-cta-outline:hover {
+  transform: scale(1.03); border-color: var(--color-orange);
+  background: rgba(249, 115, 22, 0.08); box-shadow: 0 0 30px rgba(249, 115, 22, 0.18);
+}
+
+/* Hero — mot rotatif (fade/slide vertical à chaque changement) */
+@keyframes heroWordIn { from { opacity: 0; transform: translateY(0.7em); } to { opacity: 1; transform: translateY(0); } }
+.hero-word { animation: heroWordIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+/* Hors écran — grille 1 col mobile / 2 cols tablette / 3 cols desktop */
+.he-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
+@media (min-width: 640px)  { .he-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1024px) { .he-grid { grid-template-columns: repeat(3, 1fr); } }
+.he-card { height: 100%; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
+.he-card:hover { transform: translateY(-4px); }
+
+/* Pont VEGA — indicateur "online" pulsant */
+@keyframes vegaOnlinePulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(249, 115, 22, 0.6); }
+  50% { opacity: 0.5; box-shadow: 0 0 14px rgba(249, 115, 22, 0.95); }
+}
+.vega-online-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--color-orange); margin-right: 8px; vertical-align: 1px;
+  animation: vegaOnlinePulse 1.8s ease-in-out infinite;
+}
+
+/* Constellation — drift organique idle + flux sur les arêtes du nœud focalisé */
+@keyframes skillDrift {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(3px, -3px); }
+  50% { transform: translate(-2.5px, 3.5px); }
+  75% { transform: translate(-3.5px, -2px); }
+}
+.skill-drift { animation: skillDrift 7s ease-in-out infinite; }
+@keyframes skillEdgeFlow { to { stroke-dashoffset: -24; } }
+.skill-edge-flow { animation: skillEdgeFlow 1.1s linear infinite; }
+
+/* Panneau de détail d'un nœud (NodePanel) */
+@keyframes skillPanelIn { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
 @media (prefers-reduced-motion: reduce) {
   .parcours-fade, .parcours-line, .parcours-marquee { animation: none !important; opacity: 1 !important; transform: none !important; }
+  .hero-word, .skill-drift, .skill-edge-flow, .vega-online-dot { animation: none !important; }
+  .he-card:hover, .parcours-cta:hover, .parcours-cta-outline:hover { transform: none; }
 }
 
 /* ── Contact — lignes "fréquences" + bouton ─────────────────────────────── */
@@ -236,9 +285,18 @@ body {
 .tl-node-cell { grid-column: 2; display: flex; justify-content: center; }
 .tl-card-inner {
   background: #0d0d1a; border: 1px solid #1e1e32; border-radius: 12px;
-  padding: 1.25rem 1.5rem; transition: border-color 0.2s ease;
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.tl-card-inner:hover { border-color: #2a2a42; }
+/* Lift + glow dans la teinte du badge (variables posées par TimelineItem) */
+.tl-card-inner:hover {
+  border-color: var(--tl-accent, #2a2a42);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px -10px var(--tl-glow, transparent);
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl-card-inner:hover { transform: none; }
+}
 
 @media (max-width: 639px) {
   .tl-row { display: block; position: relative; padding-left: 24px; border-left: 1px solid #2a2a42; }

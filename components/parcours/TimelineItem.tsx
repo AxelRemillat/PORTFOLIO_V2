@@ -18,6 +18,9 @@ export interface TimelineEvent {
 
 const badgeColor = (c: string) => (c === "orange" ? "#f97316" : c === "blue" ? "#3a6fa8" : "#444");
 const roleColor = (c: string) => (c === "orange" ? "#f97316" : c === "blue" ? "#60a5fa" : "#94a3b8");
+// Glow au hover, dans la teinte du badge (consommé par .tl-card-inner:hover)
+const glowColor = (c: string) =>
+  c === "orange" ? "rgba(249,115,22,0.3)" : c === "blue" ? "rgba(96,165,250,0.25)" : "rgba(255,255,255,0.07)";
 
 interface Props {
   event: TimelineEvent;
@@ -49,7 +52,14 @@ const TimelineItem = forwardRef<HTMLDivElement, Props>(function TimelineItem(
           textAlign: side === "left" ? "right" : "left",
         }}
       >
-        <div className="tl-card-inner" style={{ display: "inline-block", textAlign: "left", maxWidth: "100%" }}>
+        <div
+          className="tl-card-inner"
+          style={{
+            display: "inline-block", textAlign: "left", maxWidth: "100%",
+            "--tl-accent": badgeColor(event.color),
+            "--tl-glow": glowColor(event.color),
+          } as CSSProperties}
+        >
           <span
             style={{
               fontFamily: "var(--font-mono)",

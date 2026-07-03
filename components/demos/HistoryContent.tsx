@@ -1,8 +1,11 @@
 "use client";
+import { useState } from "react";
 import type { Conversation } from "./useConversationHistory";
 
-// Contenu de l'historique (liste des conversations + transcript actif), sans le
-// shell : réutilisé dans le panneau droit (desktop) et le drawer (mobile).
+// Contenu de l'historique en 2 vues, sans le shell (réutilisé dans le panneau
+// droit desktop et le drawer mobile) :
+//   liste  → uniquement les questions (titre) + date, cliquables
+//   détail → la conversation sélectionnée en grand (transcript plein panneau)
 interface Props {
   conversations: Conversation[];
   activeId: string | null;
@@ -20,8 +23,41 @@ function relTime(ts: number): string {
 }
 
 export default function HistoryContent({ conversations, activeId, onSelect, onNew, onDelete }: Props) {
-  const active = conversations.find((c) => c.id === activeId) ?? null;
+  // Conversation affichée en grand (null = vue liste)
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const detail = detailId ? conversations.find((c) => c.id === detailId) : null;
 
+  const openDetail = (c: Conversation) => { onSelect(c); setDetailId(c.id); };
+
+  // ── Vue détail : conversation en grand ────────────────────────────────────
+  if (detail) {
+    return (
+      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+          <button type="button" onClick={() => setDetailId(null)} className="hud-suggestion"
+            style={{ color: "rgba(255,170,80,0.9)", border: "1px solid rgba(255,120,0,0.35)", borderRadius: 6, padding: "5px 10px", flexShrink: 0 }}>
+            ‹ Historique
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{detail.title}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{relTime(detail.updatedAt)}</div>
+          </div>
+        </div>
+        <div style={{ overflowY: "auto", flex: 1, padding: "14px" }}>
+          {detail.messages.map((m, i) => (
+            <div key={i} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 10, letterSpacing: "0.1em", color: m.role === "user" ? "rgba(167,139,250,0.8)" : "rgba(255,140,0,0.8)", marginBottom: 3 }}>
+                {m.role === "user" ? "TOI" : "VEGA"}
+              </div>
+              <div style={{ fontSize: 13, lineHeight: 1.55, color: "rgba(255,255,255,0.78)" }}>{m.content}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Vue liste : questions + dates uniquement ──────────────────────────────
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <div style={{ padding: "10px 12px" }}>
@@ -31,7 +67,7 @@ export default function HistoryContent({ conversations, activeId, onSelect, onNe
         </button>
       </div>
 
-      <div style={{ overflowY: "auto", flex: "0 0 auto", maxHeight: "40%", padding: "0 10px 8px" }}>
+      <div style={{ overflowY: "auto", flex: 1, padding: "0 10px 8px" }}>
         {conversations.length === 0 && (
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", padding: "8px 6px" }}>Aucune conversation enregistrée.</p>
         )}
@@ -40,8 +76,8 @@ export default function HistoryContent({ conversations, activeId, onSelect, onNe
             key={c.id}
             role="button"
             tabIndex={0}
-            onClick={() => onSelect(c)}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onSelect(c); } }}
+            onClick={() => openDetail(c)}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openDetail(c); } }}
             style={{
               display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
               padding: "8px", borderRadius: 6, marginBottom: 2,
@@ -56,19 +92,6 @@ export default function HistoryContent({ conversations, activeId, onSelect, onNe
           </div>
         ))}
       </div>
-
-      {active && (
-        <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", overflowY: "auto", flex: 1, padding: "12px 14px" }}>
-          {active.messages.map((m, i) => (
-            <div key={i} style={{ marginBottom: 12 }}>
-              <div style={{ fontSize: 10, letterSpacing: "0.1em", color: m.role === "user" ? "rgba(167,139,250,0.8)" : "rgba(255,140,0,0.8)", marginBottom: 3 }}>
-                {m.role === "user" ? "TOI" : "VEGA"}
-              </div>
-              <div style={{ fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,0.78)" }}>{m.content}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 }

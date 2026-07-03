@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 
-interface Props { containerRef: React.RefObject<HTMLDivElement>; }
+interface Props { containerRef: React.RefObject<HTMLDivElement | null>; }
 
 // Cycloïde PROLATE descendante (spirographe) : le point tourne en cercle pendant
 // que le centre descend lentement. Comme le rayon vertical Ry > l'avance A, la

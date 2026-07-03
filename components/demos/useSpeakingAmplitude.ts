@@ -14,7 +14,7 @@ export function useSpeakingAmplitude(state: OrbState) {
   const ctxRef      = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const srcRef      = useRef<MediaElementAudioSourceNode | null>(null);
-  const dataRef     = useRef<Uint8Array | null>(null);
+  const dataRef     = useRef<Uint8Array<ArrayBuffer> | null>(null);
   const boundElRef  = useRef<HTMLAudioElement | null>(null);
   const rafRef      = useRef(0);
 
@@ -37,7 +37,8 @@ export function useSpeakingAmplitude(state: OrbState) {
           analyserRef.current.fftSize = 256;
           srcRef.current.connect(analyserRef.current);
           analyserRef.current.connect(ctx.destination); // garder le son audible
-          dataRef.current = new Uint8Array(analyserRef.current.frequencyBinCount);
+          // ArrayBuffer explicite : getByteFrequencyData exige Uint8Array<ArrayBuffer>
+          dataRef.current = new Uint8Array(new ArrayBuffer(analyserRef.current.frequencyBinCount));
           boundElRef.current = el;
         }
       } catch { /* élément déjà lié / indisponible → repli sinus */ }

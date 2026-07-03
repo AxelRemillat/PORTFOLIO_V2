@@ -61,26 +61,26 @@ export const EDGES: GEdge[] = [
   {from:"supabase",to:"vercel"},  {from:"gcloud", to:"bigquery"},
 ];
 
-// Descriptions orientées USAGE RÉEL d'Axel. Les [à confirmer] sont des placeholders
-// volontaires à compléter — ne pas inventer.
+// Descriptions orientées USAGE RÉEL d'Axel (cursus ESME + projets du portfolio).
+// TODO Axel : enrichir (stages INOVALP/ROSI, usages pro)
 export const SKILL_DETAILS: Record<string, { level: string; desc: string }> = {
-  python:   { level: "Avancé",        desc: "Scripts d'ingestion de données et d'embeddings pour mes systèmes RAG. [usage SEACO/data à confirmer]" },
-  sql:      { level: "Avancé",        desc: "Requêtes et structuration des données de mes projets. [à confirmer]" },
+  python:   { level: "Avancé",        desc: "Langage principal : scripts d'ingestion et d'embeddings des systèmes RAG du portfolio, data mining et machine learning dans le cadre de la majeure Big Data ESME." },
+  sql:      { level: "Avancé",        desc: "Requêtage et modélisation de données — bases PostgreSQL des projets (Supabase) et entrepôts analytiques (BigQuery)." },
   openai:   { level: "Avancé",        desc: "Génération des réponses de VEGA (gpt-4o-mini) et embeddings (text-3-large) pour le RAG." },
   pgvector: { level: "Intermédiaire", desc: "Recherche par similarité des embeddings — moteur de VEGA et du CV interactif RAG." },
-  fastapi:  { level: "Avancé",        desc: "Backend des APIs de mes démos IA. [projet précis à confirmer]" },
+  fastapi:  { level: "Avancé",        desc: "Backend Python des APIs de démos IA du portfolio." },
   supabase: { level: "Avancé",        desc: "Stockage vectoriel (pgvector) des documents du portfolio pour le RAG de VEGA." },
-  n8n:      { level: "Avancé",        desc: "Automatisation de mes workflows. [exemples concrets à confirmer]" },
-  make:     { level: "Intermédiaire", desc: "Automatisations no-code complémentaires. [à confirmer]" },
+  n8n:      { level: "Avancé",        desc: "Orchestration d'agents IA et d'automatisations : chatbot SEACO (webhook, mémoire conversationnelle, actions), pipelines d'ingestion RAG, démos métiers testables à venir sur le portfolio." },
+  make:     { level: "Intermédiaire", desc: "Automatisations no-code complémentaires à N8N pour connecter des services entre eux." },
   webhooks: { level: "Avancé",        desc: "Déclencheurs temps réel entre services dans mes automatisations." },
-  gcloud:   { level: "Intermédiaire", desc: "[usage projet SEACO/data à confirmer]" },
+  gcloud:   { level: "Intermédiaire", desc: "Écosystème cloud de la spécialisation Big Data ESME (architecture et services cloud) : BigQuery, Cloud Run, Vertex AI." },
   react:    { level: "Avancé",        desc: "Interfaces du portfolio : orbe VEGA, graphe de compétences, pages projets." },
   nextjs:   { level: "Avancé",        desc: "Framework du site (App Router) : pages, routes API, rendu." },
   ts:       { level: "Avancé",        desc: "Typage de l'ensemble du front Next.js du portfolio." },
   tailwind: { level: "Avancé",        desc: "Styling de l'ensemble du site." },
   vercel:   { level: "Avancé",        desc: "Déploiement et hébergement du portfolio." },
-  docker:   { level: "Intermédiaire", desc: "[conteneurisation — usage à confirmer]" },
-  bigquery: { level: "Intermédiaire", desc: "[entrepôt data — usage à confirmer]" },
-  vertexai: { level: "Intermédiaire", desc: "[usage à confirmer]" },
-  cloudrun: { level: "Intermédiaire", desc: "[déploiement conteneurisé — à confirmer]" },
+  docker:   { level: "Intermédiaire", desc: "Conteneurisation de services pour des déploiements reproductibles." },
+  bigquery: { level: "Intermédiaire", desc: "Entrepôt de données Google Cloud — requêtage analytique à grande échelle, étudié et pratiqué dans le cursus Big Data." },
+  vertexai: { level: "Intermédiaire", desc: "Plateforme ML de Google Cloud — entraînement et déploiement de modèles, pratiquée dans le cursus ESME." },
+  cloudrun: { level: "Intermédiaire", desc: "Déploiement serverless de conteneurs sur Google Cloud." },
 };

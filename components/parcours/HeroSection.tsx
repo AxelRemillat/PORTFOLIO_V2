@@ -1,8 +1,19 @@
 "use client";
 
+import Link from "next/link";
+import RotatingWord from "./RotatingWord";
+
 // Hero plein écran. Animations au chargement (CSS keyframes, fill-mode both) :
-// label fade-in, nom en clip-reveal ligne par ligne, sous-titre fade-in.
+// labels fade-in, nom en clip-reveal ligne par ligne, sous-titres + CTA fade-in.
 export default function HeroSection() {
+  const hudLabel: React.CSSProperties = {
+    position: "absolute",
+    top: "9vh",
+    fontFamily: "var(--font-mono)",
+    fontSize: "0.75rem",
+    letterSpacing: "0.15em",
+  };
+
   return (
     <section
       style={{
@@ -17,20 +28,12 @@ export default function HeroSection() {
           "radial-gradient(circle at 50% 50%, rgba(249,115,22,0.04) 0%, transparent 70%)",
       }}
     >
-      <p
-        className="parcours-fade"
-        style={{
-          position: "absolute",
-          top: "9vh",
-          left: "6vw",
-          fontFamily: "var(--font-mono)",
-          fontSize: "0.75rem",
-          letterSpacing: "0.15em",
-          color: "var(--color-muted)",
-          animationDelay: "0.2s",
-        }}
-      >
+      <p className="parcours-fade" style={{ ...hudLabel, left: "6vw", color: "var(--color-muted)", animationDelay: "0.2s" }}>
         AXEL REMILLAT — PORTFOLIO 2026
+      </p>
+      {/* Label HUD symétrique, même famille visuelle que /demos */}
+      <p className="parcours-fade" style={{ ...hudLabel, right: "6vw", color: "rgba(255,100,0,0.5)", animationDelay: "0.2s" }}>
+        PARCOURS&nbsp;//&nbsp;v2026.07
       </p>
 
       <h1
@@ -58,13 +61,27 @@ export default function HeroSection() {
         className="parcours-fade"
         style={{
           marginTop: "1.5rem",
-          fontSize: "clamp(1rem, 2.5vw, 1.5rem)",
-          color: "var(--color-muted)",
+          fontSize: "clamp(1.05rem, 2.5vw, 1.5rem)",
+          color: "var(--color-text)",
           animationDelay: "0.8s",
         }}
       >
-        Ingénieur IA &amp; Data · ESME Paris
+        Je construis des <RotatingWord />
       </p>
+      <p
+        className="parcours-fade"
+        style={{ marginTop: "0.6rem", fontSize: "clamp(0.85rem, 1.8vw, 1rem)", color: "var(--color-muted)", animationDelay: "0.9s" }}
+      >
+        Ingénieur IA &amp; Data · ESME Paris · Alternant @ Andra Learning (Station F)
+      </p>
+
+      <div
+        className="parcours-fade"
+        style={{ marginTop: "2.25rem", display: "flex", gap: "1rem", flexWrap: "wrap", animationDelay: "1.05s" }}
+      >
+        <Link href="/projets" className="parcours-cta">Voir les projets →</Link>
+        <Link href="/demos" className="parcours-cta-outline">Poser une question à VEGA</Link>
+      </div>
 
       {/* Indicateur de scroll — pointer-events none pour ne jamais bloquer la nav */}
       <div

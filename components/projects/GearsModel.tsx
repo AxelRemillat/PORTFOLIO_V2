@@ -59,7 +59,8 @@ export default function GearsModel() {
         <ambientLight intensity={3.0} />
         <directionalLight position={[3, 4, 3]}  intensity={2.5} />
         <directionalLight position={[-3, 1, -2]} intensity={1.0} />
-        <pointLight position={[0, 3, 3]} intensity={1.5} color="#10b981" />
+        {/* Accent assorti à la card hôte (RAG, orange) depuis le swap drone ↔ robot */}
+        <pointLight position={[0, 3, 3]} intensity={1.5} color="#ff6b35" />
         <Suspense fallback={null}>
           <DroneScene />
         </Suspense>

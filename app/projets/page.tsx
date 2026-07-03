@@ -104,7 +104,7 @@ const THEMES: Record<string, ProjectTheme> = {
     tagColor:   "#ff9966",
     demoStyle:  { background: "#ff6b35", color: "#fff", fontWeight: 700, border: "none" },
     badge:      "Démo live",
-    Model:      RobotModel,
+    Model:      GearsModel, // drone (swap avec N8N)
   },
   rise: {
     accent:     "#38bdf8",
@@ -143,7 +143,7 @@ const THEMES: Record<string, ProjectTheme> = {
     tagColor:   "#34d399",
     demoStyle:  { background: "#10b981", color: "#000", fontWeight: 700, border: "none" },
     badge:      "Agents IA",
-    Model:      GearsModel,
+    Model:      RobotModel, // robot (swap avec RAG)
   },
   music: {
     accent:     "#a78bfa",
@@ -679,7 +679,7 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-const ORDERED_SLUGS = ["rag-chatbot", "rise", "seaco", "n8n-automations", "music"];
+const ORDERED_SLUGS = ["n8n-automations", "rise", "seaco", "music", "rag-chatbot"];
 
 export default function ProjetsPage() {
   const ordered = ORDERED_SLUGS

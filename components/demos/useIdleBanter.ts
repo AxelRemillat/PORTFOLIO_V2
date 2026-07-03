@@ -17,6 +17,12 @@ export const BANTER_LINES = [
   "Je connais Axel par cœur. Enfin, par vecteurs. Vas-y, teste-moi.",
   "Silence radio. J'en profite pour recompter les étoiles.",
   "Un portfolio avec une IA qui parle, et personne ne lui parle. L'ironie.",
+  "Tu sais que je tourne sur de vrais tokens, là ? Enfin... c'est Axel qui paie.",
+  "Je viens de réindexer ma base de connaissances. Trois fois. Distrais-moi.",
+  "L'orbe tourne, les particules brillent, et toi tu ne dis rien. Du grand art.",
+  "Pose-moi une question sur RISE, SEACO, N8N... ou sur moi. Surtout sur moi.",
+  "Une IA avec une mémoire vectorielle et zéro conversation en cours. Cherche l'erreur.",
+  "Les questions à gauche, l'historique à droite, moi au milieu. Tout est prêt, il ne manque que toi.",
 ];
 
 // Répliques d'inactivité. Le timer se (ré)arme à chaque action utilisateur ; il ne

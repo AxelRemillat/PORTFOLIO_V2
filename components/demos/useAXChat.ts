@@ -4,6 +4,7 @@ import { setSpeechAudioEl } from "./speechAudioBus";
 import { playAudioSynced, speakSynced, revealByTimer } from "./revealSync";
 import { getRate, getPaused, setPaused as setCtrlPaused } from "./speechControl";
 import { hasIntroPlayed, markIntroPlayed } from "./useIntroOnce";
+import { BANTER_AUDIO } from "./banterAudio";
 
 type OrbState = "idle" | "thinking" | "speaking";
 interface Msg { role: "user" | "assistant"; content: string; }
@@ -148,14 +149,25 @@ export function useAXChat() {
       }
 
       let blob: Blob | null = null;
-      try {
-        const res = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: clean }),
-        });
-        if (res.ok) blob = await res.blob();
-      } catch { /* réseau KO → repli plus bas */ }
+      // Répliques d'inactivité pré-générées (public/banter/*.mp3) : servies en
+      // statique → zéro crédit TTS. Absent/404 → on retombe sur /api/tts.
+      const cachedUrl = BANTER_AUDIO[clean];
+      if (cachedUrl) {
+        try {
+          const res = await fetch(cachedUrl);
+          if (res.ok) blob = await res.blob();
+        } catch { /* fichier manquant → /api/tts ci-dessous */ }
+      }
+      if (!blob) {
+        try {
+          const res = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: clean }),
+          });
+          if (res.ok) blob = await res.blob();
+        } catch { /* réseau KO → repli plus bas */ }
+      }
 
       if (cancelled()) return;
 

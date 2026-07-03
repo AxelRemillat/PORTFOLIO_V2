@@ -17,44 +17,80 @@ export const QUESTION_CATEGORIES: QuestionCategory[] = [
       "Tes compétences en data/IA ?",
       "Où en est ton alternance ?",
       "Tes objectifs pro ?",
+      "Pourquoi l'IA et la data ?",
+      "C'est quoi ta stack technique ?",
+      "Qu'est-ce qui différencie Axel d'un autre ingé IA ?",
+      "Ses expériences passées ?",
+      "Comment le contacter ?",
+      "Ses passions en dehors du code ?",
     ],
   },
   {
     id: "projets",
     label: "Les projets",
     questions: [
-      "Parle-moi de RISE",
+      "Présente-moi les projets du portfolio",
+      "C'est quoi RISE ?",
       "C'est quoi SEACO ?",
-      "Tes automatisations N8N",
-      "Explique ton CV interactif RAG",
+      "C'est quoi les automatisations N8N ?",
+      "Comment fonctionne le CV interactif RAG ?",
+      "Quel projet est le plus abouti ?",
+      "Quelles technos derrière chaque projet ?",
+      "Le plus gros défi technique rencontré ?",
+      "Je peux tester les projets moi-même ?",
+      "C'est quoi le prochain projet ?",
     ],
   },
   {
     id: "vega",
     label: "VEGA (toi)",
     questions: [
-      "Qui es-tu ?",
-      "Comment as-tu été construite ?",
-      "Tu tournes sur quel modèle ?",
+      "Qui es-tu, VEGA ?",
+      "Comment tu fonctionnes techniquement ?",
+      "C'est quoi le RAG qui t'alimente ?",
+      "Quel modèle d'IA tourne derrière toi ?",
+      "Comment ta voix est générée ?",
+      "Comment ton orbe 3D est animée ?",
+      "Tu as une mémoire ?",
+      "Combien tu coûtes à faire tourner ?",
+      "Pourquoi tu t'appelles VEGA ?",
+      "Quelles sont tes limites ?",
     ],
   },
   {
     id: "site",
     label: "Le site",
-    questions: ["Comment naviguer ici ?", "Pourquoi ce design spatial ?"],
+    questions: [
+      "Comment ce site a été construit ?",
+      "Quelle est la stack du site ?",
+      "Pourquoi le thème espace / Petit Prince ?",
+      "C'est quoi le mini-jeu 3D ?",
+      "Comment les modèles 3D sont intégrés ?",
+      "Quel rôle l'IA a joué dans le dev ?",
+      "Combien coûte l'infra ?",
+      "Le site est-il open source ?",
+      "Les prochaines évolutions ?",
+      "Quelle page je devrais visiter en premier ?",
+    ],
   },
   {
     id: "fun",
     label: "Pour le fun",
-    questions: ["Teste tes limites", "T'as de l'humour ?", "Ton truc préféré chez Axel ?"],
+    questions: [
+      "Raconte-moi une blague d'IA",
+      "Que penses-tu des humains ?",
+      "Explique le RAG comme si j'avais 5 ans",
+      "Fais le pitch d'Axel en 10 secondes",
+      "Écris un haïku sur la data",
+      "Que penses-tu de ChatGPT ?",
+      "C'est quoi le Petit Prince pour toi ?",
+      "Si tu étais humaine, tu ferais quoi ?",
+      "Vends-moi ce portfolio comme un commercial",
+      "Un fait surprenant sur l'IA ?",
+    ],
   },
 ];
 
-// Ticker du bas = simple amorce : 3 questions max, piochées dans le catalogue
-// ci-dessus (pas de doublon de contenu en dur).
-const byId = (id: string) => QUESTION_CATEGORIES.find((c) => c.id === id)!;
-export const TICKER_QUESTIONS: string[] = [
-  byId("vega").questions[0], // "Qui es-tu ?"
-  byId("projets").questions[0], // "Parle-moi de RISE"
-  byId("fun").questions[0], // "Teste tes limites"
-];
+// Ticker du bas : TOUTES les questions du catalogue (5 × 10 = 50). Le ticker
+// les affiche en ordre aléatoire (mélange côté client dans FloatingInput).
+export const ALL_QUESTIONS: string[] = QUESTION_CATEGORIES.flatMap((c) => c.questions);
