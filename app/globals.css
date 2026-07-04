@@ -69,13 +69,6 @@ body {
 @keyframes heroWordIn { from { opacity: 0; transform: translateY(0.7em); } to { opacity: 1; transform: translateY(0); } }
 .hero-word { animation: heroWordIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) both; }
 
-/* Hors écran — grille 1 col mobile / 2 cols tablette / 3 cols desktop */
-.he-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; }
-@media (min-width: 640px)  { .he-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1024px) { .he-grid { grid-template-columns: repeat(3, 1fr); } }
-.he-card { height: 100%; transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1); }
-.he-card:hover { transform: translateY(-4px); }
-
 /* Pont VEGA — indicateur "online" pulsant */
 @keyframes vegaOnlinePulse {
   0%, 100% { opacity: 1; box-shadow: 0 0 6px rgba(249, 115, 22, 0.6); }
@@ -86,6 +79,10 @@ body {
   background: var(--color-orange); margin-right: 8px; vertical-align: 1px;
   animation: vegaOnlinePulse 1.8s ease-in-out infinite;
 }
+
+/* Pont VEGA en fin de timeline — hover subtil (une ligne, pas une card) */
+.vega-inline-link { transition: color 0.25s ease; }
+.vega-inline-link:hover { color: var(--color-orange); }
 
 /* Constellation — drift organique idle + flux sur les arêtes du nœud focalisé */
 @keyframes skillDrift {
@@ -104,7 +101,79 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .parcours-fade, .parcours-line, .parcours-marquee { animation: none !important; opacity: 1 !important; transform: none !important; }
   .hero-word, .skill-drift, .skill-edge-flow, .vega-online-dot { animation: none !important; }
-  .he-card:hover, .parcours-cta:hover, .parcours-cta-outline:hover { transform: none; }
+  .parcours-cta:hover, .parcours-cta-outline:hover { transform: none; }
+}
+
+/* ── Home — pill VEGA du hero + bande projets ───────────────────────────── */
+@keyframes vegaDot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 6px #67e8f9, 0 0 12px #67e8f9; }
+  50%      { opacity: 0.4; box-shadow: 0 0 2px #67e8f9; }
+}
+@keyframes vegaGlitch {
+  0%, 90%, 100% { clip-path: none; transform: none; }
+  92%  { clip-path: inset(20% 0 60% 0); transform: translateX(-3px); }
+  94%  { clip-path: inset(60% 0 10% 0); transform: translateX(3px); }
+  96%  { clip-path: none; transform: none; }
+}
+.vega-cta-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #67e8f9; animation: vegaDot 2s ease-in-out infinite; flex-shrink: 0;
+}
+.vega-cta {
+  border: 1px solid rgba(103, 232, 249, 0.35); border-radius: 40px;
+  padding: 11px 22px; background: rgba(103, 232, 249, 0.05);
+  box-shadow: 0 0 18px rgba(103, 232, 249, 0.12);
+  transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.vega-cta:hover {
+  background: rgba(103, 232, 249, 0.12); border-color: #67e8f9;
+  box-shadow: 0 0 30px rgba(103, 232, 249, 0.35); transform: translateY(-2px);
+}
+.vega-cta-text { color: rgba(255, 255, 255, 0.78); font-weight: 600; transition: color 0.3s ease; }
+.vega-cta-keyword {
+  color: #67e8f9; font-weight: 700;
+  text-shadow: 0 0 10px rgba(103, 232, 249, 0.6);
+  animation: vegaGlitch 5s ease-in-out infinite;
+}
+.vega-cta-arrow { color: #67e8f9; opacity: 0; transform: translateX(-6px); transition: opacity 0.3s ease, transform 0.3s ease; }
+.vega-cta:hover .vega-cta-text { color: #ffffff; }
+.vega-cta:hover .vega-cta-arrow { opacity: 1; transform: translateX(0); }
+
+/* Bande projets : scroll horizontal + snap, cards légères sans canvas 3D */
+.home-strip {
+  display: flex; gap: 1.25rem;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 0.5rem 6vw 1.75rem;
+  scroll-padding: 0 6vw; /* le snap respecte le retrait latéral */
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.home-strip::-webkit-scrollbar { display: none; }
+.home-strip-card {
+  scroll-snap-align: start; flex: 0 0 min(340px, 78vw);
+  border-radius: 16px; padding: 1.5rem; min-height: 230px;
+  display: flex; flex-direction: column; text-decoration: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+.home-strip-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--hp-accent) !important;
+  box-shadow: 0 10px 30px -12px var(--hp-glow);
+}
+.hsc-arrow { transition: transform 0.2s ease; }
+.home-strip-card:hover .hsc-arrow { transform: translateX(4px); }
+.home-strip-track {
+  width: min(300px, 60vw); height: 2px; margin: 0 auto;
+  background: #1e1e32; border-radius: 2px; overflow: hidden;
+}
+.home-strip-fill { width: 8%; height: 100%; background: var(--color-orange); border-radius: 2px; transition: width 0.15s linear; }
+
+/* Questions du teaser VEGA */
+.vega-teaser-q { transition: background 0.2s ease, color 0.2s ease; }
+.vega-teaser-q:hover { background: rgba(249, 115, 22, 0.07); color: #e2e8f0; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vega-cta-dot, .vega-cta-keyword { animation: none !important; }
+  .vega-cta:hover, .home-strip-card:hover { transform: none; }
 }
 
 /* ── Contact — lignes "fréquences" + bouton ─────────────────────────────── */
@@ -191,6 +260,18 @@ body {
 .hud-glyph:focus-visible { outline: 2px solid rgba(255, 150, 0, 0.8); outline-offset: 2px; }
 .hud-glyph.on { color: #ff8800; }
 .hud-glyph:disabled { opacity: 0.3; cursor: default; }
+
+/* Micro (dictée vocale) — pulse "enregistrement" quand il écoute */
+.hud-mic-on,
+.hud-mic-on:hover:not(:disabled) {
+  color: #ff5252;
+  background: rgba(255, 70, 70, 0.12);
+  animation: hudMicPulse 1.3s ease-in-out infinite;
+}
+@keyframes hudMicPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 80, 80, 0.45); }
+  50%      { box-shadow: 0 0 0 8px rgba(255, 80, 80, 0); }
+}
 
 /* Cluster de contrôles pendant "speaking" (pause / supprimer / vitesse) */
 .vega-ctrl {
