@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import Link from "next/link";
 import { projects } from "@/lib/projects-data";
 import type { Project } from "@/lib/projects-data";
+import useScrollStage from "@/hooks/useScrollStage";
 
 const SpaceBackground  = dynamic(() => import("@/components/ui/SpaceBackground"),  { ssr: false });
 const RobotModel       = dynamic(() => import("@/components/projects/RobotModel"),     { ssr: false });
@@ -523,7 +524,7 @@ function PremiumSticker({ label, accent }: { label: string; accent: string }) {
 
 // ─── ProjectCard3D ────────────────────────────────────────────────────────────
 
-function ProjectCard3D({ project, index }: { project: Project; index: number }) {
+function ProjectCard3D({ project, registerCard }: { project: Project; registerCard: (el: HTMLElement | null) => void }) {
   const theme = THEMES[project.slug];
   if (!theme) return null;
   const { accent, borderIdle, cardBg, glowAnim, descColor, tagBg, tagBorder, tagColor, demoStyle, badge, Model } = theme;
@@ -531,6 +532,7 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
   return (
     <div
       className="project-card"
+      ref={registerCard}
       style={{
         border: `2px solid ${borderIdle}`,
         background: cardBg,
@@ -538,10 +540,13 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
         minHeight: 280,
         position: "relative",
         overflow: "hidden",
-        animation: `fadeInUp 0.55s ease ${index * 120}ms both, ${glowAnim}`,
+        animation: glowAnim, // le reveal est géré au scroll (useScrollStage)
       }}
     >
-      {DECORATORS[project.slug]}
+      {/* Couche décorateurs : parallaxe inverse (géométrie inchangée, inset 0) */}
+      <div className="pjt-parallax-bg" aria-hidden style={{ position: "absolute", inset: 0, zIndex: 0 }}>
+        {DECORATORS[project.slug]}
+      </div>
 
       <Link
         href={project.directUrl ?? `/projets/${project.slug}`}
@@ -635,8 +640,8 @@ function ProjectCard3D({ project, index }: { project: Project; index: number }) 
           </div>
         </div>
 
-        {/* Right — 40% canvas */}
-        <div style={{
+        {/* Right — 40% canvas (couche parallaxe : translateY composité) */}
+        <div className="pjt-parallax-fg" style={{
           flex: 1,
           minHeight: 200,
           position: "relative",
@@ -686,12 +691,33 @@ export default function ProjetsPage() {
     .map((slug) => projects.find((p) => p.slug === slug))
     .filter(Boolean) as Project[];
 
+  // Couche scroll : reveal des cards, parallaxe, pause de l'ambiance hors écran.
+  const registerCard = useScrollStage();
+
   return (
     <>
       <style>{`
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(28px); }
+        /* ── Couche scroll (useScrollStage) : reveal + parallaxe + pause ── */
+        .project-card {
+          opacity: 0;
+          transform: translateY(36px) scale(0.985);
+          transition: opacity 0.65s cubic-bezier(0.16,1,0.3,1), transform 0.65s cubic-bezier(0.16,1,0.3,1);
+        }
+        .project-card.pjt-in { opacity: 1; transform: translateY(0) scale(1); }
+        /* Hors viewport : toute l'ambiance (breathe, matrix, gears, notes...) en pause */
+        .pjt-paused, .pjt-paused * { animation-play-state: paused !important; }
+        .pjt-parallax-fg, .pjt-parallax-bg { will-change: transform; }
+        @keyframes pjtHeadIn {
+          from { opacity: 0; transform: translateY(18px); }
           to   { opacity: 1; transform: translateY(0); }
+        }
+        .pjt-head { animation: pjtHeadIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
+        @media (prefers-reduced-motion: reduce) {
+          .project-card { opacity: 1 !important; transform: none !important; transition: none !important; }
+          .pjt-head { animation: none !important; }
+          .pjt-parallax-fg, .pjt-parallax-bg { transform: none !important; }
+          /* Ambiance figée (frame 0), reveal désactivé */
+          .project-card, .project-card * { animation-play-state: paused !important; }
         }
         @keyframes breatheOrange {
           0%   { box-shadow: 0 0 40px rgba(255,107,53,0.30), 0 0 80px rgba(255,107,53,0.15), inset 0 0 40px rgba(255,107,53,0.08); }
@@ -753,7 +779,6 @@ export default function ProjetsPage() {
         }
         @keyframes gearCw  { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes gearCcw { from { transform: rotate(0deg); } to { transform: rotate(-360deg); } }
-        .project-card  { opacity: 0; }
         /* CTA « En savoir plus » révélé au survol de la carte */
         .card-cta {
           opacity: 0;
@@ -811,24 +836,24 @@ export default function ProjetsPage() {
 
       <div className="max-w-5xl mx-auto px-6 py-16">
         <div style={{ marginBottom: 48 }}>
-          <p style={{
+          <p className="pjt-head" style={{
             fontSize: "0.75rem", fontFamily: "monospace",
             color: "#f97316", letterSpacing: "0.12em",
             textTransform: "uppercase", marginBottom: 12,
           }}>
             Projets
           </p>
-          <h1 style={{ fontSize: "4rem", fontWeight: 900, color: "#fff", lineHeight: 1.05, margin: "0 0 16px" }}>
+          <h1 className="pjt-head" style={{ fontSize: "4rem", fontWeight: 900, color: "#fff", lineHeight: 1.05, margin: "0 0 16px", animationDelay: "0.08s" }}>
             Ce que j&apos;ai construit
           </h1>
-          <p style={{ color: "rgba(255,255,255,0.5)", maxWidth: 560 }}>
+          <p className="pjt-head" style={{ color: "rgba(255,255,255,0.5)", maxWidth: 560, animationDelay: "0.16s" }}>
             Chaque projet résout un vrai problème. Certains ont une démo live — vas voir par toi-même.
           </p>
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-          {ordered.map((project, i) => (
-            <ProjectCard3D key={project.slug} project={project} index={i} />
+          {ordered.map((project) => (
+            <ProjectCard3D key={project.slug} project={project} registerCard={registerCard} />
           ))}
         </div>
       </div>
