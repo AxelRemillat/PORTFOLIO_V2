@@ -1,9 +1,7 @@
 import HeroSection from "@/components/parcours/HeroSection";
-import ManifestoSection from "@/components/parcours/ManifestoSection";
-import StatsSection from "@/components/parcours/StatsSection";
+import IntroSection from "@/components/parcours/IntroSection";
 import SkillsSection from "@/components/parcours/SkillsSection";
 import TimelineSection from "@/components/parcours/TimelineSection";
-import HorsEcranSection from "@/components/parcours/HorsEcranSection";
 import FormationSection from "@/components/parcours/FormationSection";
 
 // Server component : conserve le SEO (metadata). Chaque section est 'use client'
@@ -18,11 +16,9 @@ export default function ParcoursPage() {
   return (
     <main style={{ background: "var(--color-bg)" }}>
       <HeroSection />
-      <ManifestoSection />
-      <StatsSection />
+      <IntroSection />
       <SkillsSection />
       <TimelineSection />
-      <HorsEcranSection />
       <FormationSection />
     </main>
   );

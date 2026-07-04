@@ -1,17 +1,17 @@
 "use client";
 
 import ScrollReveal from "./ScrollReveal";
-import VegaBridge from "./VegaBridge";
+import SectionLabel from "./SectionLabel";
 
-// Pont vers VEGA + bloc CTA final. (La carte formation a été retirée :
-// l'info est déjà dans la timeline au-dessus.)
+// CTA final orienté recruteur : CV en principal (plein), contact en secondaire
+// (outline). Le pont VEGA vit désormais en fin de timeline (TimelineSection).
 export default function FormationSection() {
   return (
-    <section style={{ padding: "4vh 6vw 18vh", maxWidth: "820px", margin: "0 auto" }}>
-      <VegaBridge />
-
+    <section style={{ padding: "10vh 6vw 18vh", maxWidth: "820px", margin: "0 auto" }}>
       <ScrollReveal delay={0.1}>
-        <div style={{ textAlign: "center", marginTop: "10vh" }}>
+        <SectionLabel>04 // FORMATION</SectionLabel>
+
+        <div style={{ textAlign: "center", marginTop: "4vh" }}>
           <p
             style={{
               fontSize: "clamp(1.5rem, 4vw, 2.5rem)",
@@ -20,11 +20,25 @@ export default function FormationSection() {
               marginBottom: "2rem",
             }}
           >
-            Une question ? Un projet ?
+            On travaille ensemble ?
           </p>
-          <a href="/contact" className="parcours-cta">
-            Me contacter →
-          </a>
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "1rem",
+            }}
+          >
+            <a href="/cv-axel-remillat.pdf" download className="parcours-cta">
+              Télécharger mon CV (PDF)
+            </a>
+            <a href="/contact" className="parcours-cta-outline">
+              Me contacter →
+            </a>
+          </div>
         </div>
       </ScrollReveal>
     </section>

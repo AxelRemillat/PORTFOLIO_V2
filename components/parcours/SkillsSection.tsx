@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CAT_COLOR, EDGES, NODES, W, H } from "./skills-graph-data";
+import { EDGES, NODES, W, H } from "./skills-graph-data";
 import NodePanel from "./NodePanel";
 import SkillsMarquee from "./SkillsMarquee";
 import SectionLabel from "./SectionLabel";
 import ConstellationNode from "./ConstellationNode";
+import ConstellationEdges from "./ConstellationEdges";
+import useGraphPhysics from "./useGraphPhysics";
 
 // ── Constantes réglables ──────────────────────────────────────────────────────
 const ZOOM_SCALE = 1.8;                                  // facteur de zoom au focus
@@ -17,6 +19,10 @@ export default function SkillsSection() {
   const [visible, setVisible] = useState(false);
   const [reduce, setReduce] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
+  const zoomRef = useRef<SVGGElement>(null);
+
+  // Drag élastique : simulation dans le hook, rendu impératif via refs.
+  const phys = useGraphPhysics(zoomRef, !reduce);
 
   useEffect(() => {
     setReduce(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -65,12 +71,12 @@ export default function SkillsSection() {
 
       {/* Constellation des compétences */}
       <div style={{ position: "relative", maxWidth: "1600px", margin: "10vh auto 0", padding: "0 4vw" }}>
-        <SectionLabel>03 // COMPÉTENCES</SectionLabel>
+        <SectionLabel>02 // COMPÉTENCES</SectionLabel>
         <h2 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "0.75rem" }}>
           Compétences
         </h2>
         <p style={{ fontSize: "0.9rem", color: "#7a7a92", marginBottom: "2rem", fontFamily: "var(--font-mono)" }}>
-          Cliquez sur un outil pour zoomer et en savoir plus.
+          Cliquez sur un outil pour zoomer — ou attrapez-le et tirez.
         </p>
 
         <svg
@@ -87,28 +93,11 @@ export default function SkillsSection() {
             </filter>
           </defs>
 
-          {/* Groupe zoomable (edges + nodes) — seul élément transformé */}
-          <g transform={focusTransform} style={{ transition: reduce ? "none" : ZOOM_TRANSITION }}>
-            {/* Arêtes — celles du nœud focalisé passent en pointillés animés (flux) */}
-            {EDGES.map((e, i) => {
-              const A = NODES.find(n => n.id === e.from)!;
-              const B = NODES.find(n => n.id === e.to)!;
-              const highlight = !!focus && (e.from === focus || e.to === focus);
-              const active = !focus || highlight;
-              return (
-                <line key={i}
-                  className={highlight && !reduce ? "skill-edge-flow" : undefined}
-                  x1={A.x * W} y1={A.y * H} x2={B.x * W} y2={B.y * H}
-                  stroke={active ? CAT_COLOR[A.cat] : "#ffffff"}
-                  strokeWidth={active ? 1.2 : 0.5}
-                  strokeDasharray={highlight ? "6 6" : undefined}
-                  opacity={visible ? (active ? 0.55 : 0.08) : 0}
-                  style={{ transition: `opacity 0.6s ease ${i * 0.02}s` }}
-                />
-              );
-            })}
+          {/* Groupe zoomable (edges + nodes) — son CTM sert aussi de repère au drag */}
+          <g ref={zoomRef} transform={focusTransform} style={{ transition: reduce ? "none" : ZOOM_TRANSITION }}>
+            <ConstellationEdges focus={focus} visible={visible} reduce={reduce} register={phys.registerEdge} />
 
-            {/* Nœuds — drift organique idle (déphasé par index, figé si reduce/sélection) */}
+            {/* Nœuds — drift idle + drag élastique (hover suspendu pendant un drag) */}
             {NODES.map((n, i) => (
               <ConstellationNode
                 key={n.id}
@@ -119,9 +108,12 @@ export default function SkillsSection() {
                 isSelected={n.id === selected}
                 drift={!reduce && n.id !== selected}
                 visible={visible}
-                onEnter={() => setHovered(n.id)}
-                onLeave={() => setHovered(null)}
-                onToggle={() => setSelected(s => (s === n.id ? null : n.id))}
+                grabbing={phys.isDragging}
+                nodeRef={phys.registerNode(n.id)}
+                pointerHandlers={phys.pointerHandlers(n.id)}
+                onEnter={() => { if (!phys.draggingRef.current) setHovered(n.id); }}
+                onLeave={() => { if (!phys.draggingRef.current) setHovered(null); }}
+                onToggle={() => { if (!phys.wasDrag()) setSelected(s => (s === n.id ? null : n.id)); }}
               />
             ))}
           </g>

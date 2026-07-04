@@ -1,6 +1,7 @@
 "use client";
 
 import { CAT_COLOR, W, H, type GNode } from "./skills-graph-data";
+import type { NodePointerHandlers } from "./useGraphPhysics";
 
 interface Props {
   node: GNode;
@@ -10,27 +11,39 @@ interface Props {
   isSelected: boolean;
   drift: boolean;      // drift organique idle (désactivé si reduce / sélection)
   visible: boolean;
+  grabbing: boolean;   // drag en cours → curseur grabbing
+  nodeRef: (el: SVGGElement | null) => void;      // ref pour useGraphPhysics
+  pointerHandlers: NodePointerHandlers;           // drag élastique
   onEnter: () => void;
   onLeave: () => void;
   onToggle: () => void;
 }
 
 // Un nœud de la constellation : zone de tap élargie, anneau pulsant si
-// sélectionné, halo + pastille + label. Drift déphasé par index.
+// sélectionné, halo + pastille + label. Drift déphasé par index (g interne,
+// se compose avec le translate physique posé sur le g externe).
 export default function ConstellationNode({
-  node, index, active, big, isSelected, drift, visible, onEnter, onLeave, onToggle,
+  node, index, active, big, isSelected, drift, visible, grabbing,
+  nodeRef, pointerHandlers, onEnter, onLeave, onToggle,
 }: Props) {
   const cx = node.x * W, cy = node.y * H;
   const color = CAT_COLOR[node.cat];
 
   return (
     <g
+      ref={nodeRef}
+      {...pointerHandlers}
+      // onEnter d'abord : au doigt (pas de hover), le nœud saisi passe quand
+      // même en "big + glow" dès la prise.
+      onPointerDown={(e) => { onEnter(); pointerHandlers.onPointerDown(e); }}
       onMouseEnter={onEnter}
       onMouseLeave={onLeave}
       // stopPropagation : ne PAS déclencher le dézoom du fond.
       // Clic sur un autre nœud → re-focus direct ; même nœud → toggle.
       onClick={(ev) => { ev.stopPropagation(); onToggle(); }}
-      style={{ cursor: "pointer" }}
+      // touch-action none sur les nœuds UNIQUEMENT : le doigt peut les tirer,
+      // le scroll de page reste possible sur le fond du SVG.
+      style={{ cursor: grabbing ? "grabbing" : "pointer", touchAction: "none" }}
       opacity={visible ? (active ? 1 : 0.22) : 0}
     >
       <g
