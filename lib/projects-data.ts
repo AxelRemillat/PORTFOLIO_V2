@@ -1,92 +1,104 @@
+// Données des 3 preuves affichées sur /preuves.
+// Repurposé depuis l'ancien projects-data : ne reste que ce qui tourne vraiment
+// (VEGA en prod) ou se déploie en ce moment (N8N, infra self-hosted).
+
+export type PreuveModel = "robot" | "drone" | "satellite";
+export type PreuveState = "live" | "wip" | "building";
+
+export interface CtaLink {
+  label: string;
+  href: string;
+}
+
 export interface Project {
   slug: string;
   title: string;
-  tagline: string;
-  problem: string;
-  solution: string;
-  result: string;
+  tagline: string;        // accroche courte affichée sur la card
+  badge: string;          // libellé du badge de statut
+  state: PreuveState;     // pilote la pastille (vert / ambre / bleu)
+  model: PreuveModel;     // canvas 3D réutilisé depuis components/projects
+  accent: string;         // couleur d'accent
+  cardBg: string;         // dégradé de fond de la card
+  glow: string;           // nom d'animation de halo (breathe…)
   stack: string[];
-  demoUrl?: string;
-  directUrl?: string; // override link target (e.g. direct experience pages)
-  githubUrl?: string;
-  featured: boolean;
-  hook?: string;          // phrase d'accroche mise en avant sur la vignette
-  highlights?: string[];  // mots / infos clés affichés sur la vignette
+  demoUrl?: string;       // cible testable directe (VEGA → /demos)
+  primaryCta?: CtaLink;   // CTA principal de la card
+  detailCta: CtaLink;     // CTA vers la fiche détail
+  // Fiche détail (Contexte → Problème → … → Résultats → offre)
+  context: string;
+  problem: string;
+  result: string;
+  offer: CtaLink;         // CTA vers l'offre correspondante
 }
 
 export const projects: Project[] = [
   {
-    slug: "rise",
-    title: "RISE",
-    tagline: "Plateforme de mobilité internationale étudiante",
-    hook: "De l'idée étudiante à la startup EdTech qui rafle les concours.",
-    highlights: ["🏆 3× primé", "💰 4 500 € de dotations", "🎓 Startup B2B", "🚀 Bêta en cours"],
-    problem:
-      "Les étudiants manquent d'informations fiables et personnalisées sur leurs destinations de semestre à l'international. Les données des bureaux des relations internationales (BRI) sont fragmentées et inaccessibles.",
-    solution:
-      "Application web donnant accès à des témoignages d'étudiants, infos détaillées sur les universités partenaires, hôtels et services locaux. Accès restreint aux étudiants des universités partenaires via un abonnement B2B.",
-    result:
-      "3 concours remportés : 1er ESME (500 €), 1er IONIS sur 400+ projets (3 000 €), 2e Galets du Rhône (1 000 €). Statut d'association officielle, brevet d'idée déposé, béta en cours de déploiement. Intégration à l'incubateur ESME.",
-    stack: ["React", "Firebase", "Figma", "TypeScript", "GitHub"],
-    featured: true,
-  },
-  {
-    slug: "seaco",
-    title: "SEACO — Pipeline RAG",
-    tagline: "Moteur de recherche documentaire IA sur corpus métier",
-    problem:
-      "[À compléter — description du problème SEACO]",
-    solution:
-      "Pipeline RAG hybride complet : ingestion de documents, découpe en chunks, génération d'embeddings text-embedding-3-large (1536 dim), stockage pgvector Supabase, retrieval par similarité cosinus, génération de réponses contextuelles avec GPT-4o-mini.",
-    result:
-      "Pipeline fonctionnel en production. Architecture réutilisée comme base technique de la démo RAG de ce portfolio.",
-    stack: ["Python", "Supabase", "pgvector", "OpenAI", "FastAPI"],
-    featured: true,
-  },
-  {
-    slug: "n8n-automations",
-    title: "Automatisations N8N",
-    tagline: "Agents IA et workflows automatisés pour PME",
-    problem:
-      "[À compléter — cas d'usage client]",
-    solution:
-      "Workflows N8N intégrant des agents IA (OpenAI) pour automatiser des processus métier répétitifs : traitement d'emails, extraction de données, notifications conditionnelles.",
-    result:
-      "[À compléter — gains mesurés]",
-    stack: ["N8N", "OpenAI", "Webhooks", "Python", "Make"],
-    featured: false,
-  },
-  {
-    slug: "music",
-    directUrl: "/projets/music",
-    title: "La Planète qui Chante",
-    tagline: "Planète musicale interactive — plante des instruments, génère de la musique",
-    problem: "Explorer la créativité à travers l'interaction spatiale et sonore en temps réel.",
-    solution: "Planète 3D low-poly (React Three Fiber) sur laquelle tu places jusqu'à 8 instruments parmi 6 types (Baobab, Cristal, Renard, Rose, Mouton, Étoile). Chaque instrument joue sa note via Web Audio API et s'intègre à un arpège génératif continu. Double-clic pour retirer.",
-    result: "Expérience interactive et sonore. 6 timbres distincts (sine, triangle, sawtooth…), placement perpendiculaire à la surface via quaternion, glow au survol.",
-    stack: ["Three.js", "React Three Fiber", "Web Audio API", "Next.js", "TypeScript"],
-    featured: false,
-  },
-  {
-    slug: "rag-chatbot",
-    title: "CV Interactif RAG",
-    tagline: "Chatbot qui répond sur mon profil et mes projets en temps réel",
-    problem:
-      "Un CV PDF reste passif — un recruteur ou un prospect ne peut pas explorer activement un profil, poser des questions précises ou vérifier une compétence en quelques secondes.",
-    solution:
-      "Chatbot RAG live intégré au portfolio : question → embedding (text-embedding-3-large) → retrieval dans Supabase pgvector → réponse GPT-4o-mini contextuelle. Rate-limité pour contrôler les coûts.",
-    result:
-      "Démo live sur ce site. Stack RAG complète déployée sur Vercel + Supabase, avec garde-fou tokens/jour et rate-limit par IP.",
-    stack: ["Next.js", "Supabase", "pgvector", "OpenAI", "Vercel"],
+    slug: "vega",
+    title: "VEGA — Assistant RAG",
+    tagline:
+      "Un CV qu'on interroge à la voix. Pipeline RAG complet, en production sur ce site.",
+    badge: "LIVE — testable",
+    state: "live",
+    model: "robot",
+    accent: "#ff6b35",
+    cardBg: "linear-gradient(120deg, #1a0500 0%, #3d0e00 40%, #5a1500 100%)",
+    glow: "breatheOrange 3s ease-in-out infinite",
+    stack: ["Next.js", "Supabase", "OpenAI", "pgvector"],
     demoUrl: "/demos",
-    featured: true,
+    primaryCta: { label: "Tester VEGA →", href: "/demos" },
+    detailCta: { label: "Voir l'architecture", href: "/preuves/vega" },
+    context:
+      "Un CV PDF est passif : un recruteur ou un prospect ne peut ni poser une question précise, ni vérifier une compétence en quelques secondes. Je voulais une preuve vivante de ce que je livre — un système RAG complet en production, pas une démo jetable.",
+    problem:
+      "Rendre un profil interrogeable en langage naturel, et à la voix, avec des réponses sourcées, une latence acceptable et des coûts maîtrisés — le tout hébergé en production, pas en local sur ma machine.",
+    result:
+      "En production sur ce site. Pipeline déployé sur Vercel + Supabase : ingestion de documents → embeddings → recherche vectorielle (pgvector) → génération (gpt-4o-mini) → synthèse vocale. Garde-fou tokens/jour et rate-limit par IP pour contrôler les coûts. Testable maintenant.",
+    offer: { label: "Voir l'offre — Déploiement IA en production →", href: "/offres" },
+  },
+  {
+    slug: "n8n",
+    title: "Automatisations N8N pour PME",
+    tagline:
+      "12 automatisations métier conçues (factures, emails, comptes rendus, SAV…), 5 en cours de déploiement public testable.",
+    badge: "Déploiement en cours",
+    state: "wip",
+    model: "drone",
+    accent: "#10b981",
+    cardBg: "linear-gradient(135deg, #010a04 0%, #021508 50%, #033014 100%)",
+    glow: "breatheGreen 3s ease-in-out infinite",
+    stack: ["n8n", "OpenAI", "Webhooks", "Python"],
+    detailCta: { label: "Bientôt testable — voir le détail →", href: "/preuves/n8n" },
+    context:
+      "Les PME accumulent des tâches répétitives à faible valeur : ressaisie de factures, tri d'emails, comptes rendus, réponses SAV. Prises une par une elles semblent anodines ; cumulées, elles coûtent des heures chaque semaine.",
+    problem:
+      "Concevoir des workflows fiables plutôt que des scripts fragiles : orchestrés, rate-limités face aux APIs, monitorés, avec reprise sur erreur. Et les rendre testables publiquement sans jamais exposer de données clientes.",
+    result:
+      "12 automatisations métier conçues (factures, emails, comptes rendus, SAV…). 5 sont en cours de déploiement en version publique testable ; les autres tournent en environnement client. Statut honnête : les workflows existent, la vitrine testable arrive.",
+    offer: { label: "Voir l'offre — Automatisation métier →", href: "/offres" },
+  },
+  {
+    slug: "infra",
+    title: "Infrastructure IA self-hosted",
+    tagline:
+      "Mon propre serveur GPU de production : Docker, LLM local, API TTS, tunnel sécurisé, monitoring, backups.",
+    badge: "En construction",
+    state: "building",
+    model: "satellite",
+    accent: "#a855f7",
+    cardBg: "radial-gradient(ellipse at 60% 40%, #3d0f72 0%, #1c0540 45%, #080118 100%)",
+    glow: "breathePurple 3.5s ease-in-out infinite",
+    stack: ["Docker", "Ollama", "API TTS", "Tunnel", "Monitoring"],
+    detailCta: { label: "Voir l'architecture →", href: "/preuves/infra" },
+    context:
+      "Tout louer à des API tierces (LLM, TTS, hébergement) plafonne les marges et crée une dépendance. Je veux opérer moi-même l'infrastructure que je vends à mes clients — et pouvoir le prouver.",
+    problem:
+      "Monter un serveur GPU de production maison : conteneurisation, LLM local, API de synthèse vocale, exposition sécurisée vers l'extérieur, supervision et sauvegardes. Reproductible et fiable, pas un montage jetable.",
+    result:
+      "En construction. Cible : serveur GPU (RTX) sous Docker, LLM local via Ollama, API TTS self-hosted, tunnel sécurisé, monitoring et backups planifiés. Objectif assumé : « j'opère ce que je vends ». Statut : socle en cours de montage.",
+    offer: { label: "Voir l'offre — Run & infrastructure →", href: "/offres" },
   },
 ];
 
 export function getProjectBySlug(slug: string): Project | undefined {
   return projects.find((p) => p.slug === slug);
-}
-
-export function getFeaturedProjects(): Project[] {
-  return projects.filter((p) => p.featured);
 }
