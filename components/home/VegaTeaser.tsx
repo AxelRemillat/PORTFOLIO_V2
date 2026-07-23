@@ -22,7 +22,7 @@ export default function VegaTeaser() {
   return (
     <section id="vega" style={{ padding: "10vh 6vw", maxWidth: "820px", margin: "0 auto" }}>
       <ScrollReveal>
-        <SectionLabel>03 // VEGA</SectionLabel>
+        <SectionLabel>04 // VEGA</SectionLabel>
         <div
           style={{
             border: "1px solid rgba(249,115,22,0.25)",

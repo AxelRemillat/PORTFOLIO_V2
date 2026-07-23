@@ -1,90 +1,91 @@
 "use client";
 
-import { useRef } from "react";
 import Link from "next/link";
 import type { CSSProperties } from "react";
-import { projects } from "@/lib/projects-data";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 import SectionLabel from "@/components/parcours/SectionLabel";
-import { HOME_PROJECT_THEMES } from "./home-projects-data";
 
-// Bande projets en scroll horizontal avec snap. Cards légères SANS canvas 3D :
-// gradient + glow de la couleur du projet. Indicateur de progression mis à
-// jour impérativement (pas de re-render au scroll).
+// Teaser des 3 preuves (page /preuves créée séparément). Cards colorées
+// (orange / vert émeraude / violet), reveal au scroll, hover sobre.
+const PROOFS = [
+  {
+    tag: "RAG",
+    accent: "#f97316",
+    bg: "linear-gradient(120deg, #1a0500 0%, #3d0e00 40%, #5a1500 100%)",
+    title: "VEGA — Assistant RAG en production",
+    line: "L'IA de ce site répond sur mon parcours — sourcée, monitorée, en ligne.",
+  },
+  {
+    tag: "Automatisation",
+    accent: "#10b981",
+    bg: "linear-gradient(135deg, #010a04 0%, #021508 50%, #033014 100%)",
+    title: "Automatisations N8N testables",
+    line: "Des workflows réels que vous déclenchez vous-même, en direct.",
+  },
+  {
+    tag: "Infra",
+    accent: "#a855f7",
+    bg: "radial-gradient(ellipse at 60% 40%, #3d0f72 0%, #1c0540 45%, #080118 100%)",
+    title: "Infrastructure IA self-hosted",
+    line: "Modèles hébergés, conteneurisés et supervisés — sans dépendance forcée au cloud.",
+  },
+];
+
 export default function ProjectsStrip() {
-  const fill = useRef<HTMLDivElement>(null);
-
-  const cards = HOME_PROJECT_THEMES.flatMap((t) => {
-    const p = projects.find((pr) => pr.slug === t.slug);
-    return p ? [{ t, p }] : [];
-  });
-
-  const onScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    const max = el.scrollWidth - el.clientWidth;
-    const p = max > 0 ? el.scrollLeft / max : 0;
-    if (fill.current) fill.current.style.width = `${(8 + p * 92).toFixed(1)}%`;
-  };
-
   return (
-    <section id="projets" style={{ padding: "8vh 0" }}>
+    <section id="preuves" style={{ padding: "8vh 6vw", maxWidth: "1100px", margin: "0 auto" }}>
       <ScrollReveal>
-        {/* même retrait latéral que la bande (6vw) pour aligner titre et cards */}
-        <div style={{ padding: "0 6vw" }}>
-          <SectionLabel>02 // PROJETS</SectionLabel>
-          <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)", margin: "0 0 0.5rem" }}>
-            Ce que j&apos;ai construit
-          </h2>
-          <p style={{ fontSize: "0.9rem", color: "#7a7a92", margin: "0 0 2rem", fontFamily: "var(--font-mono)" }}>
-            Faites défiler — chaque card mène au projet.
-          </p>
-        </div>
+        <SectionLabel>03 // PREUVES</SectionLabel>
+        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)", margin: "0 0 0.5rem" }}>
+          Des preuves, pas des promesses
+        </h2>
+        <p style={{ fontSize: "0.9rem", color: "#7a7a92", margin: "0 0 2rem", fontFamily: "var(--font-mono)" }}>
+          Trois systèmes que vous pouvez tester en vrai.
+        </p>
       </ScrollReveal>
 
-      <ScrollReveal delay={0.1}>
-        <div className="home-strip" onScroll={onScroll}>
-          {cards.map(({ t, p }) => (
+      <div
+        style={{
+          display: "grid",
+          gap: "1.25rem",
+          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+        }}
+      >
+        {PROOFS.map((p, i) => (
+          <ScrollReveal key={p.title} delay={i * 0.08}>
             <Link
-              key={t.slug}
-              href={p.directUrl ?? `/projets/${p.slug}`}
-              className="home-strip-card"
+              href="/preuves"
+              className="flex flex-col h-full no-underline transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               style={{
-                background: t.bg,
-                border: `1px solid ${t.accent}44`,
-                "--hp-accent": t.accent,
-                "--hp-glow": `${t.accent}55`,
+                background: p.bg,
+                border: `1px solid ${p.accent}44`,
+                borderRadius: 14,
+                padding: "1.5rem",
               } as CSSProperties}
             >
               <span
                 style={{
                   alignSelf: "flex-start",
                   fontFamily: "var(--font-mono)", fontSize: "0.7rem", fontWeight: 700,
-                  color: t.accent, border: `1px solid ${t.accent}55`,
-                  background: `${t.accent}18`, borderRadius: 999, padding: "0.25rem 0.7rem",
+                  color: p.accent, border: `1px solid ${p.accent}55`,
+                  background: `${p.accent}18`, borderRadius: 999, padding: "0.25rem 0.7rem",
                 }}
               >
-                {t.tag}
+                {p.tag}
               </span>
-              <h3 style={{ margin: "1.1rem 0 0.4rem", fontSize: "1.25rem", fontWeight: 800, color: "#fff" }}>
+              <h3 style={{ margin: "1.1rem 0 0.4rem", fontSize: "1.2rem", fontWeight: 800, color: "#fff" }}>
                 {p.title}
               </h3>
               <p style={{ margin: 0, fontSize: "0.85rem", lineHeight: 1.55, color: "rgba(255,255,255,0.62)" }}>
-                {p.tagline}
+                {p.line}
               </p>
-              <span
-                className="hsc-arrow"
-                style={{ marginTop: "auto", alignSelf: "flex-end", color: t.accent, fontSize: "1.2rem", paddingTop: "1rem" }}
-              >
+              <span style={{ marginTop: "auto", alignSelf: "flex-end", color: p.accent, fontSize: "1.2rem", paddingTop: "1rem" }}>
                 →
               </span>
             </Link>
-          ))}
-        </div>
-        {/* Indicateur de progression discret */}
-        <div className="home-strip-track" aria-hidden>
-          <div ref={fill} className="home-strip-fill" />
-        </div>
-      </ScrollReveal>
+          </ScrollReveal>
+        ))}
+      </div>
     </section>
   );
 }

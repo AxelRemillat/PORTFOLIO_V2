@@ -4,8 +4,7 @@ import Link from "next/link";
 import HeroMedia from "./HeroMedia";
 
 // Hero plein écran : fond vidéo-ready (HeroMedia), label mono, nom massif en
-// clip-reveal, tagline, 2 CTA et la pill VEGA. Le CTA /game (monde 3D) est
-// masqué en mobile.
+// clip-reveal, tagline + sous-ligne, 2 CTA (offres / preuves) et la pill VEGA.
 export default function HomeHero() {
   return (
     <section className="relative min-h-[calc(100vh-64px)] flex flex-col items-center justify-center text-center px-6 overflow-hidden">
@@ -16,7 +15,7 @@ export default function HomeHero() {
           className="parcours-fade text-xs font-mono text-orange tracking-[0.2em] uppercase"
           style={{ animationDelay: "0.15s" }}
         >
-          Ingénieur Data &amp; IA
+          Ingénieur IA — Mise en production
         </p>
 
         <h1 className="text-6xl md:text-8xl font-bold text-white leading-none tracking-tight">
@@ -28,27 +27,34 @@ export default function HomeHero() {
           </span>
         </h1>
 
-        <p className="parcours-fade text-muted text-base md:text-lg max-w-sm" style={{ animationDelay: "0.7s" }}>
-          Pas des screenshots —{" "}
-          <span className="text-text">des projets testables en vrai.</span>
+        <p
+          className="parcours-fade text-white text-xl md:text-2xl font-semibold max-w-xl"
+          style={{ animationDelay: "0.6s" }}
+        >
+          Votre IA en production. Fiable, monitorée, conforme.
+        </p>
+
+        <p
+          className="parcours-fade text-muted text-sm md:text-base max-w-xl leading-relaxed"
+          style={{ animationDelay: "0.72s" }}
+        >
+          J&apos;aide les PME et startups à passer leurs projets IA du POC à la
+          production : agents, RAG, automatisations. Ingénieur IA Agentic &amp;
+          Full Stack en alternance chez Andra Learning (EdTech — Station F).
         </p>
 
         <div className="parcours-fade flex flex-col sm:flex-row gap-4 mt-4" style={{ animationDelay: "0.85s" }}>
           <Link
-            href="/game"
-            className="hidden md:inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-orange text-white font-semibold text-sm hover:bg-orange/90 transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
+            href="/offres"
+            className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-orange text-white font-semibold text-sm hover:bg-orange/90 transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <circle cx="12" cy="12" r="10" />
-              <path d="M12 8v8M8 12h8" />
-            </svg>
-            Explorer en 3D
+            Découvrir les offres
           </Link>
           <Link
-            href="/projets"
+            href="/preuves"
             className="px-8 py-4 rounded-xl border border-border text-muted text-sm font-medium hover:text-white hover:border-white/20 transition-all duration-200"
           >
-            Accéder aux projets →
+            Tester les preuves →
           </Link>
         </div>
 
