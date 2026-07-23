@@ -2,6 +2,7 @@ import Image from "next/image";
 import StarField from "@/components/contact/StarField";
 import FreqRow from "@/components/contact/FreqRow";
 import ContactForm from "@/components/contact/ContactForm";
+import { CALENDAR_URL } from "@/lib/site-config";
 
 // Server component : conserve le SEO (metadata). StarField & ContactForm sont
 // 'use client', FreqRow est statique.
@@ -119,6 +120,20 @@ export default function ContactPage() {
           />
         </div>
 
+        {/* Ligne de disponibilité freelance, juste sous le titre */}
+        <p
+          style={{
+            marginTop: "1.5rem",
+            marginBottom: 0,
+            fontSize: "clamp(1rem, 1.5vw, 1.15rem)",
+            lineHeight: 1.6,
+            color: "#b0bdcc",
+          }}
+        >
+          Disponible 1 à 2 jours par semaine — appel découverte de 30 min{" "}
+          <span style={{ color: "var(--color-orange)" }}>gratuit</span>.
+        </p>
+
         <p
           style={{
             marginTop: "2rem",
@@ -139,6 +154,7 @@ export default function ContactPage() {
         <FreqRow num="02" type="LinkedIn" value="Voir mon profil" href="https://linkedin.com/in/axel-remillatesmelyon" />
         <FreqRow num="03" type="Téléphone" value="+33 7 49 72 71 92" href="tel:+33749727192" />
         <FreqRow num="04" type="CV" value="Télécharger mon CV" href="/cv-axel-remillat.pdf" download badge="PDF 2026" />
+        <FreqRow num="05" type="Rendez-vous" value="Réserver un créneau" href={CALENDAR_URL} />
       </section>
 
       {/* FORMULAIRE — fond distinct (surface) + liseré orange pour séparer

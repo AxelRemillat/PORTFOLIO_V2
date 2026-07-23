@@ -1,6 +1,6 @@
 # Portfolio — Axel Remillat
 
-Portfolio personnel d'**Axel Remillat**, Ingénieur Data & IA.  
+Site freelance d'**Axel Remillat**, Ingénieur IA — mise en production de systèmes IA pour PME/startups.  
 Construit avec Next.js 16 App Router, React Three Fiber, Tailwind CSS v4, Supabase et OpenAI.
 
 ---
@@ -9,12 +9,15 @@ Construit avec Next.js 16 App Router, React Three Fiber, Tailwind CSS v4, Supaba
 
 | Route | Description |
 |-------|-------------|
-| `/` | Accueil — fond spatial animé (étoiles + astéroïdes), présentation |
-| `/projets` | 4 projets avec modèles 3D interactifs et effets visuels par carte |
+| `/` | Accueil — vidéo hero, positionnement, teaser offres/preuves |
+| `/offres` | Les 3 offres packagées (Pré-Vol, Mise en Orbite, Contrôle de Mission) |
+| `/preuves` | 3 case studies testables (VEGA RAG, N8N, infra self-hosted) |
 | `/parcours` | Parcours académique et professionnel |
-| `/contact` | Formulaire de contact |
-| `/demos/rag` | Démo live du chatbot RAG (nécessite les clés API) |
-| `/game` | Mini-jeu Three.js — exploration d'une planète sphérique en 3D |
+| `/contact` | Formulaire de contact + prise de RDV |
+| `/demos` | VEGA — assistant IA vocal du site (RAG, nécessite les clés API) |
+| `/ops` | Salle des machines — monitoring public (métriques en cours de câblage) |
+
+> Le mini-jeu 3D `/game` et les pages projets historiques ont été retirés lors du pivot freelance (juillet 2026) — récupérables via le tag git `sauvegarde-game-rise`.
 
 ---
 
@@ -80,50 +83,31 @@ Le script lit tous les `.md` de `content/`, les découpe en chunks, génère les
 
 ```
 app/
-  page.tsx              Accueil
-  projets/page.tsx      Page projets (4 cartes 3D)
+  page.tsx              Accueil (vidéo hero + sections commerciales)
+  offres/page.tsx       Offres packagées
+  preuves/              Case studies (liste + fiches [slug])
   parcours/page.tsx     Parcours
-  contact/page.tsx      Contact
-  demos/rag/page.tsx    Démo RAG
-  game/page.tsx         Mini-jeu planète 3D
-  api/demo/rag/         Endpoint RAG (rate-limit par IP)
+  contact/page.tsx      Contact + RDV
+  demos/page.tsx        VEGA (orbe IA, chat vocal RAG)
+  ops/page.tsx          Salle des machines (monitoring public)
+  api/                  chat (RAG), tts, contact
 
 components/
-  game/
-    GameCanvas.tsx      Scène Three.js (planète, robot, portails)
-    Robot.tsx           Personnage joueur avec marche animée
-    Portal.tsx          Portails interactifs vers les projets
-  projects/
-    RobotModel.tsx      Modèle 3D GLB — robot (RAG)
-    PlaneModel.tsx      Modèle 3D GLB — avion (RISE)
-    SatelliteModel.tsx  Modèle 3D GLB — satellite (SEACO)
-    GearsModel.tsx      Modèle 3D GLB — drone (N8N)
-  ui/
-    SpaceBackground.tsx Fond étoilé animé (homepage + /projets)
-    Navbar.tsx          Navigation
+  home/ offres/ projects/ parcours/ contact/ demos/ ui/
 
 public/
-  *.glb                 Modèles 3D (robot, avion, satellite, drone)
+  *.glb                 Modèles 3D (robot, satellite, drone)
+  hero/                 Vidéo hero + poster
 
 lib/
+  ax-rag.ts             Pipeline RAG de VEGA
   demo-guard.ts         Rate-limit + plafond tokens/jour
-  projects-data.ts      Données statiques des projets
+  projects-data.ts      Données des preuves
+  site-config.ts        Config (CALENDAR_URL...)
 
-content/                Markdown source pour le RAG
-scripts/ingest.ts       Script d'ingestion Supabase
+content/ax-knowledge/   Markdown source du RAG VEGA
+scripts/ingest-ax.ts    Script d'ingestion Supabase
 ```
-
----
-
-## Mini-jeu `/game`
-
-Exploration en third-person d'une planète sphérique aplatie (ellipsoïde 7×5.95×7).
-
-- **Déplacement** : ZQSD ou flèches directionnelles
-- **Saut** : Barre espace
-- **Clic** : Clic gauche sur la surface pour se déplacer vers ce point
-- **Portails** : 4 portails sur la surface mènent vers les pages projets
-- **Physique** : position toujours re-projetée sur l'ellipsoïde, orientation via quaternion aligné sur la normale de surface
 
 ---
 

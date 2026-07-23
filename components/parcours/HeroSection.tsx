@@ -79,7 +79,7 @@ export default function HeroSection() {
         className="parcours-fade"
         style={{ marginTop: "2.25rem", display: "flex", gap: "1rem", flexWrap: "wrap", animationDelay: "1.05s" }}
       >
-        <Link href="/projets" className="parcours-cta">Voir les projets →</Link>
+        <Link href="/preuves" className="parcours-cta">Voir les preuves →</Link>
         <Link href="/demos" className="parcours-cta-outline">Poser une question à VEGA</Link>
       </div>
 

@@ -5,10 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const LINKS = [
-  { href: "/", label: "Projets", key: "projets", match: (p: string) => p === "/" },
+  { href: "/offres", label: "Offres", key: "offres", match: (p: string) => p.startsWith("/offres") },
+  { href: "/preuves", label: "Preuves", key: "preuves", match: (p: string) => p.startsWith("/preuves") },
   { href: "/parcours", label: "Parcours", key: "parcours", match: (p: string) => p.startsWith("/parcours") },
   { href: "/contact", label: "Contact", key: "contact", match: (p: string) => p.startsWith("/contact") },
 ];
+
+// Index après lequel la pill VEGA est insérée (entre Preuves et Parcours)
+const VEGA_AFTER = 1;
 
 export default function Navbar() {
   const pathname = usePathname() || "/";
@@ -56,7 +60,7 @@ export default function Navbar() {
 
         .nv-center {
           display: flex; align-items: center; justify-content: center;
-          gap: 48px; flex: 1;
+          gap: 36px; flex: 1;
         }
         .nv-link {
           position: relative;
@@ -72,8 +76,10 @@ export default function Navbar() {
         .nv-link:hover { color: rgba(255,255,255,0.9); }
 
         /* Couleur signature par page */
-        .nv-link-projets.nv-active  { color: #f97316; }
-        .nv-link-projets:hover      { color: #f97316; }
+        .nv-link-offres.nv-active   { color: #f97316; }
+        .nv-link-offres:hover       { color: #f97316; }
+        .nv-link-preuves.nv-active  { color: #10b981; }
+        .nv-link-preuves:hover      { color: #10b981; }
         .nv-link-parcours.nv-active { color: #a78bfa; }
         .nv-link-parcours:hover     { color: #a78bfa; }
         .nv-link-contact.nv-active  { color: #67e8f9; }
@@ -86,7 +92,8 @@ export default function Navbar() {
           animation: nvUnderline 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
         }
         /* Couleur de l'underline selon la page active */
-        .nv-link-projets .nv-underline  { background: #f97316; }
+        .nv-link-offres .nv-underline   { background: #f97316; }
+        .nv-link-preuves .nv-underline  { background: #10b981; }
         .nv-link-parcours .nv-underline { background: #a78bfa; }
         .nv-link-contact .nv-underline  { background: #67e8f9; }
         @keyframes nvUnderline { from { transform: scaleX(0); } to { transform: scaleX(1); } }
@@ -162,8 +169,8 @@ export default function Navbar() {
                     {l.label}
                     {active && <span className="nv-underline" />}
                   </Link>
-                  {/* Pill VEGA insérée entre Projets et Parcours */}
-                  {idx === 0 && (
+                  {/* Pill VEGA insérée entre Preuves et Parcours */}
+                  {idx === VEGA_AFTER && (
                     <Link href="/demos" className={`nv-vega${vegaActive ? " nv-vega-active" : ""}`}>
                       VEGA 1.0 <span className="nv-dot" />
                     </Link>
@@ -203,7 +210,7 @@ export default function Navbar() {
                 >
                   {l.label}
                 </Link>
-                {idx === 0 && (
+                {idx === VEGA_AFTER && (
                   <Link href="/demos" className={vegaActive ? "nv-active" : ""} onClick={() => setOpen(false)}>
                     VEGA 1.0
                   </Link>

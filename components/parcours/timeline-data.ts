@@ -44,7 +44,7 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     color: "orange",
     company: "RISE",
     role: "Co-fondateur & Lead Tech",
-    period: "Oct. 2024 → Aujourd'hui · 1 an 9 mois",
+    period: "Oct. 2024 → Juin 2026 · Terminé",
     description:
       "Plateforme d'aide au choix de mobilité internationale étudiante. Cofondateur & Lead Tech — produit, développement (React, Firebase), pitchs jurys. Statut d'association, incubateur ESME.",
     achievements: [
@@ -53,7 +53,7 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
       "🥈 Galets du Rhône 2025 (Genève) — 2e place (1 000 €)",
     ],
     skills: ["React", "Firebase", "Gestion de projet"],
-    current: true,
+    current: false,
   },
   {
     year: "2025",
@@ -67,17 +67,8 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     skills: ["Anglais", "Systèmes d'information"],
     current: false,
   },
-  {
-    year: "2025",
-    type: "Projet",
-    color: "muted",
-    company: "N8N — Indépendant",
-    role: "Ingénieur IA & Automatisation",
-    period: "Sept. 2025 → Aujourd'hui · 10 mois",
-    description: "Conception d'agents IA pour automatisation de tâches métiers. Intégration API OpenAI / LLM.",
-    skills: ["N8N", "OpenAI API", "Automatisation"],
-    current: true,
-  },
+  // L'entrée "N8N — Indépendant" a été retirée : l'activité freelance est
+  // désormais documentée sur /preuves (doublon évité).
   {
     year: "2026",
     type: "Formation",

@@ -3,7 +3,7 @@
 import ScrollReveal from "./ScrollReveal";
 import SectionLabel from "./SectionLabel";
 
-// CTA final orienté recruteur : CV en principal (plein), contact en secondaire
+// CTA final orienté client : appel en principal (plein), CV en secondaire
 // (outline). Le pont VEGA vit désormais en fin de timeline (TimelineSection).
 export default function FormationSection() {
   return (
@@ -32,11 +32,11 @@ export default function FormationSection() {
               gap: "1rem",
             }}
           >
-            <a href="/cv-axel-remillat.pdf" download className="parcours-cta">
-              Télécharger mon CV (PDF)
+            <a href="/contact" className="parcours-cta">
+              Réserver un appel →
             </a>
-            <a href="/contact" className="parcours-cta-outline">
-              Me contacter →
+            <a href="/cv-axel-remillat.pdf" download className="parcours-cta-outline">
+              Télécharger mon CV (PDF)
             </a>
           </div>
         </div>

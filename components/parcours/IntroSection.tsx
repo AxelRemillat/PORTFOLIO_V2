@@ -63,6 +63,8 @@ export default function IntroSection() {
             3 fois et incubée. Alternant Ingénieur IA Agentic chez Andra Learning
             à Station F. Je construis des produits IA complets — de l&apos;idée au
             déploiement — et tout ce que je fais se teste en vrai sur ce site.
+            Aujourd&apos;hui, j&apos;accompagne aussi PME et startups en freelance :
+            mise en production et fiabilisation de systèmes IA.
           </p>
         </div>
       </ScrollReveal>
