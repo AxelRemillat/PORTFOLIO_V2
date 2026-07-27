@@ -71,7 +71,7 @@ export async function retrieveContext(query: string): Promise<string> {
     //    via la fonction 'match_ax_documents') — séparée du RAG RISE/portfolio.
     const { data, error } = await clients.supabase.rpc("match_ax_documents", {
       query_embedding: embedding,
-      match_threshold: 0.70,
+      match_threshold: 0.55,
       match_count: 4,
     });
 
