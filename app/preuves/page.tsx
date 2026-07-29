@@ -1,80 +1,67 @@
-"use client";
-
-import dynamic from "next/dynamic";
+import type { Metadata } from "next";
 import { projects } from "@/lib/projects-data";
-import PreuveCard from "@/components/projects/PreuveCard";
+import PreuveCard from "@/components/preuves/PreuveCard";
+import { PREUVES_CSS } from "@/components/preuves/preuvesCss";
 
-const SpaceBackground = dynamic(() => import("@/components/ui/SpaceBackground"), { ssr: false });
+// Server component : SEO + fond propre (plus de SpaceBackground). Les cards sont
+// des mini-interfaces produit + flux d'architecture (client, animées).
+export const metadata: Metadata = {
+  title: "Preuves — Axel Remillat | Systèmes IA testables",
+  description:
+    "Trois systèmes IA en production, testables en vrai : l'assistant RAG VEGA, les automatisations n8n et l'infrastructure self-hosted. Pas de screenshots — des preuves.",
+};
 
 export default function PreuvesPage() {
   return (
-    <>
+    <main className="pvp-main">
+      <style>{PREUVES_CSS}</style>
       <style>{`
-        @keyframes breatheOrange {
-          0%,100% { box-shadow: 0 0 40px rgba(255,107,53,0.30), 0 0 80px rgba(255,107,53,0.15), inset 0 0 40px rgba(255,107,53,0.08); }
-          50%     { box-shadow: 0 0 70px rgba(255,107,53,0.60), 0 0 120px rgba(255,107,53,0.30), inset 0 0 80px rgba(255,107,53,0.15); }
-        }
-        @keyframes breatheGreen {
-          0%,100% { box-shadow: 0 0 35px rgba(16,185,129,0.28), 0 0 70px rgba(16,185,129,0.12), inset 0 0 45px rgba(16,185,129,0.06); }
-          50%     { box-shadow: 0 0 70px rgba(16,185,129,0.55), 0 0 120px rgba(16,185,129,0.26), inset 0 0 80px rgba(16,185,129,0.13); }
-        }
-        @keyframes breathePurple {
-          0%,100% { box-shadow: 0 0 40px rgba(168,85,247,0.30), 0 0 80px rgba(168,85,247,0.12), inset 0 0 50px rgba(168,85,247,0.06); }
-          50%     { box-shadow: 0 0 75px rgba(168,85,247,0.60), 0 0 130px rgba(168,85,247,0.28), inset 0 0 90px rgba(168,85,247,0.14); }
-        }
-        @keyframes preuveDot {
-          0%,100% { opacity: 1; transform: scale(1); }
-          50%     { opacity: 0.4; transform: scale(1.5); }
-        }
-        .preuve-dot-pulse { animation: preuveDot 1.6s ease-in-out infinite; }
-        @keyframes preuveHeadIn {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .preuve-head { animation: preuveHeadIn 0.6s cubic-bezier(0.16,1,0.3,1) both; }
-        @media (prefers-reduced-motion: reduce) {
-          .preuve-head { animation: none !important; }
-        }
+        .pvp-main { position:relative; min-height:100vh; background:var(--color-bg); overflow:hidden;
+          padding:10vh clamp(1.25rem,5vw,3rem) 14vh; }
+        .pvp-bg { position:absolute; inset:0; z-index:0; pointer-events:none;
+          background:
+            radial-gradient(60% 55% at 82% 12%, rgba(249,115,22,0.12), transparent 62%),
+            radial-gradient(45% 45% at 15% 90%, rgba(168,85,247,0.08), transparent 70%); }
+        .pvp-grid { position:absolute; inset:0; z-index:0; pointer-events:none; opacity:.5;
+          background-image:linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+          background-size:48px 48px;
+          -webkit-mask-image:radial-gradient(80% 60% at 70% 10%, #000, transparent 75%);
+          mask-image:radial-gradient(80% 60% at 70% 10%, #000, transparent 75%); }
+        .pvp-vignette { position:absolute; inset:0; z-index:0; pointer-events:none;
+          background:radial-gradient(120% 90% at 50% -10%, transparent 55%, rgba(0,0,0,0.5) 100%); }
+        .pvp-wrap { position:relative; z-index:1; max-width:1040px; margin:0 auto; }
+        .pvp-label { font-family:var(--font-mono); font-size:0.75rem; color:var(--color-orange);
+          letter-spacing:.14em; text-transform:uppercase; margin:0 0 0.9rem; }
+        .pvp-h1 { font-size:clamp(2.3rem,5vw,3.4rem); font-weight:900; color:#fff; line-height:1.05; margin:0 0 1rem; }
+        .pvp-sub { color:rgba(255,255,255,0.55); max-width:600px; line-height:1.6; margin:0 0 3.5rem; }
+        .pvp-list { display:flex; flex-direction:column; gap:2rem; }
+        @keyframes pvpIn { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:none;} }
+        .pvp-head { animation:pvpIn .6s cubic-bezier(.16,1,.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .pvp-head { animation:none; } }
       `}</style>
 
-      <SpaceBackground />
+      <div className="pvp-bg" aria-hidden />
+      <div className="pvp-grid" aria-hidden />
+      <div className="pvp-vignette" aria-hidden />
 
-      <div className="max-w-5xl mx-auto px-6 py-16">
-        <div style={{ marginBottom: 48 }}>
-          <p
-            className="preuve-head"
-            style={{
-              fontSize: "0.75rem",
-              fontFamily: "monospace",
-              color: "#f97316",
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              marginBottom: 12,
-            }}
-          >
-            PREUVES // EN PRODUCTION
-          </p>
-          <h1
-            className="preuve-head"
-            style={{ fontSize: "3.4rem", fontWeight: 900, color: "#fff", lineHeight: 1.05, margin: "0 0 16px", animationDelay: "0.08s" }}
-          >
+      <div className="pvp-wrap">
+        <header>
+          <p className="pvp-label pvp-head">PREUVES // EN PRODUCTION</p>
+          <h1 className="pvp-h1 pvp-head" style={{ animationDelay: "0.08s" }}>
             Ne me croyez pas sur parole. Testez.
           </h1>
-          <p
-            className="preuve-head"
-            style={{ color: "rgba(255,255,255,0.55)", maxWidth: 620, lineHeight: 1.6, animationDelay: "0.16s" }}
-          >
-            Chaque système ci-dessous tourne en vrai. Cliquez, essayez, cassez-les si
-            vous pouvez.
+          <p className="pvp-sub pvp-head" style={{ animationDelay: "0.16s" }}>
+            Chaque système ci-dessous tourne en vrai. Cliquez, essayez, cassez-les si vous pouvez.
           </p>
-        </div>
+        </header>
 
-        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
-          {projects.map((project) => (
-            <PreuveCard key={project.slug} project={project} />
+        <div className="pvp-list">
+          {projects.map((project, i) => (
+            <PreuveCard key={project.slug} project={project} index={i} />
           ))}
         </div>
       </div>
-    </>
+    </main>
   );
 }

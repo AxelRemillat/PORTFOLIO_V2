@@ -50,23 +50,6 @@ export default function ContactPage() {
           04 // CONTACT
         </p>
 
-        <p
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            fontFamily: "var(--font-mono)",
-            fontSize: 11,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            color: "#94a3b8",
-            marginBottom: "1.5rem",
-          }}
-        >
-          <span className="contact-ring" />
-          Disponible — réponse sous 48h
-        </p>
-
         {/* Titre sur UNE ligne (desktop) + photo juste à droite.
             Police calée en vw pour que "Construisons quelque chose." + la photo
             tiennent toujours sur la même ligne ; < 1100px : retour multi-lignes. */}

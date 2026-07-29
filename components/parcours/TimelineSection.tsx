@@ -114,20 +114,6 @@ export default function TimelineSection() {
           </div>
         ))}
       </div>
-
-      {/* Pont VEGA discret : une ligne, pas de card ni bouton (le bandeau a été retiré) */}
-      <ScrollReveal delay={0.1}>
-        <p style={{ textAlign: "center", margin: "5rem 0 0" }}>
-          <a
-            href="/demos"
-            className="vega-inline-link"
-            style={{ fontFamily: "var(--font-mono)", fontSize: 13, color: "var(--color-muted)", textDecoration: "none" }}
-          >
-            <span className="vega-online-dot" aria-hidden />
-            Tout ce qui est écrit ici est vérifiable — demandez à VEGA →
-          </a>
-        </p>
-      </ScrollReveal>
     </section>
   );
 }
