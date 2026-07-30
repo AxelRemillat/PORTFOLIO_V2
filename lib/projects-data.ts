@@ -59,15 +59,17 @@ export const projects: Project[] = [
     slug: "n8n",
     title: "Automatisations N8N pour PME",
     tagline:
-      "12 automatisations métier conçues (factures, emails, comptes rendus, SAV…), 5 en cours de déploiement public testable.",
-    badge: "Déploiement en cours",
-    state: "wip",
+      "Tri d'email par IA, testable en direct. Factures, SAV, comptes rendus… en préparation.",
+    badge: "LIVE — testable",
+    state: "live",
     model: "drone",
     accent: "#10b981",
     cardBg: "linear-gradient(135deg, #010a04 0%, #021508 50%, #033014 100%)",
     glow: "breatheGreen 3s ease-in-out infinite",
     stack: ["n8n", "OpenAI", "Webhooks", "Python"],
-    detailCta: { label: "Bientôt testable — voir le détail →", href: "/preuves/n8n" },
+    demoUrl: "/automatisations",
+    primaryCta: { label: "Tester les automatisations →", href: "/automatisations" },
+    detailCta: { label: "Voir l'architecture", href: "/preuves/n8n" },
     context:
       "Les PME accumulent des tâches répétitives à faible valeur : ressaisie de factures, tri d'emails, comptes rendus, réponses SAV. Prises une par une elles semblent anodines ; cumulées, elles coûtent des heures chaque semaine.",
     problem:
