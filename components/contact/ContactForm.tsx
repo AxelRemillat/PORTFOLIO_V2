@@ -54,7 +54,7 @@ export default function ContactForm() {
       <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
         <div style={{ fontSize: "2.5rem", color: "var(--color-orange)", marginBottom: "1rem" }}>✦</div>
         <p style={{ fontSize: "clamp(1.4rem, 4vw, 2rem)", fontWeight: 700, color: "var(--color-text)" }}>
-          Message reçu — je te réponds sous 48h.
+          Message reçu — je te réponds en moins de 24h.
         </p>
       </div>
     );
@@ -110,7 +110,7 @@ export default function ContactForm() {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <p style={{ fontSize: 13, color: "#94a3b8", maxWidth: 320 }}>
-          Dispo pour missions data/IA & collaborations. Réponse sous 48h.
+          Dispo pour missions data/IA & collaborations. Réponse en moins de 24h.
         </p>
         <button type="submit" className="contact-submit" disabled={sending}>
           <span className="contact-ring" />

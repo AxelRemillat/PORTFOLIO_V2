@@ -37,7 +37,7 @@ export default function PreuveCard({ project, index }: { project: Project; index
   } as CSSProperties;
 
   return (
-    <ScrollReveal>
+    <ScrollReveal threshold={0.01} rootMargin="0px 0px 12% 0px" respectReducedMotion>
       <article className={`pv-card ${state === "live" ? "pv-live" : ""}`} style={vars}>
         <div className="pv-info">
           <div className="pv-head">

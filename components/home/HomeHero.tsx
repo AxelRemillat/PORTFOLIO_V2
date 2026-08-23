@@ -43,8 +43,8 @@ export default function HomeHero() {
             className="parcours-fade text-muted text-sm md:text-base max-w-xl leading-relaxed"
             style={{ animationDelay: "0.72s" }}
           >
-            J&apos;aide les PME et startups à passer leurs projets IA du POC à la
-            production : agents, RAG, automatisations. Ingénieur IA Agentic &amp;
+            J&apos;aide les PME et startups à passer leurs projets IA du prototype
+            à la production : agents, RAG, automatisations. Ingénieur IA Agentic &amp;
             Full Stack en alternance chez Andra Learning (EdTech — Station F).
           </p>
 
@@ -56,7 +56,7 @@ export default function HomeHero() {
               Découvrir les offres
             </Link>
             <Link
-              href="/preuves"
+              href="/projets"
               className="px-8 py-4 rounded-xl border border-border text-muted text-sm font-medium hover:text-white hover:border-white/20 transition-all duration-200"
             >
               Tester les preuves →

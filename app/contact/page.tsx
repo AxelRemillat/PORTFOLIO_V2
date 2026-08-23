@@ -113,8 +113,16 @@ export default function ContactPage() {
             color: "#b0bdcc",
           }}
         >
-          Disponible 1 à 2 jours par semaine — appel découverte de 30 min{" "}
-          <span style={{ color: "var(--color-orange)" }}>gratuit</span>.
+          Appel découverte de 30 min{" "}
+          <span style={{ color: "var(--color-orange)" }}>gratuit</span>.{" "}
+          <a
+            href={CALENDAR_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: "var(--color-orange)", textDecoration: "none", borderBottom: "1px solid rgba(249,115,22,0.45)", whiteSpace: "nowrap" }}
+          >
+            Voir mes disponibilités de la semaine →
+          </a>
         </p>
 
         <p

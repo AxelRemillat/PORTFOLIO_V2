@@ -8,11 +8,13 @@ interface Limit {
   window: number; // secondes
 }
 
-function limitsFor(ip: string): Limit[] {
+// Hybride : buckets par-IP SÉPARÉS par démo (prefix) pour 5/min & 20/j, mais un
+// plafond journalier GLOBAL partagé entre toutes les démos (backstop coût OpenAI).
+function limitsFor(ip: string, prefix: string): Limit[] {
   return [
-    { key: `rl:et:min:${ip}`, limit: 5, window: 60 },
-    { key: `rl:et:day:${ip}`, limit: 20, window: 86400 },
-    { key: "rl:et:global:day", limit: 300, window: 86400 },
+    { key: `rl:${prefix}:min:${ip}`, limit: 5, window: 60 },
+    { key: `rl:${prefix}:day:${ip}`, limit: 20, window: 86400 },
+    { key: "rl:global:day", limit: 300, window: 86400 },
   ];
 }
 
@@ -45,9 +47,10 @@ async function upstashHits(limits: Limit[], url: string, token: string): Promise
   return limits.map((l, i) => (data[i * 2]?.result ?? 0) <= l.limit);
 }
 
-/** true = requête autorisée ; false = au moins une limite dépassée. */
-export async function checkRateLimit(ip: string): Promise<boolean> {
-  const limits = limitsFor(ip);
+/** true = requête autorisée ; false = au moins une limite dépassée. `prefix` isole
+ *  les compteurs par-IP d'une démo (ex "email", "meeting"). */
+export async function checkRateLimit(ip: string, prefix: string): Promise<boolean> {
+  const limits = limitsFor(ip, prefix);
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (url && token) {

@@ -12,6 +12,7 @@ const ICONS: Record<NodeIcon, React.ReactNode> = {
   table: <><rect x="3" y="5" width="18" height="14" rx="2" /><path d="M3 10h18M9 5v14" /></>,
   receipt: <><path d="M6 3h12v17l-3-1.8-3 1.8-3-1.8-3 1.8V3z" /><path d="M9 8h6M9 12h5" /></>,
   chat: <path d="M21 5H3v12h4v3l4-3h10z" />,
+  wave: <><path d="M5 10v4" /><path d="M9 7v10" /><path d="M12 5v14" /><path d="M15 7v10" /><path d="M19 10v4" /></>,
 };
 
 export function Icon({ name }: { name: NodeIcon }) {

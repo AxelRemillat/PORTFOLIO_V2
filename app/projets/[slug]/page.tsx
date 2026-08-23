@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return project ? { title: `${project.title} — Architecture`, description: project.tagline } : {};
 }
 
-export default async function PreuveDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjetDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
   if (!project) notFound();
@@ -41,7 +41,7 @@ export default async function PreuveDetailPage({ params }: { params: Promise<{ s
       <BlueprintGrid accent={accent} />
 
       <div className="ap-inner">
-        <Link href="/preuves" className="ap-back">← Retour aux preuves</Link>
+        <Link href="/projets" className="ap-back">← Retour aux projets</Link>
 
         <header>
           <p className="ap-kicker">

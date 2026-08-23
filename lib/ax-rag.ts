@@ -21,15 +21,15 @@ Perso : tennis avec son père, très bon cuisinier (famille de gourmets), a gran
 Contact : UNIQUEMENT email axelremillat@netcourrier.com et LinkedIn linkedin.com/in/axel-remillatesmelyon. Rendez-vous : appel découverte de 30 min gratuit, à réserver via la page /contact.
 
 ## Offres freelance (page /offres)
-- 01 Pré-Vol (audit express) : "Votre système IA au banc d'essai avant le décollage." À partir de 490 € (forfait), délai 1 semaine. Livrables : revue d'architecture/code/infra, tests de robustesse, rapport priorisé de quick wins, restitution d'1h.
-- 02 Mise en Orbite (déploiement production) : "Votre RAG, agent ou automatisation déployé proprement — et qui le reste." 1 900 à 4 900 € selon périmètre. Livrables : conteneurisation Docker, pipeline CI/CD, monitoring et alerting, journalisation traçable, documentation et passation.
-- 03 Contrôle de Mission (run mensuel) : "Je veille sur votre IA pendant que vous dirigez votre entreprise." À partir de 690 €/mois (2 jours), sans engagement au-delà du mois en cours. Inclus : surveillance continue, maintenance, évaluations qualité, mises à jour de modèles, rapport mensuel.
+- 01 Diagnostic (audit express) : "Votre système IA au banc d'essai avant le décollage." À partir de 490 € (forfait), délai 1 semaine. Livrables : revue d'architecture/code/infra, tests de robustesse, rapport priorisé de quick wins, restitution d'1h.
+- 02 Mise en production (déploiement production) : "Votre RAG, agent ou automatisation déployé proprement — et qui le reste." 1 900 à 4 900 € selon périmètre. Livrables : conteneurisation Docker, pipeline CI/CD, monitoring et alerting, journalisation traçable, documentation et passation.
+- 03 Suivi mensuel (run mensuel) : "Je veille sur votre IA pendant que vous dirigez votre entreprise." À partir de 690 €/mois (2 jours), sans engagement au-delà du mois en cours. Inclus : surveillance continue, maintenance, évaluations qualité, mises à jour de modèles, rapport mensuel.
 Entonnoir : audit → déploiement → run. Option transverse AI Act : journalisation & traçabilité (logs, horodatage, archivage) — accompagnement technique, pas un conseil juridique. Démarrage : appel découverte 30 min gratuit → proposition écrite (périmètre, prix, livrable) → go. Tarifs de lancement, amenés à augmenter. VEGA ne négocie aucun tarif et ne fait pas de devis : renvoi vers /contact ou l'appel découverte.
 
-## Preuves (page /preuves — testables sur pièces)
-- VEGA — Assistant RAG (LIVE) : un CV qu'on interroge à la voix, pipeline RAG complet en production sur ce site (ingestion → embeddings → pgvector → gpt-4o-mini → TTS). Garde-fous tokens/jour et rate-limit par IP. Testable sur /demos, architecture sur /preuves/vega.
-- Automatisations N8N pour PME (déploiement en cours) : 12 automatisations métier conçues (factures, emails, comptes rendus, SAV…), 5 en cours de déploiement public testable, les autres tournent en environnement client. Fiche /preuves/n8n.
-- Infrastructure IA self-hosted (en construction) : serveur GPU perso sous Docker, LLM local (Ollama), API TTS, tunnel sécurisé, monitoring, backups. Objectif assumé : "j'opère ce que je vends". Fiche /preuves/infra.
+## Preuves (page /projets — testables sur pièces)
+- VEGA — Assistant RAG (LIVE) : un CV qu'on interroge à la voix, pipeline RAG complet en production sur ce site (ingestion → embeddings → pgvector → gpt-4o-mini → TTS). Garde-fous tokens/jour et rate-limit par IP. Testable sur /demos, architecture sur /projets/vega.
+- Automatisations N8N pour PME (déploiement en cours) : 12 automatisations métier conçues (factures, emails, comptes rendus, SAV…), 5 en cours de déploiement public testable, les autres tournent en environnement client. Fiche /projets/n8n.
+- Infrastructure IA self-hosted (en construction) : serveur GPU perso sous Docker, LLM local (Ollama), API TTS, tunnel sécurisé, monitoring, backups. Objectif assumé : "j'opère ce que je vends". Fiche /projets/infra.
 
 ## Projets passés
 - RISE (oct. 2024 → juin 2026, TERMINÉ — toujours en parler au passé) : startup EdTech cofondée avec 3 étudiants ESME, aide au choix de mobilité internationale. 3 concours gagnés : 1re place ESME Calendrier de l'Avent 2025 (500 €), 1re place concours IONIS sur 400+ projets (3 000 €), 2e place Galets du Rhône 2025 à Genève (1 000 €). Asso officielle, dépôt d'idée, incubée par l'ESME. Une réussite passée dont Axel garde les réflexes produit/business.
@@ -39,7 +39,7 @@ Entonnoir : audit → déploiement → run. Option transverse AI Act : journalis
 Nommée d'après l'étoile Vega (constellation de la Lyre). Cerveau : pipeline RAG (Supabase pgvector + gpt-4o-mini). Voix : TTS OpenAI, repli navigateur. Corps : orbe React Three Fiber pilotée par ton état (idle/thinking/speaking). Mémoire multi-tours en localStorage. Coût : quelques centimes par conversation, infra du site 10-30 €/mois.
 
 ## Le site
-Next.js (App Router, TypeScript) sur Vercel, Supabase (PostgreSQL + pgvector), OpenAI, React Three Fiber, GA4. Univers Petit Prince (Axel a joué le renard enfant) : vidéo hero sur l'accueil, modèles 3D sur les cards preuves (robot VEGA, drone N8N, satellite infra). Pages : accueil, /offres, /preuves (+ fiches vega/n8n/infra), /demos (VEGA), /parcours, /contact (formulaire + appel découverte), /ops — la "salle des machines", monitoring public du site (uptime, latence VEGA, requêtes, coût par réponse ; câblage en cours). Le mini-jeu 3D a été retiré lors du pivot freelance. Construit avec des agents IA comme copilotes — démarche assumée. Pas open source.`;
+Next.js (App Router, TypeScript) sur Vercel, Supabase (PostgreSQL + pgvector), OpenAI, React Three Fiber, GA4. Univers Petit Prince (Axel a joué le renard enfant) : vidéo hero sur l'accueil, modèles 3D sur les cards preuves (robot VEGA, drone N8N, satellite infra). Pages : accueil, /offres, /projets (+ fiches vega/n8n/infra), /demos (VEGA), /parcours, /contact (formulaire + appel découverte), /ops — la "salle des machines", monitoring public du site (uptime, latence VEGA, requêtes, coût par réponse ; câblage en cours). Le mini-jeu 3D a été retiré lors du pivot freelance. Construit avec des agents IA comme copilotes — démarche assumée. Pas open source.`;
 
 // Lazy init : évite l'erreur "supabaseUrl is required" au build Next.js et
 // permet de basculer proprement sur le fallback quand l'env n'est pas configuré.

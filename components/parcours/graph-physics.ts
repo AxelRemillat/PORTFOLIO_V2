@@ -4,11 +4,12 @@
 // les voisins quand on tire un nœud). Intégration Euler semi-implicite amortie,
 // normalisée à 60 fps (s = dt/16.7).
 
-import { EDGES, NODES, W, H } from "./skills-graph-data";
+import { EDGES, NODES, W, H, CAT_COLOR } from "./skills-graph-data";
 
 // ── Constantes physiques (réglage facile) ────────────────────────────────────
 export const K_HOME = 0.015;     // raideur du rappel vers home
 export const K_EDGE = 0.03;      // raideur des arêtes (propagation aux voisins)
+export const K_CAT  = 0.006;     // cohésion douce vers l'ancre de la catégorie
 export const DAMPING = 0.86;     // amortissement / frame : rebond calmé en ~1,5 s
 export const SLEEP_ENERGY = 0.1; // somme des |vel| sous laquelle la boucle s'endort
 export const SOFT_RADIUS = 90;   // px : au-delà, l'élastique "résiste"
@@ -21,7 +22,22 @@ export interface Body {
   vx: number; vy: number; // vitesse
   fx: number; fy: number; // accumulateur de forces du tick courant
   hx: number; hy: number; // home = position d'origine
+  ax: number; ay: number; // ancre de la catégorie (cohésion)
 }
+
+// Ancres de catégorie : grille 2 colonnes répartie dans le viewBox, dérivée de
+// l'ordre des catégories (data-driven) → une future catégorie obtient sa région.
+const A_CATS = Object.keys(CAT_COLOR);
+const A_COLS: number = 2, A_MX = 0.20, A_MY = 0.26; // marges = centres des régions extrêmes
+export const CAT_ANCHOR: Record<string, { x: number; y: number }> = Object.fromEntries(
+  A_CATS.map((cat, i) => {
+    const rows = Math.ceil(A_CATS.length / A_COLS);
+    const col = i % A_COLS, row = Math.floor(i / A_COLS);
+    const fx = A_COLS === 1 ? 0.5 : A_MX + (col * (1 - 2 * A_MX)) / (A_COLS - 1);
+    const fy = rows === 1 ? 0.5 : A_MY + (row * (1 - 2 * A_MY)) / (rows - 1);
+    return [cat, { x: fx * W, y: fy * H }];
+  }),
+);
 
 // Ressorts d'arêtes précalculés : longueur au repos = distance entre les homes.
 export const SPRINGS = EDGES.map((e) => {
@@ -34,7 +50,8 @@ export function createBodies(): Map<string, Body> {
   return new Map(
     NODES.map((n) => {
       const hx = n.x * W, hy = n.y * H;
-      return [n.id, { x: hx, y: hy, vx: 0, vy: 0, fx: 0, fy: 0, hx, hy }];
+      const a = CAT_ANCHOR[n.cat];
+      return [n.id, { x: hx, y: hy, vx: 0, vy: 0, fx: 0, fy: 0, hx, hy, ax: a.x, ay: a.y }];
     }),
   );
 }
@@ -58,8 +75,9 @@ export function applyDragPos(b: Body, px: number, py: number) {
 // totale (somme des |vel|) pour la mise en veille de la boucle.
 export function step(bodies: Map<string, Body>, dragId: string | null, s: number): number {
   for (const b of bodies.values()) {
-    b.fx = (b.hx - b.x) * K_HOME;
-    b.fy = (b.hy - b.y) * K_HOME;
+    // rappel vers home + cohésion douce vers l'ancre de la catégorie
+    b.fx = (b.hx - b.x) * K_HOME + (b.ax - b.x) * K_CAT;
+    b.fy = (b.hy - b.y) * K_HOME + (b.ay - b.y) * K_CAT;
   }
   for (const sp of SPRINGS) {
     const a = bodies.get(sp.a)!, b = bodies.get(sp.b)!;

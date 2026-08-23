@@ -8,14 +8,19 @@ import { OFFERS } from "./offres-data";
 export default function OffresList() {
   return (
     <section style={{ padding: "2vh 6vw 4vh", maxWidth: "1150px", margin: "0 auto" }}>
-      <div
-        style={{
-          display: "grid",
-          gap: "1.5rem",
-          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-          alignItems: "stretch",
-        }}
-      >
+      <style>{`
+        .offres-grid {
+          display: grid;
+          gap: 1.5rem;
+          align-items: stretch;
+          grid-template-columns: repeat(3, 1fr);
+        }
+        /* Tablette : 2 colonnes */
+        @media (max-width: 900px) { .offres-grid { grid-template-columns: repeat(2, 1fr); } }
+        /* Mobile : 1 colonne empilée */
+        @media (max-width: 640px) { .offres-grid { grid-template-columns: 1fr; } }
+      `}</style>
+      <div className="offres-grid">
         {OFFERS.map((o, i) => (
           <ScrollReveal key={o.name} delay={i * 0.08}>
             <article

@@ -1,16 +1,16 @@
 # Offres — Freelance
 
-En parallèle de son alternance, Axel accompagne PME et startups en freelance : mise en production et fiabilisation de systèmes IA (RAG, agents, automatisations). Disponibilité : 1 à 2 jours par semaine, réponse sous 24 à 48h ouvrées, pas d'astreinte. Les trois offres forment un entonnoir naturel : audit (Pré-Vol) → déploiement (Mise en Orbite) → run mensuel (Contrôle de Mission). Tarifs de lancement : ils augmenteront avec le carnet de références — les premiers clients sont les mieux servis. Tout est détaillé sur la page /offres.
+En parallèle de son alternance, Axel accompagne PME et startups en freelance : mise en production et fiabilisation de systèmes IA (RAG, agents, automatisations). Disponibilité : 1 à 2 jours par semaine, réponse sous 24 à 48h ouvrées, pas d'astreinte. Les trois offres forment un entonnoir naturel : audit (Diagnostic) → déploiement (Mise en production) → run mensuel (Suivi mensuel). Tarifs de lancement : ils augmenteront avec le carnet de références — les premiers clients sont les mieux servis. Tout est détaillé sur la page /offres.
 
-## Offre 01 — Pré-Vol (audit express)
+## Offre 01 — Diagnostic (audit express)
 
 « Votre système IA au banc d'essai avant le décollage. » Prix : à partir de 490 € (forfait). Délai : 1 semaine. Livrables : revue d'architecture, de code et d'infra ; tests de robustesse ; rapport priorisé de quick wins ; restitution d'1h. C'est la porte d'entrée idéale : petit engagement, résultat concret en une semaine.
 
-## Offre 02 — Mise en Orbite (déploiement production)
+## Offre 02 — Mise en production (déploiement production)
 
-« Votre RAG, agent ou automatisation déployé proprement — et qui le reste. » Prix : 1 900 à 4 900 € selon périmètre. Livrables : conteneurisation (Docker), pipeline de déploiement (CI/CD), monitoring et alerting, journalisation traçable, documentation et passation. Pour passer un POC ou un système fragile en vraie production.
+« Votre RAG, agent ou automatisation déployé proprement — et qui le reste. » Prix : 1 900 à 4 900 € selon périmètre. Livrables : conteneurisation (Docker), pipeline de déploiement (CI/CD), monitoring et alerting, journalisation traçable, documentation et passation. Pour passer un prototype ou un système fragile en vraie production.
 
-## Offre 03 — Contrôle de Mission (run mensuel)
+## Offre 03 — Suivi mensuel (run mensuel)
 
 « Je veille sur votre IA pendant que vous dirigez votre entreprise. » Prix : à partir de 690 €/mois pour 2 jours. Sans engagement au-delà du mois en cours. Inclus : surveillance continue, maintenance, évaluations qualité, mises à jour de modèles, rapport mensuel.
 
@@ -24,4 +24,4 @@ Un appel découverte de 30 minutes, gratuit, pour cadrer le besoin → une propo
 
 ## Pourquoi Axel plutôt qu'une agence
 
-Les preuves sont testables directement sur le site (/preuves) : on juge sur pièces, pas sur un CV ni sur des slides. Les tarifs de lancement sont imbattables, et la disponibilité (1 à 2 jours par semaine) est cadrée à l'avance — pas de promesse de disponibilité infinie qu'on ne tient pas. Outils : Docker, N8N, OpenAI/Ollama, Supabase, GCP et outils de monitoring.
+Les preuves sont testables directement sur le site (/projets) : on juge sur pièces, pas sur un CV ni sur des slides. Les tarifs de lancement sont imbattables, et la disponibilité (1 à 2 jours par semaine) est cadrée à l'avance — pas de promesse de disponibilité infinie qu'on ne tient pas. Outils : Docker, N8N, OpenAI/Ollama, Supabase, GCP et outils de monitoring.

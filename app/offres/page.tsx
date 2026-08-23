@@ -10,7 +10,7 @@ import OffresCta from "@/components/offres/OffresCta";
 export const metadata: Metadata = {
   title: "Offres — Axel Remillat | Mise en production IA",
   description:
-    "Trois offres claires pour PME et startups : audit express, déploiement production et run mensuel monitoré. Passez votre IA du POC à la production, sans surprise.",
+    "Trois offres claires pour PME et startups : audit express, déploiement production et run mensuel monitoré. Passez votre IA du prototype à la production, sans surprise.",
 };
 
 export default function OffresPage() {

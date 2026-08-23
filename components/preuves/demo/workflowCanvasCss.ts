@@ -34,7 +34,6 @@ export const WORKFLOW_CSS = `
   box-shadow:0 6px 16px -6px var(--tab-accent); }
 .wc-tab.is-active .wc-tab-num, .wc-tab.is-active .wc-tab-ico { color:var(--tab-fg); }
 .wc-tab:focus-visible { outline:2px solid var(--tab-accent); outline-offset:2px; }
-.wc-panel { scroll-margin-top:80px; }
 
 .wc-card { background:var(--wc-surface); border:1px solid var(--wc-border); border-radius:16px;
   box-shadow:0 1px 0 rgba(0,0,0,0.02), 0 22px 44px -30px rgba(30,34,48,0.35); padding:1.5rem; }
@@ -64,6 +63,23 @@ export const WORKFLOW_CSS = `
 .wc-ghost { background:#fff; color:var(--wc-text); border:1px solid var(--wc-border-strong); }
 .wc-ghost:hover:not(:disabled) { border-color:var(--wc-accent); }
 .wc-ghost:disabled { opacity:.5; cursor:not-allowed; }
+.wc-modes { display:inline-flex; gap:4px; padding:4px; border-radius:10px; background:var(--wc-soft); border:1px solid var(--wc-border-strong); }
+.wc-mode { font-size:.82rem; font-weight:600; font-family:inherit; padding:6px 15px; border-radius:7px; border:none;
+  background:transparent; color:var(--wc-muted); cursor:pointer; transition:background .15s ease, color .15s ease; }
+.wc-mode.is-on { background:var(--wc-accent); color:#fff; }
+.wc-mode:focus-visible { outline:2px solid var(--wc-accent); outline-offset:2px; }
+.wc-try { display:flex; flex-direction:column; gap:.55rem; padding:.9rem 1rem; border-radius:12px;
+  background:var(--wc-accent-weak); border:1px dashed var(--wc-accent); }
+.wc-try-lbl { margin:0; font-size:.9rem; font-weight:700; color:var(--wc-text); }
+.wc-examples { display:flex; flex-wrap:wrap; gap:9px; }
+.wc-ex { display:inline-flex; align-items:center; gap:8px; font-size:.86rem; font-weight:600; font-family:inherit;
+  color:var(--wc-text); cursor:pointer; background:#fff; border:1.5px solid var(--wc-accent); border-radius:10px;
+  padding:9px 15px; transition:background .18s ease, transform .12s ease, box-shadow .18s ease; }
+.wc-ex:hover:not(:disabled) { background:var(--wc-accent-weak); box-shadow:0 3px 10px -4px var(--wc-accent); transform:translateY(-1px); }
+.wc-ex:disabled { opacity:.5; cursor:not-allowed; }
+.wc-ex:focus-visible { outline:2px solid var(--wc-accent); outline-offset:2px; }
+.wc-ex-ico { color:var(--wc-accent); display:inline-flex; }
+.wc-ex-ico svg { width:16px; height:16px; display:block; }
 
 .wc-pipe { display:flex; align-items:flex-start; margin:1.7rem 0 .3rem; overflow-x:auto; padding-bottom:6px; -webkit-overflow-scrolling:touch; }
 .wc-node { flex:1 0 118px; min-width:118px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:.35rem; padding:.2rem; }
@@ -104,6 +120,16 @@ export const WORKFLOW_CSS = `
 .wc-res-json { margin:0; padding:.85rem .9rem; border:1px solid var(--wc-border-strong); border-radius:10px;
   background:var(--wc-soft); color:var(--wc-text); font-family:var(--font-mono); font-size:.78rem; line-height:1.5;
   white-space:pre-wrap; overflow-x:auto; }
+.wc-mr-title { font-size:1.1rem; font-weight:800; color:var(--wc-text); margin:0 0 .4rem; }
+.wc-mr-resume { color:var(--wc-text); line-height:1.6; margin:0 0 1.1rem; font-size:.92rem; }
+.wc-mr-tablewrap { overflow-x:auto; margin:0 0 1.1rem; }
+.wc-mr-table { width:100%; border-collapse:collapse; font-size:.85rem; }
+.wc-mr-table th, .wc-mr-table td { text-align:left; padding:.5rem .7rem; border-bottom:1px solid var(--wc-border); vertical-align:top; }
+.wc-mr-table th { font-family:var(--font-mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:var(--wc-muted); }
+.wc-mr-table td { color:var(--wc-text); }
+.wc-mr-transcript { margin-top:.4rem; border:1px solid var(--wc-border-strong); border-radius:10px; background:var(--wc-soft); padding:.6rem .9rem; }
+.wc-mr-transcript summary { cursor:pointer; font-family:var(--font-mono); font-size:.78rem; color:var(--wc-accent); font-weight:600; }
+.wc-mr-transcript p { margin:.7rem 0 0; white-space:pre-wrap; color:var(--wc-text); font-size:.86rem; line-height:1.55; }
 
 .wc-rebound { margin-top:1.3rem; border:1px solid var(--wc-border-strong); border-left:3px solid var(--wc-accent);
   border-radius:12px; background:var(--wc-soft); padding:1rem 1.1rem; animation:wcRebound .45s ease both; }

@@ -54,7 +54,7 @@ export default function ProjectsStrip() {
         {PROOFS.map((p, i) => (
           <ScrollReveal key={p.title} delay={i * 0.08}>
             <Link
-              href="/preuves"
+              href="/projets"
               className="flex flex-col h-full no-underline transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
               style={{
                 background: p.bg,

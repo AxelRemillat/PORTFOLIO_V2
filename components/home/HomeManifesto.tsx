@@ -8,8 +8,8 @@ import SectionLabel from "@/components/parcours/SectionLabel";
 // mot par mot, ~40 ms de délai incrémental), texte différent. Statique si
 // prefers-reduced-motion.
 const LINES: { text: string; accent?: boolean }[][] = [
-  [{ text: "Un" }, { text: "POC" }, { text: "impressionne." }],
-  [{ text: "La" }, { text: "prod", accent: true }, { text: "convainc." }],
+  [{ text: "Impressionner" }, { text: "avec" }, { text: "une" }, { text: "démo," }, { text: "c'est" }, { text: "facile." }],
+  [{ text: "Tenir", accent: true }, { text: "en", accent: true }, { text: "production,", accent: true }, { text: "c'est" }, { text: "mon" }, { text: "métier." }],
 ];
 
 const EASE = "cubic-bezier(0.16, 1, 0.3, 1)";

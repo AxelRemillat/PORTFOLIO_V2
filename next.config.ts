@@ -7,10 +7,9 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // Migration /projets → /preuves (308 permanent)
-      { source: "/projets", destination: "/preuves", permanent: true },
-      // :slug* capture aussi les anciennes sous-pages (ex. /projets/rise/site)
-      { source: "/projets/:slug*", destination: "/preuves", permanent: true },
+      // Renommage /preuves → /projets (308 permanent), slug conservé
+      { source: "/preuves", destination: "/projets", permanent: true },
+      { source: "/preuves/:slug*", destination: "/projets/:slug*", permanent: true },
       // /game supprimé → retour à l'accueil
       { source: "/game", destination: "/", permanent: true },
     ];

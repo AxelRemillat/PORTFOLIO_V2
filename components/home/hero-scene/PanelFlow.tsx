@@ -33,7 +33,7 @@ export default function PanelFlow() {
         .hsf-foot i { width:6px; height:6px; border-radius:50%; background:${EMERALD}; }
         @media (prefers-reduced-motion: reduce) { .hsf-flow{animation:none;stroke-dasharray:none;stroke-opacity:.55;} }
       `}</style>
-      <Link href="/preuves" className="hs-panel hsf" aria-label="Automatisations n8n — les preuves">
+      <Link href="/projets" className="hs-panel hsf" aria-label="Automatisations n8n — les preuves">
         <div className="hs-bar">
           <span className="hsf-ico" />
           <span className="hs-title">n8n — automatisations</span>

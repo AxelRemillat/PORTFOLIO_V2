@@ -2,9 +2,11 @@
 // Source unique consommée par components/offres/*. Textes en clair (pas de JSX)
 // pour éviter l'échappement des apostrophes.
 
+import { CALENDAR_URL } from "@/lib/site-config";
+
 export interface Offer {
   num: string;        // "01"
-  name: string;       // "Pré-Vol"
+  name: string;       // "Diagnostic"
   kind: string;       // "Audit express"
   pitch: string;
   price: string;
@@ -18,10 +20,10 @@ export interface Offer {
 export const OFFERS: Offer[] = [
   {
     num: "01",
-    name: "Pré-Vol",
+    name: "Diagnostic",
     kind: "Audit express",
     pitch: "Votre système IA au banc d'essai avant le décollage.",
-    price: "À partir de 490 €",
+    price: "À partir de 490 €",
     priceNote: "forfait",
     meta: "Délai : 1 semaine",
     itemsLabel: "Livrables",
@@ -35,10 +37,10 @@ export const OFFERS: Offer[] = [
   },
   {
     num: "02",
-    name: "Mise en Orbite",
+    name: "Mise en production",
     kind: "Déploiement production",
     pitch: "Votre RAG, agent ou automatisation déployé proprement — et qui le reste.",
-    price: "1 900 à 4 900 €",
+    price: "1 900 à 4 900 €",
     priceNote: "selon périmètre",
     itemsLabel: "Livrables",
     items: [
@@ -52,10 +54,10 @@ export const OFFERS: Offer[] = [
   },
   {
     num: "03",
-    name: "Contrôle de Mission",
+    name: "Suivi mensuel",
     kind: "Run mensuel",
     pitch: "Je veille sur votre IA pendant que vous dirigez votre entreprise.",
-    price: "À partir de 690 €/mois",
+    price: "À partir de 690 €/mois",
     priceNote: "2 jours",
     meta: "Sans engagement au-delà du mois en cours",
     itemsLabel: "Inclus",
@@ -73,12 +75,14 @@ export const OFFERS: Offer[] = [
 export interface Faq {
   q: string;
   a: string;
+  link?: { label: string; href: string };
 }
 
 export const FAQ: Faq[] = [
   {
     q: "Pourquoi un alternant ?",
-    a: "Parce que les preuves sont testables directement sur ce site, que les tarifs de lancement sont imbattables, et que ma disponibilité (1 à 2 jours par semaine) est cadrée à l'avance. Vous jugez sur pièces, pas sur un CV.",
+    a: "Parce que les preuves sont testables directement sur ce site et que les tarifs de lancement sont imbattables : vous jugez sur pièces, pas sur un CV. Pour les créneaux, mes disponibilités du moment sont sur mon calendrier — on cale ensemble lors de l'appel découverte.",
+    link: { label: "Voir mes disponibilités →", href: CALENDAR_URL },
   },
   {
     q: "Comment on démarre ?",

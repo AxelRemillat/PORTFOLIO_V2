@@ -7,9 +7,11 @@ import StatCounter, { type StatDef } from "@/components/ui/StatCounter";
 // Chiffres de crédibilité freelance. Les valeurs numériques sont animées
 // (StatCounter partagé) ; « 24/7 » s'affiche tel quel, sans compteur.
 const STATS: StatDef[] = [
-  { value: 3, label: "systèmes IA en production" },
-  { value: 19, label: "technologies maîtrisées" },
-  { value: 14, suffix: " mois", label: "d'alternance IA à Station F" },
+  { value: 15, suffix: "+", label: "systèmes IA en production" },
+  { value: 3, label: "concours remportés" },
+  { value: 4500, prefix: "+", suffix: " €", label: "de prix remportés" },
+  { value: 13, suffix: " mois", label: "d'alternance IA (Station F)" },
+  { value: 20, suffix: "+", label: "technologies maîtrisées" },
 ];
 
 export default function HomeStats() {
@@ -23,10 +25,11 @@ export default function HomeStats() {
         </div>
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            justifyContent: "center",
-            gap: "clamp(2rem, 6vw, 5rem)",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 280px), 1fr))",
+            justifyItems: "center",
+            alignItems: "start",
+            gap: "clamp(2.5rem, 5vw, 4rem) clamp(2rem, 6vw, 5rem)",
           }}
         >
           {STATS.map((s) => (

@@ -19,7 +19,7 @@ export default function AutomatisationsPage() {
       <div className="wc-grid" aria-hidden />
 
       <div className="wc-inner">
-        <Link href="/preuves" className="wc-back">← Retour aux preuves</Link>
+        <Link href="/projets" className="wc-back">← Retour aux projets</Link>
         <p className="wc-kicker">Automatisations n8n // démos testables</p>
         <h1 className="wc-h1">Testez mes automatisations</h1>
         <p className="wc-lead">

@@ -1,5 +1,12 @@
 import EmailResult from "./EmailResult";
-import GenericResult from "./GenericResult";
+import MeetingResult from "./MeetingResult";
+import type { MeetingData } from "./MeetingResult";
+import DataCleanResult from "./DataCleanResult";
+import type { DataCleanData } from "./DataCleanResult";
+import InvoiceResult from "./InvoiceResult";
+import type { InvoiceData } from "./InvoiceResult";
+import SavResult from "./SavResult";
+import type { SavData } from "./SavResult";
 import { SAMPLE_EMAIL } from "./email-triage-lib";
 import type { TriageResult } from "./email-triage-lib";
 import type { WorkflowConfig } from "./workflow-types";
@@ -12,8 +19,6 @@ Marie : le design est validé, on démarre le dev lundi.
 Thomas : je prends l'API, livrable jeudi.
 Sofia : je relance le client pour les accès, sinon on est bloqués.
 Décision : démo client vendredi 16h. Thomas doit corriger le bug de login avant.`;
-
-const SAV_SAMPLE = `Bonjour, j'ai reçu un article défectueux (réf. AZ-200). Comment le retourner et être remboursé ? Merci.`;
 
 export const AUTOMATIONS: WorkflowConfig[] = [
   {
@@ -39,18 +44,34 @@ export const AUTOMATIONS: WorkflowConfig[] = [
   {
     id: "meeting", tabLabel: "Compte rendu", tabIcon: "doc", accent: "#6366f1",
     title: "Compte rendu de réunion",
-    subtitle: "Collez une transcription : l'IA en extrait décisions, actions et compte rendu.",
-    endpoint: "/api/demo/meeting-notes", inputType: "textarea", inputField: "transcript_text",
-    inputLabel: "Transcription à résumer", placeholder: "Collez la transcription de la réunion…",
-    exampleText: MEETING_SAMPLE, submitLabel: "Lancer le workflow",
+    subtitle: "Transcription (texte ou audio) : l'IA en extrait décisions, actions et compte rendu.",
+    endpoint: "/api/demo/meeting-notes",
+    inputType: "dual", inputField: "transcript_text", audioField: "audio",
+    inputLabel: "Transcription à résumer", audioLabel: "Audio",
+    placeholder: "Collez la transcription de la réunion…", accept: "audio/*", textMax: 12000,
+    submitLabel: "Lancer le workflow",
+    examples: {
+      text: [{ label: "Exemple texte", value: MEETING_SAMPLE }],
+      audio: [
+        { label: "Réunion produit", src: "/samples/meeting/reunion-equipe-produit.mp3" },
+        { label: "Point client", src: "/samples/meeting/point-client-commercial.mp3" },
+        { label: "Réunion asso", src: "/samples/meeting/reunion-asso-evenement.mp3" },
+      ],
+    },
+    errorMessages: { upstream_error: "Le service de compte rendu est injoignable, réessaie plus tard." },
     nodes: [
       { id: "in", label: "Réception", icon: "mail", sublabel: "Webhook" },
-      { id: "chk", label: "Vérification", icon: "shield", sublabel: "Garde-fou" },
+      { id: "tr", label: "Transcription", icon: "wave", sublabel: "Whisper" },
       { id: "ai", label: "Analyse IA", icon: "ai", sublabel: "gpt-4o-mini" },
       { id: "ext", label: "Extraction", icon: "format", sublabel: "décisions · actions" },
       { id: "out", label: "Résultat", icon: "check", sublabel: "CR" },
     ],
-    renderResult: (r) => <GenericResult result={r} />,
+    renderResult: (result, response) => (
+      <MeetingResult
+        result={result as MeetingData}
+        transcript={(response as { transcript?: string } | undefined)?.transcript}
+      />
+    ),
   },
   {
     id: "dataclean", tabLabel: "Nettoyage data", tabIcon: "table", accent: "#8b5cf6",
@@ -58,6 +79,14 @@ export const AUTOMATIONS: WorkflowConfig[] = [
     subtitle: "Envoyez un CSV : détection d'anomalies, normalisation et dédup, puis rapport.",
     endpoint: "/api/demo/data-clean", inputType: "file", accept: ".csv", inputField: "file",
     inputLabel: "Fichier CSV à nettoyer", submitLabel: "Lancer le workflow",
+    examples: {
+      file: [
+        { label: "Fichier clients", src: "/samples/data/clients-sales.csv" },
+        { label: "Catalogue produits", src: "/samples/data/produits-stock.csv" },
+        { label: "Contacts CRM", src: "/samples/data/contacts-crm.csv" },
+      ],
+    },
+    errorMessages: { upstream_error: "Le service de nettoyage est injoignable, réessaie plus tard." },
     nodes: [
       { id: "in", label: "Import CSV", icon: "table", sublabel: ".csv" },
       { id: "col", label: "Analyse colonnes", icon: "format", sublabel: "colonnes" },
@@ -65,30 +94,53 @@ export const AUTOMATIONS: WorkflowConfig[] = [
       { id: "norm", label: "Normalisation · dédup", icon: "ai", sublabel: "dédup" },
       { id: "out", label: "Rapport", icon: "check", sublabel: "rapport" },
     ],
-    renderResult: (r) => <GenericResult result={r} />,
+    renderResult: (result) => <DataCleanResult result={result as DataCleanData} />,
   },
   {
     id: "invoice", tabLabel: "Facture", tabIcon: "receipt", accent: "#f59e0b",
     title: "Extraction de facture",
-    subtitle: "Envoyez une facture (image ou PDF) : OCR, extraction des champs, contrôle des totaux.",
-    endpoint: "/api/demo/invoice", inputType: "file", accept: "image/*,application/pdf", inputField: "file",
+    subtitle: "Envoyez une facture (image ou PDF) : Vision lit le document, extrait les champs et contrôle les totaux.",
+    endpoint: "/api/demo/invoice", inputType: "file", accept: "image/jpeg,image/png,image/webp,application/pdf", inputField: "file",
     inputLabel: "Facture à analyser (image ou PDF)", submitLabel: "Lancer le workflow",
+    examples: {
+      file: [
+        { label: "Facture agence web", src: "/samples/invoices/facture-agence-web.png" },
+        { label: "Facture matériel", src: "/samples/invoices/facture-materiel.png" },
+        { label: "Facture conseil (PDF)", src: "/samples/invoices/facture-conseil.pdf" },
+      ],
+    },
+    errorMessages: {
+      invalid_input: "Fichier invalide (image JPG/PNG/WEBP ou PDF attendus).",
+      upstream_error: "Le service d'extraction est injoignable, réessaie plus tard.",
+    },
     nodes: [
-      { id: "in", label: "Import doc", icon: "receipt", sublabel: "doc" },
+      { id: "in", label: "Import doc", icon: "receipt", sublabel: "image" },
       { id: "ocr", label: "OCR · Vision", icon: "ai", sublabel: "OCR · Vision" },
       { id: "ext", label: "Extraction champs", icon: "format", sublabel: "champs" },
       { id: "val", label: "Validation totaux", icon: "shield", sublabel: "totaux" },
       { id: "out", label: "Résultat", icon: "check", sublabel: "résultat" },
     ],
-    renderResult: (r) => <GenericResult result={r} />,
+    renderResult: (result, _response, ctx) => (
+      <InvoiceResult
+        result={result as InvoiceData}
+        fileUrl={ctx?.fileUrl} fileType={ctx?.fileType} fileName={ctx?.fileName}
+      />
+    ),
   },
   {
-    id: "sav", tabLabel: "SAV", tabIcon: "chat", accent: "#06b6d4",
+    id: "sav", tabLabel: "SAV", tabIcon: "chat", accent: "#06b6d4", chat: true,
     title: "Assistant SAV (RAG)",
-    subtitle: "Posez une question client : recherche dans la base, analyse et réponse sourcée.",
+    subtitle: "Posez une question de client : l'IA cherche dans la FAQ de la boutique et répond en citant ses sources — zéro invention.",
     endpoint: "/api/demo/sav", inputType: "textarea", inputField: "question",
-    inputLabel: "Question client", placeholder: "Ex : Comment retourner un article défectueux ?",
-    exampleText: SAV_SAMPLE, submitLabel: "Lancer le workflow",
+    inputLabel: "Question client", placeholder: "Posez une question de client…", textMax: 500,
+    examples: {
+      text: [
+        { label: "Délais de livraison", value: "Quels sont vos délais de livraison ?" },
+        { label: "Retour & remboursement", value: "Comment retourner un article et être remboursé ?" },
+        { label: "Hors base (test refus)", value: "Avez-vous une boutique physique à Paris ?" },
+      ],
+    },
+    errorMessages: { upstream_error: "L'assistant SAV est injoignable, réessaie plus tard." },
     nodes: [
       { id: "q", label: "Question", icon: "chat", sublabel: "question" },
       { id: "rag", label: "Recherche base", icon: "table", sublabel: "RAG" },
@@ -96,6 +148,6 @@ export const AUTOMATIONS: WorkflowConfig[] = [
       { id: "red", label: "Rédaction", icon: "format", sublabel: "rédaction" },
       { id: "out", label: "Résultat sourcé", icon: "check", sublabel: "sourcé" },
     ],
-    renderResult: (r) => <GenericResult result={r} />,
+    renderResult: (r) => <SavResult result={r as SavData} />,
   },
 ];

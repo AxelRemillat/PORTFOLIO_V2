@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { type Body, MAX_DT, SLEEP_ENERGY, SPRINGS, applyDragPos, createBodies, step } from "./graph-physics";
+import { CAT_MEMBERS, zonePath, zoneLabelAnchor, type Pt } from "./skills-zones";
+
+interface ZoneRefs { paths: SVGPathElement[]; label: SVGTextElement | null }
 
 const DRAG_THRESHOLD = 5; // px écran : en-deçà = clic (comportement existant)
 
@@ -23,6 +26,7 @@ export default function useGraphPhysics(
   const bodies = useRef<Map<string, Body> | null>(null);
   const nodeEls = useRef(new Map<string, SVGGElement>());
   const edgeEls = useRef<(SVGLineElement | null)[]>([]);
+  const zoneEls = useRef(new Map<string, ZoneRefs>());
   const dragId = useRef<string | null>(null);
   const draggingRef = useRef(false); // miroir non-React de isDragging (guards hover)
   const wasDragRef = useRef(false);  // le clic qui suit un drag doit être ignoré
@@ -46,6 +50,17 @@ export default function useGraphPhysics(
       const a = B.get(SPRINGS[i].a)!, b = B.get(SPRINGS[i].b)!;
       el.setAttribute("x1", a.x.toFixed(2)); el.setAttribute("y1", a.y.toFixed(2));
       el.setAttribute("x2", b.x.toFixed(2)); el.setAttribute("y2", b.y.toFixed(2));
+    });
+    // Zones de thème : contour + label recalculés depuis les positions live.
+    zoneEls.current.forEach((rec, cat) => {
+      const pts = CAT_MEMBERS[cat].map((id) => { const b = B.get(id)!; return [b.x, b.y] as Pt; });
+      const d = zonePath(pts);
+      for (const p of rec.paths) p.setAttribute("d", d);
+      if (rec.label) {
+        const [lx, ly] = zoneLabelAnchor(pts);
+        rec.label.setAttribute("x", lx.toFixed(1));
+        rec.label.setAttribute("y", ly.toFixed(1));
+      }
     });
   };
 
@@ -126,6 +141,18 @@ export default function useGraphPhysics(
   const registerEdge = (i: number) => (el: SVGLineElement | null) => {
     edgeEls.current[i] = el;
   };
+  const zoneRec = (cat: string) => {
+    let r = zoneEls.current.get(cat);
+    if (!r) { r = { paths: [], label: null }; zoneEls.current.set(cat, r); }
+    return r;
+  };
+  const registerZonePath = (cat: string) => (el: SVGPathElement | null) => {
+    const r = zoneRec(cat);
+    if (el && !r.paths.includes(el)) r.paths.push(el);
+  };
+  const registerZoneLabel = (cat: string) => (el: SVGTextElement | null) => {
+    zoneRec(cat).label = el;
+  };
 
   return {
     isDragging,
@@ -134,5 +161,7 @@ export default function useGraphPhysics(
     pointerHandlers,
     registerNode,
     registerEdge,
+    registerZonePath,
+    registerZoneLabel,
   };
 }

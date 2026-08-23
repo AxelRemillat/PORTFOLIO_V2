@@ -12,7 +12,7 @@ import HomeCta from "@/components/home/HomeCta";
 export const metadata: Metadata = {
   title: "Axel Remillat — Mise en production IA pour PME & startups",
   description:
-    "Ingénieur IA. Je fais passer vos projets IA du POC à la production : agents, RAG, automatisations — fiables, monitorés, conformes. Preuves testables en ligne.",
+    "Ingénieur IA. Je fais passer vos projets IA du prototype à la production : agents, RAG, automatisations — fiables, monitorés, conformes. Preuves testables en ligne.",
 };
 
 export default function HomePage() {

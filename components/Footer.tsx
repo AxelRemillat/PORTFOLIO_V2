@@ -4,7 +4,7 @@ import Link from "next/link";
 // petit) : la salle des machines se découvre, elle ne se met pas en avant.
 const links = [
   { href: "/offres", label: "Offres" },
-  { href: "/preuves", label: "Preuves" },
+  { href: "/projets", label: "Projets" },
   { href: "/demos", label: "VEGA 1.0" },
   { href: "/parcours", label: "Parcours" },
   { href: "/contact", label: "Contact" },

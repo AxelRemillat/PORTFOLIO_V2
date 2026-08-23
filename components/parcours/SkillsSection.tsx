@@ -7,6 +7,7 @@ import SkillsMarquee from "./SkillsMarquee";
 import SectionLabel from "./SectionLabel";
 import ConstellationNode from "./ConstellationNode";
 import ConstellationEdges from "./ConstellationEdges";
+import ThemeZones from "./ThemeZones";
 import useGraphPhysics from "./useGraphPhysics";
 
 // ── Constantes réglables ──────────────────────────────────────────────────────
@@ -95,6 +96,8 @@ export default function SkillsSection() {
 
           {/* Groupe zoomable (edges + nodes) — son CTM sert aussi de repère au drag */}
           <g ref={zoomRef} transform={focusTransform} style={{ transition: reduce ? "none" : ZOOM_TRANSITION }}>
+            {/* Zones de thème « territoire » — arrière-plan, derrière arêtes + nœuds */}
+            <ThemeZones registerPath={phys.registerZonePath} registerLabel={phys.registerZoneLabel} />
             <ConstellationEdges focus={focus} visible={visible} reduce={reduce} register={phys.registerEdge} />
 
             {/* Nœuds — drift idle + drag élastique (hover suspendu pendant un drag) */}

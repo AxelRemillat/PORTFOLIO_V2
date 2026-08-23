@@ -8,9 +8,9 @@ import SectionLabel from "@/components/parcours/SectionLabel";
 // Teaser des 3 offres (détail complet sur /offres). Mini-cards nom + une ligne
 // + prix « à partir de ». Reveal au scroll, hover sobre (reduced-motion OK).
 const TEASERS = [
-  { name: "Pré-Vol", line: "Votre système IA au banc d'essai.", price: "dès 490 €", accent: "#f97316" },
-  { name: "Mise en Orbite", line: "Du POC à la production.", price: "1 900 à 4 900 €", accent: "#10b981" },
-  { name: "Contrôle de Mission", line: "Votre IA sous surveillance.", price: "dès 690 €/mois", accent: "#a855f7" },
+  { name: "Diagnostic", line: "Votre système IA au banc d'essai.", price: "dès 490 €", accent: "#f97316" },
+  { name: "Mise en production", line: "Du prototype à la production.", price: "1 900 à 4 900 €", accent: "#10b981" },
+  { name: "Suivi mensuel", line: "Votre IA sous surveillance.", price: "dès 690 €/mois", accent: "#a855f7" },
 ];
 
 export default function OffersTeaser() {

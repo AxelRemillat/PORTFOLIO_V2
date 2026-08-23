@@ -1,4 +1,4 @@
-// Données des 3 preuves affichées sur /preuves.
+// Données des 3 projets affichés sur /projets.
 // Repurposé depuis l'ancien projects-data : ne reste que ce qui tourne vraiment
 // (VEGA en prod) ou se déploie en ce moment (N8N, infra self-hosted).
 
@@ -46,7 +46,7 @@ export const projects: Project[] = [
     stack: ["Next.js", "Supabase", "OpenAI", "pgvector"],
     demoUrl: "/demos",
     primaryCta: { label: "Tester VEGA →", href: "/demos" },
-    detailCta: { label: "Voir l'architecture", href: "/preuves/vega" },
+    detailCta: { label: "Voir l'architecture", href: "/projets/vega" },
     context:
       "Un CV PDF est passif : un recruteur ou un prospect ne peut ni poser une question précise, ni vérifier une compétence en quelques secondes. Je voulais une preuve vivante de ce que je livre — un système RAG complet en production, pas une démo jetable.",
     problem:
@@ -69,7 +69,7 @@ export const projects: Project[] = [
     stack: ["n8n", "OpenAI", "Webhooks", "Python"],
     demoUrl: "/automatisations",
     primaryCta: { label: "Tester les automatisations →", href: "/automatisations" },
-    detailCta: { label: "Voir l'architecture", href: "/preuves/n8n" },
+    detailCta: { label: "Voir l'architecture", href: "/projets/n8n" },
     context:
       "Les PME accumulent des tâches répétitives à faible valeur : ressaisie de factures, tri d'emails, comptes rendus, réponses SAV. Prises une par une elles semblent anodines ; cumulées, elles coûtent des heures chaque semaine.",
     problem:
@@ -90,7 +90,7 @@ export const projects: Project[] = [
     cardBg: "radial-gradient(ellipse at 60% 40%, #3d0f72 0%, #1c0540 45%, #080118 100%)",
     glow: "breathePurple 3.5s ease-in-out infinite",
     stack: ["Docker", "Ollama", "API TTS", "Tunnel", "Monitoring"],
-    detailCta: { label: "Voir l'architecture →", href: "/preuves/infra" },
+    detailCta: { label: "Voir l'architecture →", href: "/projets/infra" },
     context:
       "Tout louer à des API tierces (LLM, TTS, hébergement) plafonne les marges et crée une dépendance. Je veux opérer moi-même l'infrastructure que je vends à mes clients — et pouvoir le prouver.",
     problem:

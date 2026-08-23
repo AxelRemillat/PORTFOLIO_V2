@@ -1,25 +1,16 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import TabBar from "./TabBar";
 import WorkflowCanvas from "./WorkflowCanvas";
+import SavChat from "./SavChat";
 import { AUTOMATIONS } from "./automations-data";
 
 // Orchestrateur des onglets : un seul WorkflowCanvas actif à la fois (key=id → son
-// état se réinitialise au switch). Au changement d'onglet (TabBar ou rebond),
-// scroll doux vers le haut du nouveau canvas — respecte prefers-reduced-motion.
+// état se réinitialise au switch). Changer d'onglet (clic, clavier ou rebond) ne
+// modifie pas la position de scroll de la page — aucun scroll forcé.
 export default function AutomationTabs() {
   const [active, setActive] = useState(0);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const firstRun = useRef(true);
-
-  useEffect(() => {
-    if (firstRun.current) { firstRun.current = false; return; }
-    const el = panelRef.current;
-    if (!el) return;
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  }, [active]);
 
   const cfg = AUTOMATIONS[active];
   const selectById = (id: string) => {
@@ -34,11 +25,10 @@ export default function AutomationTabs() {
   return (
     <>
       <TabBar tabs={tabs} active={active} onSelect={setActive} />
-      <div
-        ref={panelRef} className="wc-panel" role="tabpanel"
-        id={`panel-${cfg.id}`} aria-labelledby={`tab-${cfg.id}`}
-      >
-        <WorkflowCanvas key={cfg.id} config={cfg} suggestions={suggestions} onSelect={selectById} />
+      <div role="tabpanel" id={`panel-${cfg.id}`} aria-labelledby={`tab-${cfg.id}`}>
+        {cfg.chat
+          ? <SavChat key={cfg.id} config={cfg} />
+          : <WorkflowCanvas key={cfg.id} config={cfg} suggestions={suggestions} onSelect={selectById} />}
       </div>
     </>
   );

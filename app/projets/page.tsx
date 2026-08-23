@@ -6,12 +6,12 @@ import { PREUVES_CSS } from "@/components/preuves/preuvesCss";
 // Server component : SEO + fond propre (plus de SpaceBackground). Les cards sont
 // des mini-interfaces produit + flux d'architecture (client, animées).
 export const metadata: Metadata = {
-  title: "Preuves — Axel Remillat | Systèmes IA testables",
+  title: "Projets — Axel Remillat | Systèmes IA testables",
   description:
     "Trois systèmes IA en production, testables en vrai : l'assistant RAG VEGA, les automatisations n8n et l'infrastructure self-hosted. Pas de screenshots — des preuves.",
 };
 
-export default function PreuvesPage() {
+export default function ProjetsPage() {
   return (
     <main className="pvp-main">
       <style>{PREUVES_CSS}</style>
@@ -47,7 +47,7 @@ export default function PreuvesPage() {
 
       <div className="pvp-wrap">
         <header>
-          <p className="pvp-label pvp-head">PREUVES // EN PRODUCTION</p>
+          <p className="pvp-label pvp-head">PROJETS // EN PRODUCTION</p>
           <h1 className="pvp-h1 pvp-head" style={{ animationDelay: "0.08s" }}>
             Ne me croyez pas sur parole. Testez.
           </h1>

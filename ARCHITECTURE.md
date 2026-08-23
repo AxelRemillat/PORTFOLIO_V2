@@ -87,7 +87,8 @@ Créer `.env.local` à la racine du projet (non commité) :
 OPENAI_API_KEY=sk-...
 SUPABASE_URL=https://xxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=eyJ...
-NEXT_PUBLIC_GA_ID=G-XXXXXXXXXX   # optionnel
+NEXT_PUBLIC_UMAMI_WEBSITE_ID=    # optionnel — analytics Umami (prod)
+NEXT_PUBLIC_UMAMI_SCRIPT_URL=    # optionnel — ex. https://cloud.umami.is/script.js
 ```
 
 ---

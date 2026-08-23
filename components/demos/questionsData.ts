@@ -30,9 +30,9 @@ export const QUESTION_CATEGORIES: QuestionCategory[] = [
     label: "Les offres",
     questions: [
       "Quelles sont tes offres ?",
-      "C'est quoi le Pré-Vol ?",
-      "C'est quoi la Mise en Orbite ?",
-      "C'est quoi le Contrôle de Mission ?",
+      "C'est quoi le Diagnostic ?",
+      "C'est quoi la Mise en production ?",
+      "C'est quoi le Suivi mensuel ?",
       "Combien ça coûte ?",
       "Comment on démarre ?",
       "T'es dispo combien de jours par semaine ?",

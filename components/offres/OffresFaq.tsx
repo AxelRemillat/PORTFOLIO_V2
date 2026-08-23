@@ -80,6 +80,19 @@ export default function OffresFaq() {
                   <div style={{ overflow: "hidden" }}>
                     <p style={{ margin: 0, padding: "0 1.25rem 1.25rem", fontSize: "0.9rem", lineHeight: 1.6, color: "var(--color-muted)" }}>
                       {f.a}
+                      {f.link && (
+                        <>
+                          {" "}
+                          <a
+                            href={f.link.href}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: "var(--color-orange)", textDecoration: "none", borderBottom: "1px solid rgba(249,115,22,0.45)", whiteSpace: "nowrap" }}
+                          >
+                            {f.link.label}
+                          </a>
+                        </>
+                      )}
                     </p>
                   </div>
                 </div>
