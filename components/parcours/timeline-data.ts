@@ -35,7 +35,7 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     period: "Juil. 2024 → Août 2024 · 2 mois",
     description:
       "Entreprise spécialisée dans le recyclage avancé de silicium photovoltaïque. Développement logiciel interne — gestion des stocks.",
-    skills: ["Python", "Gestion des stocks"],
+    skills: ["Python", "Développement logiciel", "Gestion de données"],
     current: false,
   },
   {
@@ -48,9 +48,9 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     description:
       "Plateforme d'aide au choix de mobilité internationale étudiante. Cofondateur & Lead Tech — produit, développement (React, Firebase), pitchs jurys. Statut d'association, incubateur ESME.",
     achievements: [
-      "🥇 Concours IONIS 2025 — 1er prix sur 400+ projets (3 000 €)",
-      "🥇 Concours ESME Calendrier de l'Avent 2025 — 1er prix (500 €)",
-      "🥈 Galets du Rhône 2025 (Genève) — 2e place (1 000 €)",
+      { medal: "🥇", title: "Concours IONIS 2025 — 1er prix sur 400+ projets", reward: "3 000 €" },
+      { medal: "🥇", title: "ESME Calendrier de l'Avent 2025 — 1er prix", reward: "500 €" },
+      { medal: "🥈", title: "Galets du Rhône 2025 (Genève) — 2e place", reward: "1 000 €" },
     ],
     skills: ["React", "Firebase", "Gestion de projet"],
     current: false,
@@ -84,11 +84,11 @@ export const TIMELINE_EVENTS: TimelineEvent[] = [
     year: "2026",
     type: "Alternance",
     color: "orange",
-    company: "Andra Learning — Station F",
+    company: "Startup EdTech — Station F",
     role: "Ingénieur IA Agentic & Gestion de données",
     period: "Juil. 2026 → Sept. 2027 · 14 mois",
     description:
-      "EdTech incubée à Station F. Systèmes IA agentiques et pipelines de données. Maître d'apprentissage : Ouriel Bettach (CTO).",
+      "EdTech incubée à Station F. Systèmes IA agentiques et pipelines de données.",
     skills: ["IA Agentic", "Data pipelines", "LLM"],
     current: true,
   },

@@ -18,8 +18,9 @@ const labelStyle: CSSProperties = {
 const fieldWrap: CSSProperties = { marginBottom: "1.5rem" };
 
 const SUBJECTS = [
-  "Mission data / IA",
-  "Recrutement / alternance",
+  "Diagnostic IA",
+  "Mise en production",
+  "Suivi mensuel",
   "Collaboration",
   "Autre",
 ];

@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!isCsv) return err(400, "invalid_input");
   if (file.size > MAX_SIZE) return err(400, "file_too_large");
 
-  if (!(await checkRateLimit(ip, "dataclean"))) return err(429, "rate_limited");
+  { const rl = await checkRateLimit(ip, "dataclean"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
   if (!webhook) return err(502, "upstream_error");
 
   const controller = new AbortController();

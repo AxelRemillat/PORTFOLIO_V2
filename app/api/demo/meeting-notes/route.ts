@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     if (typeof body.hp === "string" && body.hp.trim() !== "") return err(400, "invalid_input");
     const t = body.transcript_text;
     if (typeof t !== "string" || t.trim() === "" || t.length > MAX_TEXT) return err(400, "invalid_input");
-    if (!(await checkRateLimit(ip, "meeting"))) return err(429, "rate_limited");
+    { const rl = await checkRateLimit(ip, "meeting"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
     if (!webhook) return err(502, "upstream_error");
     return forward(webhook, JSON.stringify({ mode: "text", transcript_text: t }),
       { "Content-Type": "application/json", "x-demo-secret": secret });
@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     const audio = form.get("audio");
     if (!(audio instanceof File) || audio.size === 0 || !audio.type.startsWith("audio/")) return err(400, "invalid_input");
     if (audio.size > MAX_AUDIO) return err(400, "file_too_large");
-    if (!(await checkRateLimit(ip, "meeting"))) return err(429, "rate_limited");
+    { const rl = await checkRateLimit(ip, "meeting"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
     if (!webhook) return err(502, "upstream_error");
     const fd = new FormData();
     fd.append("mode", "audio");

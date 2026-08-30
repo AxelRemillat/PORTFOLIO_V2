@@ -3,6 +3,12 @@
 import { forwardRef } from "react";
 import type { CSSProperties } from "react";
 
+export interface Achievement {
+  medal: string;   // emoji médaille (🥇 / 🥈)
+  title: string;   // concours + rang
+  reward: string;  // montant (NBSP insécables)
+}
+
 export interface TimelineEvent {
   year: string;
   type: string;
@@ -11,7 +17,7 @@ export interface TimelineEvent {
   role: string;
   period: string;
   description: string;
-  achievements?: string[];
+  achievements?: Achievement[];
   skills: string[];
   current: boolean;
 }
@@ -80,21 +86,41 @@ const TimelineItem = forwardRef<HTMLDivElement, Props>(function TimelineItem(
           </p>
           <p style={{ margin: "8px 0 0", fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{event.description}</p>
 
-          {event.achievements?.map((a) => (
-            <div
-              key={a}
-              style={{
-                marginTop: 8,
-                background: "rgba(249,115,22,0.06)",
-                borderLeft: "2px solid #f97316",
-                padding: "4px 8px",
-                fontSize: 12,
-                color: "#e2e8f0",
-              }}
-            >
-              {a}
+          {event.achievements && event.achievements.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+              {event.achievements.map((a) => (
+                <div
+                  key={a.title}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    background: "rgba(249,115,22,0.09)",
+                    border: "1px solid rgba(249,115,22,0.35)",
+                    borderRadius: 8,
+                    padding: "8px 10px",
+                  }}
+                >
+                  <span aria-hidden style={{ fontSize: 20, lineHeight: 1, flexShrink: 0 }}>{a.medal}</span>
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 12.5, color: "#e2e8f0", lineHeight: 1.4 }}>
+                    {a.title}
+                  </span>
+                  <span
+                    style={{
+                      flexShrink: 0,
+                      fontFamily: "var(--font-mono)",
+                      fontWeight: 800,
+                      fontSize: 14,
+                      color: "#f97316",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {a.reward}
+                  </span>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
 
           <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
             {event.skills.map((s) => (

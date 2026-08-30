@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const q = body.question;
   if (typeof q !== "string" || q.trim() === "" || q.length > MAX_LEN) return err(400, "invalid_input");
 
-  if (!(await checkRateLimit(ip, "sav"))) return err(429, "rate_limited");
+  { const rl = await checkRateLimit(ip, "sav"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
   if (!webhook) return err(502, "upstream_error");
 
   const controller = new AbortController();

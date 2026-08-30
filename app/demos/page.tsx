@@ -33,7 +33,7 @@ export default function DemosPage() {
 
   // Répliques d'inactivité : uniquement une fois l'intro terminée, jamais pendant
   // que VEGA parle/réfléchit ou que l'utilisateur tape (géré dans le hook).
-  useIdleBanter({ enabled: ax.introDone, orbState: ax.orbState, speak: ax.speak });
+  useIdleBanter({ enabled: ax.introDone, orbState: ax.orbState, speak: ax.speak, cancelBanter: ax.stopBanter });
 
   // Suppression de la conversation en cours : retire de l'historique + reset chat (idle).
   const deleteConv = () => { if (hist.activeId) hist.remove(hist.activeId); ax.newConversation(); };

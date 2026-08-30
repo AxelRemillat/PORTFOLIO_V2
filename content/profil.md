@@ -8,7 +8,7 @@ Basé à Paris pour les études, originaire de la région Auvergne-Rhône-Alpes 
 
 ## Objectif professionnel
 
-Alternance d'ingénieur IA Agentic & gestion de données chez Andra Learning (EdTech, Station F) démarrée en juillet 2026. Maître d'apprentissage : Ouriel Bettach, CTO.
+Alternance d'ingénieur IA Agentic & gestion de données dans une startup EdTech (Station F) démarrée en juillet 2026.
 
 Après l'alternance : CDI dans la data/IA pour absorber le prêt étudiant, puis freelance et développement de projets propres (SEACO, RISE).
 

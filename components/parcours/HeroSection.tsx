@@ -72,7 +72,7 @@ export default function HeroSection() {
         className="parcours-fade"
         style={{ marginTop: "0.6rem", fontSize: "clamp(0.85rem, 1.8vw, 1rem)", color: "var(--color-muted)", animationDelay: "0.9s" }}
       >
-        Ingénieur IA &amp; Data · ESME Paris · Alternant @ Andra Learning (Station F)
+        Ingénieur IA &amp; Data · ESME Paris · Alternant en startup EdTech (Station F)
       </p>
 
       <div

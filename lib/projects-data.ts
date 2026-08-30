@@ -59,7 +59,7 @@ export const projects: Project[] = [
     slug: "n8n",
     title: "Automatisations N8N pour PME",
     tagline:
-      "Tri d'email par IA, testable en direct. Factures, SAV, comptes rendus… en préparation.",
+      "Tri d'email, factures, SAV et comptes rendus — automatisations métier IA, testables en direct.",
     badge: "LIVE — testable",
     state: "live",
     model: "drone",
@@ -75,8 +75,54 @@ export const projects: Project[] = [
     problem:
       "Concevoir des workflows fiables plutôt que des scripts fragiles : orchestrés, rate-limités face aux APIs, monitorés, avec reprise sur erreur. Et les rendre testables publiquement sans jamais exposer de données clientes.",
     result:
-      "12 automatisations métier conçues (factures, emails, comptes rendus, SAV…). 5 sont en cours de déploiement en version publique testable ; les autres tournent en environnement client. Statut honnête : les workflows existent, la vitrine testable arrive.",
+      "Automatisations métier IA en production, testables en direct sur le site : tri d'email, factures, SAV, comptes rendus. Workflows orchestrés, rate-limités et monitorés, avec reprise sur erreur.",
     offer: { label: "Voir l'offre — Automatisation métier →", href: "/offres" },
+  },
+  {
+    slug: "agent",
+    title: "Agent commercial autonome",
+    tagline:
+      "Une demande client → devis, réponse et créneau, traités de bout en bout par un agent qui raisonne et décide.",
+    badge: "LIVE — testable",
+    state: "live",
+    model: "drone",
+    accent: "#ec4899",
+    cardBg: "linear-gradient(130deg, #2a0416 0%, #4a0a28 45%, #6d0f3c 100%)",
+    glow: "breathePink 3s ease-in-out infinite",
+    stack: ["OpenAI function-calling", "Next.js", "Outils métier", "gpt-4o-mini"],
+    demoUrl: "/agent",
+    primaryCta: { label: "Tester l'agent →", href: "/agent" },
+    detailCta: { label: "Voir l'architecture", href: "/projets/agent" },
+    context:
+      "Une PME reçoit des demandes commerciales entrantes (« il me faut X, livré à Y, votre prix ? »). Y répondre demande de croiser catalogue, stock, zones de livraison et règles de remise — un travail répétitif qui retarde les devis.",
+    problem:
+      "Automatiser ce traitement sans jamais halluciner un prix ou un délai : un agent qui RAISONNE, appelle des outils déterministes (catalogue, stock, livraison, devis) et décide de la faisabilité — pas un simple chatbot qui improvise.",
+    result:
+      "Démo testable en ligne. Un agent function-calling (gpt-4o-mini, boucle bornée à 6 tours) enchaîne ses outils, montre sa trace en direct, et produit un livrable complet : devis chiffré (remises, TVA), email prêt à envoyer et créneau d'appel. Prix, stocks et délais viennent exclusivement des outils.",
+    offer: { label: "Voir l'offre — Déploiement IA en production →", href: "/offres" },
+  },
+  {
+    slug: "pipeline",
+    title: "Pipeline Data/ML en production",
+    tagline:
+      "Scoring de leads (proba de conversion) : ingestion → ML → prédictions + explicabilité, testable en direct.",
+    badge: "LIVE — testable",
+    state: "live",
+    model: "satellite",
+    accent: "#22d3ee",
+    cardBg: "linear-gradient(135deg, #04141a 0%, #062a33 50%, #083a45 100%)",
+    glow: "breatheCyan 3s ease-in-out infinite",
+    stack: ["Machine Learning", "Feature engineering", "Scoring", "Explicabilité"],
+    demoUrl: "/pipeline",
+    primaryCta: { label: "Tester le pipeline →", href: "/pipeline" },
+    detailCta: { label: "Voir l'architecture", href: "/projets/pipeline" },
+    context:
+      "Les PME croulent sous les leads entrants mais les traitent dans le désordre, sans savoir lesquels ont le plus de chances de convertir — du temps commercial gaspillé sur des prospects froids.",
+    problem:
+      "Construire un vrai pipeline data → ML de bout en bout, pas un notebook jetable : ingestion, nettoyage, feature engineering, modèle et explicabilité — léger, déterministe, testable en ligne, sans infra lourde ni coût par prédiction.",
+    result:
+      "Démo testable en direct. Régression logistique à poids fixes (entraînée hors-ligne), scoring 100 % client-side : chaque lead reçoit une probabilité de conversion (chaud/tiède/froid) et les features qui poussent son score. Pipeline en 5 étapes révélées pas à pas, prédictions triables et graphes d'analyse.",
+    offer: { label: "Voir l'offre — Déploiement IA en production →", href: "/offres" },
   },
   {
     slug: "infra",

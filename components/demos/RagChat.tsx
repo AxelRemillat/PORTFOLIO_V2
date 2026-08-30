@@ -39,13 +39,13 @@ export default function RagChat() {
         body: JSON.stringify({ question }),
       });
 
-      if (res.status === 429) {
-        setError(
-          "Limite atteinte — la démo est protégée contre les abus. Réessaie dans une heure."
-        );
+      if (!res.ok) {
+        // Blocage gracieux (rate-limit / démo saturée / pause) : message renvoyé.
+        let msg = "Une erreur est survenue. Réessaie.";
+        try { const j = await res.json(); if (j?.message) msg = j.message; } catch { /* pas de JSON */ }
+        setError(msg);
         return;
       }
-      if (!res.ok) throw new Error("Erreur serveur");
 
       const { answer } = await res.json();
       setMessages((prev) => [...prev, { role: "assistant", content: answer }]);

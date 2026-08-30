@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { createClient } from "@supabase/supabase-js";
-import { checkDemoGuard, logDemoEvent } from "@/lib/demo-guard";
+import { checkRateLimit } from "@/lib/demo-rate-limit";
 
 // Lazy init : évite l'erreur "supabaseUrl is required" au build Next.js
 function getClients() {
@@ -15,14 +15,20 @@ function getClients() {
 }
 
 export async function POST(req: NextRequest) {
+  // Kill-switch (opt-out : actif par défaut).
+  if (process.env.DEMO_RAG_ENABLED === "false") {
+    return NextResponse.json({ error: "demo_disabled", message: "Démo en pause, reviens plus tard." }, { status: 503 });
+  }
   const { openai, supabase } = getClients();
   const ip =
     req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "127.0.0.1";
 
-  const guard = await checkDemoGuard(ip);
-  if (!guard.allowed) {
+  const rl = await checkRateLimit(ip, "vegarag");
+  if (!rl.ok) {
     return NextResponse.json(
-      { error: "Limite atteinte. Réessaie dans une heure." },
+      rl.scope === "global"
+        ? { error: "demo_busy", message: "Démo très sollicitée aujourd'hui, réessaie plus tard." }
+        : { error: "rate_limited", message: "Trop de questions rapprochées — réessaie dans une minute." },
       { status: 429 }
     );
   }
@@ -30,7 +36,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const { question } = body;
 
-  if (!question || typeof question !== "string" || question.length > 500) {
+  if (!question || typeof question !== "string" || question.length > 2000) {
     return NextResponse.json({ error: "Question invalide." }, { status: 400 });
   }
 
@@ -70,9 +76,5 @@ ${context || "Aucun contexte disponible — le contenu RAG n'est pas encore ing�
   });
 
   const answer = completion.choices[0].message.content ?? "";
-  const tokensUsed = completion.usage?.total_tokens ?? 0;
-
-  await logDemoEvent(ip, tokensUsed);
-
   return NextResponse.json({ answer });
 }

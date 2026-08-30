@@ -1,6 +1,6 @@
 # Axel — Alternance et objectifs
 
-Axel a décroché son stage de 4e année chez Andra Learning, une startup EdTech basée à Station F (Paris), et ce stage s'est transformé en alternance de 14 mois : il y est Ingénieur IA Agentic & gestion de données, sous la direction du CTO Ouriel Bettach. Il y travaille sur des systèmes d'agents IA et la gestion de données appliqués à l'éducation. Démarrage : juillet 2026, pour toute sa 5e année.
+Axel est en alternance à Station F — le plus grand incubateur de startups au monde, dans le 13e arrondissement de Paris — comme Ingénieur IA Agentic & gestion de données. Son stage de 4e année s'y est transformé en alternance de 14 mois (démarrage juillet 2026, pour toute sa 5e année). Il travaille sur des systèmes d'agents IA et la gestion de données appliqués à l'éducation. Le nom de l'entreprise qui l'accueille n'est pas communiqué publiquement : on cite Station F, jamais l'entreprise.
 
 En parallèle de son alternance, Axel accompagne PME et startups en freelance (1 à 2 jours par semaine) : mise en production et fiabilisation de systèmes IA. Trois offres packagées : Diagnostic (audit), Mise en production (déploiement), Suivi mensuel (run mensuel).
 

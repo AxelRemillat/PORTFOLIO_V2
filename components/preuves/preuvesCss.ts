@@ -11,6 +11,10 @@ export const PREUVES_CSS = `
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 40px 80px -32px rgba(0,0,0,0.92), 0 0 46px var(--pv-accent-glow); }
 .pv-card::before { content:""; position:absolute; inset:0; pointer-events:none; z-index:0;
   background:radial-gradient(58% 90% at 100% 28%, var(--pv-accent-glow), transparent 60%); }
+/* Bandeau d'accent pleine hauteur sur le bord gauche (raccord aux coins arrondis
+   via l'overflow:hidden de la card). Couleur = accent du projet. */
+.pv-card::after { content:""; position:absolute; left:0; top:0; bottom:0; width:5px; z-index:2;
+  background:var(--pv-accent); pointer-events:none; }
 .pv-info { position:relative; z-index:1; flex:0 1 52%; padding:2.2rem; display:flex; flex-direction:column; }
 .pv-window { position:relative; z-index:1; flex:0 1 48%; padding:1.6rem 1.7rem 1.6rem 0.4rem; display:flex; align-items:center; }
 .pv-head { display:flex; align-items:center; justify-content:space-between; }

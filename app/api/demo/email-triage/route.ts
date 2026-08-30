@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
   // d. rate-limit par IP + plafond global
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
-  if (!(await checkRateLimit(ip, "email"))) return err(429, "rate_limited");
+  { const rl = await checkRateLimit(ip, "email"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
 
   // e. appel n8n (timeout 20 s)
   const webhook = process.env.N8N_EMAIL_TRIAGE_WEBHOOK_URL;

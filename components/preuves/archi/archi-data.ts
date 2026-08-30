@@ -32,6 +32,29 @@ export const ARCHI: Record<string, Archi> = {
       { title: "Action", tech: "facture · email · compte rendu · SAV" },
     ],
   },
+  agent: {
+    flow: [
+      { title: "Demande client", tech: "texte libre entrant" },
+      { title: "Agent · gpt-4o-mini", tech: "boucle function-calling (max 6 tours)", items: ["Raisonnement", "Choix des outils", "Décision faisable / non"] },
+      { title: "Outils métier", tech: "fonctions déterministes", items: ["rechercher_produits", "verifier_stock", "verifier_livraison", "calculer_devis"] },
+      { title: "Livrable", tech: "devis (remises · TVA) + email + créneau" },
+    ],
+    guards: ["Prix/stock/délai = outils uniquement", "Rate-limit 3/min · 10/j", "Kill-switch · honeypot · timeout 40s"],
+  },
+  pipeline: {
+    flow: [
+      { title: "Ingestion", tech: "dataset Leads SaaS · ~300 lignes · 11 colonnes" },
+      { title: "Nettoyage & validation", tech: "imputation · clamp des aberrants · déduplication par id" },
+      {
+        title: "Feature engineering",
+        tech: "one-hot (taille · source) · ratios · normalisations",
+        items: ["10 features dérivées"],
+      },
+      { title: "Régression logistique", tech: "poids fixés hors-ligne → proba = 1 / (1 + e^−z)" },
+      { title: "Prédictions & explicabilité", tech: "chaud / tiède / froid + features décisives" },
+    ],
+    guards: ["100 % client-side — pas d'API, pas de secret", "Déterministe · gratuit · instantané"],
+  },
   infra: {
     flow: [
       { title: "Internet", tech: "tunnel sécurisé (HTTPS)" },

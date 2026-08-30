@@ -8,7 +8,7 @@ import { PREUVES_CSS } from "@/components/preuves/preuvesCss";
 export const metadata: Metadata = {
   title: "Projets — Axel Remillat | Systèmes IA testables",
   description:
-    "Trois systèmes IA en production, testables en vrai : l'assistant RAG VEGA, les automatisations n8n et l'infrastructure self-hosted. Pas de screenshots — des preuves.",
+    "Des systèmes IA testables en vrai : l'assistant RAG VEGA, les automatisations n8n, un agent commercial autonome, un pipeline Data/ML de scoring et l'infrastructure self-hosted. Pas de screenshots — des preuves.",
 };
 
 export default function ProjetsPage() {

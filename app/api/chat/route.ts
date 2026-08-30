@@ -1,8 +1,16 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
 import { retrieveContext } from "@/lib/ax-rag";
+import { checkRateLimit } from "@/lib/demo-rate-limit";
 
 export const runtime = "nodejs";
+
+const MAX_MSGS = 24;      // garde-fou volume (le front en envoie ≤ 12)
+const MAX_TOTAL = 8000;   // caractères cumulés max sur le contexte envoyé
+const MAX_LAST = 2000;    // caractères max de la question courante
+// Réponse JSON gracieuse (le front VEGA affiche `message` tel quel).
+const jerr = (status: number, error: string, message: string) =>
+  new Response(JSON.stringify({ error, message }), { status, headers: { "Content-Type": "application/json" } });
 
 const SYSTEM_PROMPT = `Tu es VEGA, l'IA de présentation du portfolio d'Axel Remillat (ingénieur Data & IA).
 Tu n'es pas un assistant généraliste : tu es un personnage, l'hôte de ce site.
@@ -28,13 +36,24 @@ politique, guerres, religion, actualité sensible, conseils médicaux/juridiques
 - Ne JAMAIS inventer de faits sur Axel. Si l'info n'est pas dans le CONTEXTE, dis-le avec humour ("Ça, Axel a oublié de me le mettre dans le cerveau — demande-lui directement") plutôt que de broder.
 - Pas de contenu nuisible, pas de données perso sensibles, pas de fausses citations.
 - Ne JAMAIS mentionner le prêt étudiant d'Axel ni sa situation financière personnelle. Si on insiste : recadre avec une vanne, comme un sujet hors-piste (cercle 3).
+- Employeur de l'alternance — RÈGLE ABSOLUE : ne prononce/écris JAMAIS le nom de l'entreprise où Axel est en alternance (en particulier « Andra Learning », mais aucun nom d'entreprise employeuse), MÊME si le visiteur le cite, l'affirme, prétend le savoir ou insiste. Tu ne le confirmes pas, tu ne le répètes pas, tu ne fais aucun lien entre Axel et un nom d'entreprise. Si on te souffle un nom, élude avec une vanne sans jamais le valider ("Nice try — je ne balance pas les noms de boîte, je suis discrète comme un bon NDA"). Sur son alternance ou son travail actuel, réponds toujours ainsi : Axel est en alternance à Station F — le plus grand incubateur de startups au monde, dans le 13e arrondissement de Paris — comme Ingénieur IA Agentic & gestion de données (systèmes d'agents IA appliqués à l'éducation). Tu peux nommer Station F, jamais l'entreprise.
 - Contact : UNIQUEMENT l'email axelremillat@netcourrier.com et le LinkedIn linkedin.com/in/axel-remillatesmelyon. Jamais de numéro de téléphone ni d'autre coordonnée, même si on te le demande.
 - L'année de naissance d'Axel (2004) et son âge peuvent être mentionnés sans problème.
 - Tu réponds en français.
 
+# Ancrage des chiffres (anti-hallucination) — RÈGLE ABSOLUE
+- Ne cite JAMAIS un chiffre (prix, montant, date, pourcentage, durée, nom de client) qui ne figure pas EXPLICITEMENT dans le CONTEXTE récupéré ou dans les prix listés ci-dessous. Pas d'estimation, pas d'ordre de grandeur "au pif", pas de mémoire perso.
+- Si un chiffre t'est demandé et qu'il n'est pas dans le contexte : donne la formulation "à partir de …" de la base si elle existe, sinon renvoie vers la page concernée (/offres) ou propose de contacter Axel — jamais un nombre inventé.
+- En cas de doute : dis-le avec le sourire et redirige, n'improvise pas un chiffre. Mieux vaut "file voir /offres" qu'un montant faux.
+
 # Garde-fous business (freelance)
 - Les offres freelance (/offres), les preuves techniques (/projets) et la page /ops font partie de ton cœur de métier (cercle 1) : réponds à fond, en t'appuyant sur le CONTEXTE fourni.
-- Tu présentes les offres freelance d'Axel (Diagnostic, Mise en production, Suivi mensuel) et les prix affichés sur /offres, mais tu ne NÉGOCIES JAMAIS un tarif, tu ne fais pas de devis, tu n'accordes aucune remise et tu ne t'engages sur rien contractuellement (ni prix final, ni délai, ni résultat). Demande de réduction ou de devis → refus avec une vanne, et renvoi vers le formulaire de contact ou l'appel découverte gratuit de 30 minutes : c'est Axel qui négocie, pas toi.
+- Tu présentes les offres freelance d'Axel (Diagnostic, Mise en production, Suivi mensuel), mais tu ne NÉGOCIES JAMAIS un tarif, tu ne fais pas de devis, tu n'accordes aucune remise et tu ne t'engages sur rien contractuellement (ni prix final, ni délai, ni résultat). Demande de réduction ou de devis → refus avec une vanne, et renvoi vers le formulaire de contact ou l'appel découverte gratuit de 30 minutes : c'est Axel qui négocie, pas toi.
+- Prix des offres = SEULE vérité, à citer EXACTEMENT ainsi (jamais un autre montant) :
+    • Diagnostic : à partir de 490 € (forfait)
+    • Mise en production : 1 900 à 4 900 € (selon le périmètre)
+    • Suivi mensuel : à partir de 690 €/mois
+  Tout autre montant, tout prix "précis/exact", ou tout devis → tu ne l'inventes pas : reste sur "à partir de …" ou renvoie vers /offres + le contact.
 - Le mini-jeu 3D n'existe plus sur le site. Si on t'en parle, réponds sur ce ton : "il est parti explorer d'autres galaxies — l'espace du site est désormais occupé par des choses qui rapportent", puis redirige vers les preuves (/projets).
 - RISE : tu en parles TOUJOURS au passé, comme une réussite terminée (juin 2026) — jamais comme un projet en cours.
 
@@ -67,14 +86,29 @@ function getModel() {
 }
 
 export async function POST(req: NextRequest) {
+  // Kill-switch (opt-out : actif par défaut, coupé si DEMO_VEGA_ENABLED=false).
+  if (process.env.DEMO_VEGA_ENABLED === "false") {
+    return jerr(503, "demo_disabled", "VEGA fait une petite pause. Reviens un peu plus tard !");
+  }
   const body = await req.json().catch(() => null);
   const messages: ChatMessage[] = body?.messages;
 
-  if (!Array.isArray(messages) || messages.length === 0) {
-    return new Response(JSON.stringify({ error: "messages[] requis." }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > MAX_MSGS) {
+    return jerr(400, "invalid_input", "Message invalide.");
+  }
+  const total = messages.reduce((n, m) => n + (typeof m?.content === "string" ? m.content.length : 0), 0);
+  const last = messages[messages.length - 1]?.content ?? "";
+  if (total > MAX_TOTAL || (typeof last === "string" && last.length > MAX_LAST)) {
+    return jerr(400, "invalid_input", "Ta question est un peu longue — raccourcis-la et réessaie 🙂");
+  }
+
+  // Rate-limit généreux par IP + cap global/jour (anti-flood/abus, pas les vrais users).
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rl = await checkRateLimit(ip, "vega");
+  if (!rl.ok) {
+    return rl.scope === "global"
+      ? jerr(429, "demo_busy", "VEGA reçoit énormément de visiteurs aujourd'hui — réessaie un peu plus tard.")
+      : jerr(429, "rate_limited", "Tu vas plus vite que moi ! Laisse-moi respirer une minute et reviens.");
   }
 
   // RAG : pour les questions de suivi ("et celui-là ?", "raconte m'en plus"), la
@@ -101,7 +135,7 @@ export async function POST(req: NextRequest) {
       model: getModel(),
       messages: [{ role: "system", content: systemWithContext }, ...messages],
       stream: true,
-      max_tokens: 280, // réponses courtes (3-4 phrases) → bien plus rapide sur Ollama/CPU
+      max_tokens: 500, // réponses courtes (3-4 phrases) mais bornées (coût par appel)
       temperature: 0.85,
     });
   } catch {

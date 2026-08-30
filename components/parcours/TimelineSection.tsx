@@ -94,7 +94,7 @@ export default function TimelineSection() {
               style={{
                 position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
                 fontSize: "clamp(4rem, 10vw, 7rem)", fontWeight: 800, lineHeight: 1,
-                color: "rgba(255,255,255,0.03)", letterSpacing: "-0.05em",
+                color: "rgba(255,255,255,0.12)", letterSpacing: "-0.05em",
                 pointerEvents: "none", userSelect: "none",
               }}
             >

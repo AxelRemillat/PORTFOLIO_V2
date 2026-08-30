@@ -45,7 +45,7 @@ export default function HomeHero() {
           >
             J&apos;aide les PME et startups à passer leurs projets IA du prototype
             à la production : agents, RAG, automatisations. Ingénieur IA Agentic &amp;
-            Full Stack en alternance chez Andra Learning (EdTech — Station F).
+            Full Stack en alternance dans une startup EdTech (Station F).
           </p>
 
           <div className="parcours-fade flex flex-col sm:flex-row gap-4 mt-4" style={{ animationDelay: "0.85s" }}>

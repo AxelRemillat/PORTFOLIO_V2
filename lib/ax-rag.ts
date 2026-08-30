@@ -14,7 +14,7 @@ import OpenAI from "openai";
 // réseau) — on préfère un fallback plutôt que de faire crasher l'API chat.
 // ⚠️ Résumé condensé de content/ax-knowledge/*.md — garder ALIGNÉ avec ces docs.
 const FALLBACK_CONTEXT = `## Axel Remillat
-Né en 2004. Étudiant ingénieur 4e année à l'ESME (groupe IONIS), spé Big Data, IA & marketing. 3 premières années à Lyon, 1er semestre de 4e année en échange à Mapua University (Manille, Philippines), puis campus d'Ivry-sur-Seine (Paris). 5e année en alternance : Ingénieur IA Agentic & gestion de données chez Andra Learning (EdTech, Station F), 14 mois depuis juillet 2026, sous la direction du CTO Ouriel Bettach. Anglais courant (C1). Mobile Paris / Lyon / Grenoble / Genève.
+Né en 2004. Étudiant ingénieur 4e année à l'ESME (groupe IONIS), spé Big Data, IA & marketing. 3 premières années à Lyon, 1er semestre de 4e année en échange à Mapua University (Manille, Philippines), puis campus d'Ivry-sur-Seine (Paris). 5e année en alternance à Station F (le plus grand incubateur de startups au monde, 13e arrondissement de Paris) : Ingénieur IA Agentic & gestion de données, 14 mois depuis juillet 2026. Le nom de l'entreprise n'est pas communiqué (on cite Station F, jamais l'entreprise). Anglais courant (C1). Mobile Paris / Lyon / Grenoble / Genève.
 En parallèle, Axel accompagne PME et startups en freelance (1 à 2 jours par semaine) : mise en production et fiabilisation de systèmes IA. Réponse sous 24-48h ouvrées, pas d'astreinte.
 Compétences : Python, SQL, React, FastAPI, Supabase, Firebase, N8N, API OpenAI, Google Cloud (BigQuery, Cloud Run, Vertex AI), Docker, Power BI, Figma, Git. Profil hybride tech + marketing + produit ; utilise les IA génératives comme copilotes de dev en gardant l'architecture et les contraintes.
 Perso : tennis avec son père, très bon cuisinier (famille de gourmets), a grandi entouré d'animaux (grand-père au passé de cowboy), famille de musiciens et d'enseignants de lettres, passionné de cinéma, a joué le renard dans une pièce du Petit Prince enfant.
@@ -28,7 +28,7 @@ Entonnoir : audit → déploiement → run. Option transverse AI Act : journalis
 
 ## Preuves (page /projets — testables sur pièces)
 - VEGA — Assistant RAG (LIVE) : un CV qu'on interroge à la voix, pipeline RAG complet en production sur ce site (ingestion → embeddings → pgvector → gpt-4o-mini → TTS). Garde-fous tokens/jour et rate-limit par IP. Testable sur /demos, architecture sur /projets/vega.
-- Automatisations N8N pour PME (déploiement en cours) : 12 automatisations métier conçues (factures, emails, comptes rendus, SAV…), 5 en cours de déploiement public testable, les autres tournent en environnement client. Fiche /projets/n8n.
+- Automatisations N8N pour PME (LIVE — testable) : automatisations métier IA en production, testables en direct sur le site (tri d'email, factures, SAV, comptes rendus), orchestrées, rate-limitées et monitorées, avec reprise sur erreur. Fiche /projets/n8n.
 - Infrastructure IA self-hosted (en construction) : serveur GPU perso sous Docker, LLM local (Ollama), API TTS, tunnel sécurisé, monitoring, backups. Objectif assumé : "j'opère ce que je vends". Fiche /projets/infra.
 
 ## Projets passés

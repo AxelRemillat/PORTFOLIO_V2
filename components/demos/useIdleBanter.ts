@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef } from "react";
+import { isUserInputting, subscribeInputActivity } from "./inputActivity";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
@@ -27,17 +28,21 @@ export const BANTER_LINES = [
 
 // Répliques d'inactivité. Le timer se (ré)arme à chaque action utilisateur ; il ne
 // démarre qu'APRÈS la première action (donc après un geste → audio débloqué). Une
-// réplique n'est jamais déclenchée pendant thinking/speaking ou pendant la saisie.
-export function useIdleBanter({ enabled, orbState, speak }: {
+// réplique n'est jamais déclenchée pendant thinking/speaking ni pendant que
+// l'utilisateur pose sa question (champ non vide focus OU micro en écoute), et
+// toute réplique en cours est coupée dès que l'utilisateur commence à saisir.
+export function useIdleBanter({ enabled, orbState, speak, cancelBanter }: {
   enabled: boolean;
   orbState: OrbState;
   speak: (text: string) => void;
+  cancelBanter: () => void; // coupe une réplique déjà en cours (banter uniquement)
 }) {
   const timer = useRef<number | null>(null);
   const lastLine = useRef<string | null>(null);
-  const typing = useRef(false);
   const speakRef = useRef(speak);
   speakRef.current = speak;
+  const cancelRef = useRef(cancelBanter);
+  cancelRef.current = cancelBanter;
   // État frais lu dans le timeout (évite les closures périmées).
   const stateRef = useRef({ enabled, orbState });
   stateRef.current = { enabled, orbState };
@@ -57,8 +62,8 @@ export function useIdleBanter({ enabled, orbState, speak }: {
     timer.current = window.setTimeout(function fire() {
       const { enabled, orbState } = stateRef.current;
       // Garde-fous : jamais si désactivé (intro pas finie), pendant que VEGA parle/
-      // réfléchit, ou pendant la saisie → on ré-essaie plus tard.
-      if (!enabled || orbState !== "idle" || typing.current) { schedule(IDLE_DELAY_MS); return; }
+      // réfléchit, ou pendant que l'utilisateur saisit (écrit/oral) → on ré-essaie.
+      if (!enabled || orbState !== "idle" || isUserInputting()) { schedule(IDLE_DELAY_MS); return; }
       const line = pickLine();
       lastLine.current = line;
       speakRef.current(line);
@@ -67,32 +72,33 @@ export function useIdleBanter({ enabled, orbState, speak }: {
     }, delay);
   }, []);
 
-  // Toute action réelle réarme le cycle (input, focus, clic, envoi, ouverture panneau).
+  // Toute action réelle réarme le cycle (input, clic, envoi, ouverture panneau).
   const notify = useCallback(() => { schedule(IDLE_DELAY_MS); }, [schedule]);
 
   useEffect(() => {
     if (!enabled) { clear(); return; }
     const onActivity = () => notify();
-    const isField = (t: EventTarget | null) => {
-      const el = t as HTMLElement | null;
-      return !!el && (el.tagName === "INPUT" || el.tagName === "TEXTAREA" || el.isContentEditable);
+
+    // Transition d'état « saisie active » : dès que l'utilisateur pose sa question
+    // (champ non vide focus OU micro en écoute), on suspend le planificateur ET on
+    // coupe immédiatement toute réplique ambiante en cours. Sinon, on réarme après
+    // le délai d'inactivité standard.
+    const onInput = () => {
+      if (isUserInputting()) { clear(); cancelRef.current(); }
+      else { schedule(IDLE_DELAY_MS); }
     };
-    const onFocusIn = (e: FocusEvent) => { if (isField(e.target)) typing.current = true; notify(); };
-    const onFocusOut = (e: FocusEvent) => { if (isField(e.target)) typing.current = false; };
+    const unsub = subscribeInputActivity(onInput);
 
     window.addEventListener("pointerdown", onActivity);
     window.addEventListener("keydown", onActivity);
     window.addEventListener("input", onActivity, true);
-    window.addEventListener("focusin", onFocusIn);
-    window.addEventListener("focusout", onFocusOut);
     schedule(IDLE_DELAY_MS); // arme le 1ᵉʳ cycle dès que l'intro est terminée
     return () => {
       clear();
+      unsub();
       window.removeEventListener("pointerdown", onActivity);
       window.removeEventListener("keydown", onActivity);
       window.removeEventListener("input", onActivity, true);
-      window.removeEventListener("focusin", onFocusIn);
-      window.removeEventListener("focusout", onFocusOut);
     };
   }, [enabled, notify, schedule]);
 }

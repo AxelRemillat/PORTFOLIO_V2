@@ -55,7 +55,8 @@ export interface WorkflowResponse {
 
 // Messages génériques (surchargés par config.errorMessages).
 export const GENERIC_ERRORS: Record<string, string> = {
-  rate_limited: "Trop d'essais, réessaie dans 1 min.",
+  rate_limited: "Trop d'essais rapprochés, réessaie dans 1 min.",
+  demo_busy: "Démo très sollicitée aujourd'hui, réessaie plus tard.",
   demo_disabled: "Démo momentanément indisponible.",
   invalid_input: "Entrée invalide (vide ou trop longue).",
   file_too_large: "Fichier trop volumineux (max 15 Mo).",

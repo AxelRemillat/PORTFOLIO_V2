@@ -1,7 +1,20 @@
 import OpenAI from "openai";
 import { NextRequest } from "next/server";
+import { checkRateLimit } from "@/lib/demo-rate-limit";
 
 export const runtime = "nodejs";
+
+const MAX_TTS_CHARS = 600; // borne le coût par requête (ElevenLabs = crédits)
+// Cache mémoire des phrases identiques → ne repaie jamais 2× le même texte
+// (best-effort, per-instance). Le banter ambiant est déjà servi en statique côté client.
+const ttsCache = new Map<string, Buffer>();
+const CACHE_MAX = 60;
+function cacheSet(key: string, buf: Buffer) {
+  if (ttsCache.size >= CACHE_MAX) { const first = ttsCache.keys().next().value; if (first) ttsCache.delete(first); }
+  ttsCache.set(key, buf);
+}
+const jerr = (status: number, error: string) =>
+  new Response(JSON.stringify({ error }), { status, headers: { "Content-Type": "application/json" } });
 
 // ── Voix de VEGA — cascade de providers ──────────────────────────────────────
 // 1) ElevenLabs (ultra réaliste) si ELEVENLABS_API_KEY est présent
@@ -69,38 +82,31 @@ async function openaiTTS(text: string): Promise<Buffer> {
 }
 
 export async function POST(req: NextRequest) {
+  // Kill-switch (opt-out). En cas de blocage, le front bascule sur la voix navigateur.
+  if (process.env.DEMO_TTS_ENABLED === "false") return jerr(503, "demo_disabled");
+
   const body = await req.json().catch(() => null);
   const text: string | undefined = body?.text;
+  if (!text || typeof text !== "string" || !text.trim()) return jerr(400, "invalid_input");
+  const input = text.slice(0, MAX_TTS_CHARS);
 
-  if (!text || typeof text !== "string" || !text.trim()) {
-    return new Response(JSON.stringify({ error: "text requis" }), {
-      status: 400,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
-  const input = text.slice(0, 1000);
+  // Rate-limit généreux par IP + cap global/jour (ElevenLabs = ressource rare).
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+  const rl = await checkRateLimit(ip, "tts");
+  if (!rl.ok) return jerr(429, rl.scope === "global" ? "demo_busy" : "rate_limited");
+
+  // Cache : phrase déjà synthétisée → on la ressert sans repayer l'API.
+  const cached = ttsCache.get(input);
+  if (cached) return mp3(cached);
 
   // 1) ElevenLabs (prioritaire) — repli sur OpenAI si erreur
   if (EL_KEY) {
-    try {
-      return mp3(await elevenLabs(input));
-    } catch {
-      /* tombe sur OpenAI ci-dessous */
-    }
+    try { const buf = await elevenLabs(input); cacheSet(input, buf); return mp3(buf); } catch { /* → OpenAI */ }
   }
-
   // 2) OpenAI
   if (process.env.OPENAI_API_KEY) {
-    try {
-      return mp3(await openaiTTS(input));
-    } catch {
-      /* tombe sur 502 → front utilisera la voix navigateur */
-    }
+    try { const buf = await openaiTTS(input); cacheSet(input, buf); return mp3(buf); } catch { /* → 503 */ }
   }
-
-  // 3) Aucun provider dispo / tous en échec → le front bascule sur le navigateur
-  return new Response(JSON.stringify({ error: "tts indisponible" }), {
-    status: 503,
-    headers: { "Content-Type": "application/json" },
-  });
+  // 3) Aucun provider dispo → le front bascule sur la voix du navigateur
+  return jerr(503, "tts_unavailable");
 }

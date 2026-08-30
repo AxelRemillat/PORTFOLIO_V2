@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
   if (!(file instanceof File) || file.size === 0 || !TYPES.includes(file.type)) return err(400, "invalid_input");
   if (file.size > MAX_SIZE) return err(400, "file_too_large");
 
-  if (!(await checkRateLimit(ip, "invoice"))) return err(429, "rate_limited");
+  { const rl = await checkRateLimit(ip, "invoice"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
   if (!webhook) return err(502, "upstream_error");
 
   const controller = new AbortController();

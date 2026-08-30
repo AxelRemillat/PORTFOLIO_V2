@@ -15,7 +15,7 @@ export const QUESTION_CATEGORIES: QuestionCategory[] = [
     questions: [
       "Quel est ton parcours ?",
       "Tes compétences en data/IA ?",
-      "C'est quoi ton alternance chez Andra ?",
+      "C'est quoi ton alternance à Station F ?",
       "Pourquoi te faire confiance ?",
       "Qu'est-ce qui différencie Axel d'un autre ingé IA ?",
       "C'est quoi ta stack technique ?",

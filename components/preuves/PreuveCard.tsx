@@ -2,17 +2,21 @@
 
 import Link from "next/link";
 import type { CSSProperties, ComponentType } from "react";
-import type { Project, PreuveState } from "@/lib/projects-data";
+import { projects, type Project, type PreuveState } from "@/lib/projects-data";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 import VegaWindow from "./windows/VegaWindow";
 import WorkflowWindow from "./windows/WorkflowWindow";
 import InfraWindow from "./windows/InfraWindow";
+import AgentWindow from "./windows/AgentWindow";
+import PipelineWindow from "./windows/PipelineWindow";
 
 // Card « preuve » : info à gauche, fenêtre produit + flux à droite. Verre premium,
 // thème par projet via variables --pv-*. Fenêtre choisie selon le slug.
 const WINDOWS: Record<string, ComponentType> = {
   vega: VegaWindow,
   n8n: WorkflowWindow,
+  agent: AgentWindow,
+  pipeline: PipelineWindow,
   infra: InfraWindow,
 };
 const STATE_COLOR: Record<PreuveState, string> = {
@@ -42,7 +46,7 @@ export default function PreuveCard({ project, index }: { project: Project; index
         <div className="pv-info">
           <div className="pv-head">
             <span className="pv-status"><span className="pv-dot" />{badge}</span>
-            <span className="pv-num">{String(index + 1).padStart(2, "0")} / 03</span>
+            <span className="pv-num">{String(index + 1).padStart(2, "0")} / {String(projects.length).padStart(2, "0")}</span>
           </div>
           <h2 className="pv-title">{title}</h2>
           <p className="pv-tag">{tagline}</p>

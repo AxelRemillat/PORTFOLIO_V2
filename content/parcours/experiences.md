@@ -1,9 +1,9 @@
 # Expériences professionnelles
 
-## Andra Learning — Ingénieur IA Agentic & Gestion de données (Alternance)
+## Startup EdTech (Station F) — Ingénieur IA Agentic & Gestion de données (Alternance)
 
 Juillet 2026 → Septembre 2027 (14 mois).
-EdTech, Station F, Paris. Maître d'apprentissage : Ouriel Bettach (CTO).
+EdTech, Station F, Paris.
 <!-- TODO Axel : missions détaillées -->
 
 ## RISE — Co-fondateur & Lead Tech (Startup)

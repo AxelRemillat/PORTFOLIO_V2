@@ -54,6 +54,9 @@ export function useAXChat() {
   const greetedRef = useRef(false);
   const orbStateRef = useRef<OrbState>("idle"); // lecture fraîche de l'état (guard de speak)
   orbStateRef.current = orbState;
+  // Nature de la parole en cours : "banter" (intro/répliques ambiantes) ou
+  // "answer" (vraie réponse). stopBanter ne coupe QUE le banter, jamais une réponse.
+  const speakKind = useRef<"none" | "banter" | "answer">("none");
 
   // File audio ordonnée + contrôle d'interruption
   const ttsChain      = useRef<Promise<void>>(Promise.resolve());
@@ -201,13 +204,28 @@ export function useAXChat() {
   // synchronisé + TTS/repli). Utilisé par l'intro et par les répliques d'inactivité.
   // Si la voix est coupée, le texte défile quand même (géré par ttsEnqueue).
   function sayLine(text: string) {
+    speakKind.current = "banter"; // intro + répliques ambiantes = coupables
     resetReveal();
     setDisplayText("");
     setFullText(text); // taille de police calculée sur le texte complet
     ttsEnqueue(text);
     // Retour idle = retour au "cockpit" HUD (ne coexiste jamais avec l'input).
-    ttsChain.current.then(() => { setOrbState("idle"); setShowText(false); });
+    ttsChain.current.then(() => { speakKind.current = "none"; setOrbState("idle"); setShowText(false); });
   }
+
+  // Coupe IMMÉDIATEMENT une réplique ambiante en cours (texte animé + TTS) et
+  // remet l'orbe au repos — mais NE touche jamais à une vraie réponse en cours.
+  const stopBanter = useCallback(() => {
+    if (speakKind.current !== "banter") return;
+    speakKind.current = "none";
+    stopAudio();
+    resetReveal();
+    setDisplayText("");
+    setFullText("");
+    setShowText(false);
+    setOrbState("idle");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Exposé : ne parle que si l'orbe est LIBRE (ne coupe jamais thinking/speaking).
   const speak = useCallback((text: string) => {
@@ -220,7 +238,8 @@ export function useAXChat() {
   // interaction). Jouée UNE SEULE FOIS par session : si le flag sessionStorage est
   // déjà là (retour dans la même session), on saute l'intro → idle direct.
   useEffect(() => {
-    if (hasIntroPlayed()) { setIntroDone(true); return; } // déjà présentée cette session
+    // déjà présentée cette session → idle direct (setState différé : lint set-state-in-effect)
+    if (hasIntroPlayed()) { const t = window.setTimeout(() => setIntroDone(true), 0); return () => clearTimeout(t); }
     const greet = () => {
       cleanup();
       if (greetedRef.current) return;
@@ -244,6 +263,7 @@ export function useAXChat() {
     setStarted(true);
     setShowText(false);
     setOrbState("thinking");
+    speakKind.current = "answer"; // vraie réponse → jamais coupée par stopBanter
     stopAudio();           // coupe la salutation / réponse précédente
     spokenIdx.current = 0;
     resetReveal();         // repart d'un texte vide, masqué jusqu'au départ de la voix
@@ -261,7 +281,15 @@ export function useAXChat() {
         // Mémoire multi-tours : on envoie les N derniers messages (contexte de suivi).
         body: JSON.stringify({ messages: msgs.slice(-MEMORY_MAX_MSGS) }),
       });
-      if (!res.ok || !res.body) throw new Error("stream");
+      if (!res.ok) {
+        // Blocage gracieux (rate-limit / pause) : on affiche le message renvoyé.
+        let msg = "VEGA est momentanément indisponible. Réessaie.";
+        try { const j = await res.json(); if (j?.message) msg = j.message; } catch { /* pas de JSON */ }
+        speakKind.current = "none";
+        setDisplayText(msg); setFullText(msg); setShowText(true); setOrbState("idle"); setIsStreaming(false);
+        return;
+      }
+      if (!res.body) throw new Error("stream");
 
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
@@ -291,12 +319,13 @@ export function useAXChat() {
       // L'orbe reste en "speaking" jusqu'à la fin de l'audio (qui suit le texte)
       // Retour idle = retour au "cockpit" HUD : on masque la réponse pour qu'elle
       // ne coexiste jamais avec l'input/suggestions (le cas d'erreur garde showText).
-      ttsChain.current.then(() => { setOrbState("idle"); setShowText(false); });
+      ttsChain.current.then(() => { speakKind.current = "none"; setOrbState("idle"); setShowText(false); });
 
       history.current = [...msgs, { role: "assistant", content: full }];
       setConversation(history.current); // expose les tours → persistance (historique latéral)
     } catch {
       const errMsg = "Erreur — VEGA est momentanément indisponible. Réessaie.";
+      speakKind.current = "none";
       setDisplayText(errMsg);
       setFullText(errMsg);
       setShowText(true);
@@ -342,6 +371,6 @@ export function useAXChat() {
 
   return {
     orbState, displayText, fullText, isStreaming, showText, isVoiceOn, started,
-    introDone, conversation, submit, speak, toggleVoice, loadConversation, newConversation,
+    introDone, conversation, submit, speak, stopBanter, toggleVoice, loadConversation, newConversation,
   };
 }
