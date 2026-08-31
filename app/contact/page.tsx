@@ -86,7 +86,7 @@ export default function ContactPage() {
           </h1>
 
           <Image
-            src="/contact/axel-portrait.jpg"
+            src="/photos/axel-contact.jpg"
             alt="Axel Remillat"
             width={264}
             height={264}
@@ -96,6 +96,7 @@ export default function ContactPage() {
               height: "clamp(96px, 11vw, 160px)",
               borderRadius: "50%",
               objectFit: "cover",
+              objectPosition: "50% 22%",
               border: "2px solid rgba(249,115,22,0.55)",
               boxShadow: "0 0 28px rgba(249,115,22,0.22)",
               flexShrink: 0,
