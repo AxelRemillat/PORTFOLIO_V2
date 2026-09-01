@@ -35,7 +35,7 @@ export default function FormationSection() {
             <a href="/contact" className="parcours-cta">
               Réserver un appel →
             </a>
-            <a href="/cv-axel-remillat.pdf" download className="parcours-cta-outline">
+            <a href="/CV-Axel-Remillat-2026.pdf" download className="parcours-cta-outline">
               Télécharger mon CV (PDF)
             </a>
           </div>

@@ -145,7 +145,7 @@ export default function ContactPage() {
         {/* FreqRow ajoute déjà ↗ + target _blank / rel noopener sur les liens http */}
         <FreqRow num="02" type="LinkedIn" value="Voir mon profil" href="https://linkedin.com/in/axel-remillatesmelyon" />
         <FreqRow num="03" type="Téléphone" value="+33 7 49 72 71 92" href="tel:+33749727192" />
-        <FreqRow num="04" type="CV" value="Télécharger mon CV" href="/cv-axel-remillat.pdf" download badge="PDF 2026" />
+        <FreqRow num="04" type="CV" value="Télécharger mon CV" href="/CV-Axel-Remillat-2026.pdf" download badge="PDF 2026" />
         <FreqRow num="05" type="Rendez-vous" value="Réserver un créneau" href={CALENDAR_URL} />
       </section>
 
