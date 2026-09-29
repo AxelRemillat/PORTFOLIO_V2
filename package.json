@@ -10,7 +10,6 @@
     "ingest-ax": "tsx scripts/ingest-ax.ts",
     "build-ax": "tsx scripts/build-ax-knowledge.ts",
     "eval-vega": "tsx scripts/eval-vega.ts",
-    "banter-audio": "tsx scripts/generate-banter-audio.ts",
     "test": "tsx --test tests/*.test.ts && tsx scripts/contact.test.ts",
     "test:contact": "tsx scripts/contact.test.ts"
   },
