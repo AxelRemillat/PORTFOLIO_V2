@@ -1,3 +1,4 @@
+import { track } from "@/components/demo-kit/track";
 import type { ReactNode } from "react";
 
 // Contrat data-driven d'une démo « workflow » (réutilisable pour les 5 démos).
@@ -56,23 +57,25 @@ export interface WorkflowResponse {
 // Messages génériques (surchargés par config.errorMessages).
 export const GENERIC_ERRORS: Record<string, string> = {
   rate_limited: "Trop d'essais rapprochés, réessaie dans 1 min.",
-  demo_busy: "Démo très sollicitée aujourd'hui, réessaie plus tard.",
+  demo_busy: "Démo très sollicitée aujourd'hui, réessayez plus tard.",
   demo_disabled: "Démo momentanément indisponible.",
   invalid_input: "Entrée invalide (vide ou trop longue).",
   file_too_large: "Fichier trop volumineux (max 15 Mo).",
-  upstream_error: "Le service est injoignable, réessaie plus tard.",
-  default: "Une erreur est survenue, réessaie.",
+  upstream_error: "Le service est injoignable, réessayez plus tard.",
+  default: "Une erreur est survenue, réessayez.",
 };
 
-// Textarea → JSON { [field]: value, hp }.
+// Textarea → JSON { [field]: value, hp, ...extra }. Chaque lancement est compté
+// dans Umami (« demo-automatisation », avec l'endpoint et le métier éventuel).
 export async function runWorkflow(
-  endpoint: string, field: string, value: string, hp: string,
+  endpoint: string, field: string, value: string, hp: string, extra?: Record<string, string>,
 ): Promise<WorkflowResponse> {
+  track("demo-automatisation", { demo: endpoint.split("/").pop() ?? endpoint, ...extra });
   try {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ [field]: value, hp }),
+      body: JSON.stringify({ ...extra, [field]: value, hp }),
     });
     return (await res.json()) as WorkflowResponse;
   } catch {
@@ -85,6 +88,7 @@ export async function runWorkflowFile(
   endpoint: string, field: string, file: File | null, hp: string,
 ): Promise<WorkflowResponse> {
   if (!file) return { ok: false, error: "invalid_input" };
+  track("demo-automatisation", { demo: endpoint.split("/").pop() ?? endpoint });
   try {
     const fd = new FormData();
     fd.append(field, file);

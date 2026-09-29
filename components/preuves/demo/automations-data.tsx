@@ -12,8 +12,7 @@ import type { TriageResult } from "./email-triage-lib";
 import type { WorkflowConfig } from "./workflow-types";
 
 // Les 5 automatisations (data-driven). Les nodes sont le miroir du vrai backend
-// (avec sublabel technique). Seul "email" est câblé ; les autres endpoints seront
-// créés un par un (ils échouent proprement en attendant).
+// (avec sublabel technique). Les ids servent aussi de lien direct : /automatisations?demo=<id>.
 const MEETING_SAMPLE = `Réunion projet — 14h. Présents : Marie, Thomas, Sofia.
 Marie : le design est validé, on démarre le dev lundi.
 Thomas : je prends l'API, livrable jeudi.
@@ -22,8 +21,8 @@ Décision : démo client vendredi 16h. Thomas doit corriger le bug de login avan
 
 export const AUTOMATIONS: WorkflowConfig[] = [
   {
-    id: "email", tabLabel: "Tri d'email", tabIcon: "mail", accent: "#10b981",
-    title: "Tri d'email par IA",
+    id: "email", tabLabel: "Tri des emails", tabIcon: "mail", accent: "#10b981",
+    title: "Tri des emails et demandes",
     subtitle: "Collez un email reçu : l'IA le classe, le priorise et rédige une réponse.",
     endpoint: "/api/demo/email-triage", inputType: "textarea", inputField: "email_text",
     inputLabel: "Email à analyser", placeholder: "Collez ici l'email reçu…",
@@ -37,7 +36,7 @@ export const AUTOMATIONS: WorkflowConfig[] = [
     ],
     errorMessages: {
       invalid_input: "Texte d'email invalide (vide ou trop long).",
-      upstream_error: "Le service de tri est injoignable, réessaie plus tard.",
+      upstream_error: "Le service de tri est injoignable, réessayez plus tard.",
     },
     renderResult: (r) => <EmailResult result={r as TriageResult} />,
   },
@@ -58,7 +57,7 @@ export const AUTOMATIONS: WorkflowConfig[] = [
         { label: "Réunion asso", src: "/samples/meeting/reunion-asso-evenement.mp3" },
       ],
     },
-    errorMessages: { upstream_error: "Le service de compte rendu est injoignable, réessaie plus tard." },
+    errorMessages: { upstream_error: "Le service de compte rendu est injoignable, réessayez plus tard." },
     nodes: [
       { id: "in", label: "Réception", icon: "mail", sublabel: "Webhook" },
       { id: "tr", label: "Transcription", icon: "wave", sublabel: "Whisper" },
@@ -74,19 +73,20 @@ export const AUTOMATIONS: WorkflowConfig[] = [
     ),
   },
   {
-    id: "dataclean", tabLabel: "Nettoyage data", tabIcon: "table", accent: "#8b5cf6",
-    title: "Nettoyage de données CSV",
-    subtitle: "Envoyez un CSV : détection d'anomalies, normalisation et dédup, puis rapport.",
+    id: "dataclean", tabLabel: "Fichier clients", tabIcon: "table", accent: "#8b5cf6",
+    title: "Fichier clients : nettoyage et doublons",
+    subtitle: "Envoyez un fichier CSV (export Excel) : erreurs repérées, formats harmonisés, doublons fusionnés, puis un rapport.",
     endpoint: "/api/demo/data-clean", inputType: "file", accept: ".csv", inputField: "file",
     inputLabel: "Fichier CSV à nettoyer", submitLabel: "Lancer le workflow",
     examples: {
       file: [
+        { label: "Doublons (majuscules, accents)", src: "/samples/data/clients-doublons.csv" },
         { label: "Fichier clients", src: "/samples/data/clients-sales.csv" },
         { label: "Catalogue produits", src: "/samples/data/produits-stock.csv" },
         { label: "Contacts CRM", src: "/samples/data/contacts-crm.csv" },
       ],
     },
-    errorMessages: { upstream_error: "Le service de nettoyage est injoignable, réessaie plus tard." },
+    errorMessages: { upstream_error: "Le service de nettoyage est injoignable, réessayez plus tard." },
     nodes: [
       { id: "in", label: "Import CSV", icon: "table", sublabel: ".csv" },
       { id: "col", label: "Analyse colonnes", icon: "format", sublabel: "colonnes" },
@@ -99,7 +99,7 @@ export const AUTOMATIONS: WorkflowConfig[] = [
   {
     id: "invoice", tabLabel: "Facture", tabIcon: "receipt", accent: "#f59e0b",
     title: "Extraction de facture",
-    subtitle: "Envoyez une facture (image ou PDF) : Vision lit le document, extrait les champs et contrôle les totaux.",
+    subtitle: "Envoyez une facture (image ou PDF) : l'IA lit le document, en extrait les informations et vérifie les totaux.",
     endpoint: "/api/demo/invoice", inputType: "file", accept: "image/jpeg,image/png,image/webp,application/pdf", inputField: "file",
     inputLabel: "Facture à analyser (image ou PDF)", submitLabel: "Lancer le workflow",
     examples: {
@@ -111,7 +111,7 @@ export const AUTOMATIONS: WorkflowConfig[] = [
     },
     errorMessages: {
       invalid_input: "Fichier invalide (image JPG/PNG/WEBP ou PDF attendus).",
-      upstream_error: "Le service d'extraction est injoignable, réessaie plus tard.",
+      upstream_error: "Le service d'extraction est injoignable, réessayez plus tard.",
     },
     nodes: [
       { id: "in", label: "Import doc", icon: "receipt", sublabel: "image" },
@@ -128,19 +128,12 @@ export const AUTOMATIONS: WorkflowConfig[] = [
     ),
   },
   {
-    id: "sav", tabLabel: "SAV", tabIcon: "chat", accent: "#06b6d4", chat: true,
-    title: "Assistant SAV (RAG)",
-    subtitle: "Posez une question de client : l'IA cherche dans la FAQ de la boutique et répond en citant ses sources — zéro invention.",
+    id: "sav", tabLabel: "Service client", tabIcon: "chat", accent: "#06b6d4", chat: true,
+    title: "Service client (SAV)",
+    subtitle: "Choisissez votre métier et posez une question de client : l'assistant répond à partir de la base de l'entreprise, cite ses sources, et passe la main à un conseiller s'il ne sait pas.",
     endpoint: "/api/demo/sav", inputType: "textarea", inputField: "question",
     inputLabel: "Question client", placeholder: "Posez une question de client…", textMax: 500,
-    examples: {
-      text: [
-        { label: "Délais de livraison", value: "Quels sont vos délais de livraison ?" },
-        { label: "Retour & remboursement", value: "Comment retourner un article et être remboursé ?" },
-        { label: "Hors base (test refus)", value: "Avez-vous une boutique physique à Paris ?" },
-      ],
-    },
-    errorMessages: { upstream_error: "L'assistant SAV est injoignable, réessaie plus tard." },
+    errorMessages: { upstream_error: "L'assistant SAV est injoignable, réessayez plus tard." },
     nodes: [
       { id: "q", label: "Question", icon: "chat", sublabel: "question" },
       { id: "rag", label: "Recherche base", icon: "table", sublabel: "RAG" },

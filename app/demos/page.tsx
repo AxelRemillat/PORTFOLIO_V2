@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import FloatingText from "@/components/demos/FloatingText";
 import FloatingInput from "@/components/demos/FloatingInput";
 import SoundToggle from "@/components/demos/SoundToggle";
+import VegaChezVous from "@/components/demo-kit/VegaChezVous";
 import SidePanel from "@/components/demos/SidePanel";
 import QuestionList from "@/components/demos/QuestionList";
 import HistoryContent from "@/components/demos/HistoryContent";
@@ -87,6 +88,7 @@ export default function DemosPage() {
         </p>
       </div>
 
+      {ax.conversation.some((m) => m.role === "assistant") && <VegaChezVous />}{/* fin de démo */}
       {/* Texte IA flottant (taille auto-ajustée, bornée → ne déborde jamais sur l'orbe) */}
       <FloatingText text={ax.displayText} fullText={ax.fullText} isStreaming={ax.isStreaming} isVisible={ax.showText} />
 

@@ -1,18 +1,18 @@
-// Données des offres freelance « mise en production IA » + mini-FAQ.
-// Source unique consommée par components/offres/*. Textes en clair (pas de JSX)
-// pour éviter l'échappement des apostrophes.
+// Offres freelance + FAQ. SOURCE UNIQUE : consommée par components/offres/*, la
+// home (OffersTeaser) et les prompts de VEGA (app/api/chat, lib/ax-rag) via
+// offersForPrompt(). Textes en clair (pas de JSX) pour éviter l'échappement.
 
 import { CALENDAR_URL } from "@/lib/site-config";
 
 export interface Offer {
   num: string;        // "01"
-  name: string;       // "Diagnostic"
-  kind: string;       // "Audit express"
-  pitch: string;
-  price: string;
-  priceNote: string;  // "forfait", "selon périmètre", "2 jours"
+  name: string;       // "Audit automatisation"
+  kind: string;       // sur-titre court
+  pitch: string;      // une phrase, langage « patron »
+  price: string;      // "À partir de 290 €"
+  priceNote: string;  // "forfait", "par mois"…
   meta?: string;      // délai / engagement
-  itemsLabel: string; // "Livrables" | "Inclus"
+  itemsLabel: string; // "Ce que vous obtenez" | "Inclus"
   items: string[];
   accent: string;
 }
@@ -20,57 +20,81 @@ export interface Offer {
 export const OFFERS: Offer[] = [
   {
     num: "01",
-    name: "Diagnostic",
-    kind: "Audit express",
-    pitch: "Votre système IA au banc d'essai avant le décollage.",
-    price: "À partir de 490 €",
+    name: "Audit automatisation",
+    kind: "Pour commencer",
+    pitch: "Une demi-journée pour repérer et chiffrer les 3 tâches à automatiser en premier.",
+    price: "À partir de 290 €",
     priceNote: "forfait",
-    meta: "Délai : 1 semaine",
-    itemsLabel: "Livrables",
+    meta: "Durée : ½ journée, sur place ou en visio",
+    itemsLabel: "Ce que vous obtenez",
     items: [
-      "Revue d'architecture, de code et d'infra",
-      "Tests de robustesse",
-      "Rapport priorisé de quick wins",
-      "Restitution d'1h",
+      "Le tour de vos tâches répétitives, avec vous et votre équipe",
+      "Le temps perdu chaque semaine, tâche par tâche",
+      "Les 3 tâches à automatiser en premier, avec leur prix",
+      "Un plan clair, sans engagement pour la suite",
     ],
     accent: "#f97316",
   },
   {
     num: "02",
-    name: "Mise en production",
-    kind: "Déploiement production",
-    pitch: "Votre RAG, agent ou automatisation déployé proprement — et qui le reste.",
-    price: "1 900 à 4 900 €",
-    priceNote: "selon périmètre",
-    itemsLabel: "Livrables",
+    name: "Automatisation clé en main",
+    kind: "Le plus demandé",
+    pitch: "Un flux livré et testé en 2 à 3 semaines, branché sur vos outils.",
+    price: "À partir de 1 200 €",
+    priceNote: "par flux",
+    meta: "Délai : 2 à 3 semaines",
+    itemsLabel: "Ce que vous obtenez",
     items: [
-      "Conteneurisation (Docker)",
-      "Pipeline de déploiement (CI/CD)",
-      "Monitoring et alerting",
-      "Journalisation traçable",
-      "Documentation et passation",
+      "Un essai sur vos vrais exemples avant de tout mettre en place",
+      "Branché sur vos outils : messagerie, tableur, logiciel de devis ou de facturation",
+      "Testé avec vous sur des cas réels avant la mise en route",
+      "Une notice simple et une prise en main avec votre équipe",
     ],
     accent: "#10b981",
   },
   {
     num: "03",
-    name: "Suivi mensuel",
-    kind: "Run mensuel",
-    pitch: "Je veille sur votre IA pendant que vous dirigez votre entreprise.",
-    price: "À partir de 690 €/mois",
-    priceNote: "2 jours",
-    meta: "Sans engagement au-delà du mois en cours",
+    name: "Suivi & évolutions",
+    kind: "Après la livraison",
+    pitch: "Je surveille, je corrige et je fais évoluer vos automatisations.",
+    price: "À partir de 190 €/mois",
+    priceNote: "par mois",
+    meta: "Sans engagement, arrêt possible chaque mois",
     itemsLabel: "Inclus",
     items: [
-      "Surveillance continue",
-      "Maintenance",
-      "Évaluations qualité",
-      "Mises à jour de modèles",
-      "Rapport mensuel",
+      "Je vérifie chaque jour que tout tourne",
+      "Les corrections en cas de souci",
+      "De petites évolutions : un nouveau cas, un nouveau modèle de document",
+      "Un point de 15 minutes chaque mois",
     ],
     accent: "#a855f7",
   },
+  {
+    num: "04",
+    name: "Mise en production IA",
+    kind: "Vous avez déjà un prototype",
+    pitch: "Pour les équipes qui ont déjà un prototype IA et veulent l'utiliser tous les jours, sans mauvaise surprise.",
+    price: "À partir de 1 900 €",
+    priceNote: "selon le projet",
+    meta: "Délai : 2 à 4 semaines",
+    itemsLabel: "Ce que vous obtenez",
+    items: [
+      "Votre prototype rendu fiable et stable au quotidien",
+      "Une alerte dès que quelque chose se passe mal",
+      "L'historique de ce que fait l'IA, pour vérifier et corriger",
+      "La documentation et la passation à votre équipe",
+    ],
+    accent: "#06b6d4",
+  },
 ];
+
+/** Lignes de prix pour les prompts de VEGA : une seule vérité, celle de /offres. */
+export function offersForPrompt(): string {
+  return OFFERS.map((o) => `    • ${o.name} : ${o.price.toLowerCase()} (${o.priceNote}) — ${o.pitch}`).join("\n");
+}
+
+/** Noms des offres, pour les phrases du type « les offres X, Y et Z ». */
+export const OFFER_NAMES = OFFERS.map((o) => o.name).join(", ");
 
 export interface Faq {
   q: string;
@@ -80,16 +104,28 @@ export interface Faq {
 
 export const FAQ: Faq[] = [
   {
-    q: "Pourquoi un alternant ?",
-    a: "Parce que les preuves sont testables directement sur ce site et que les tarifs de lancement sont imbattables : vous jugez sur pièces, pas sur un CV. Pour les créneaux, mes disponibilités du moment sont sur mon calendrier — on cale ensemble lors de l'appel découverte.",
-    link: { label: "Voir mes disponibilités →", href: CALENDAR_URL },
+    q: "Combien ça coûte ?",
+    a: "L'audit démarre à 290 €, une automatisation clé en main à 1 200 €, le suivi à 190 € par mois. Le prix exact est écrit noir sur blanc avant de commencer : pas de dépassement surprise.",
+  },
+  {
+    q: "En combien de temps c'est en place ?",
+    a: "Comptez 2 à 3 semaines pour une automatisation : quelques jours pour un essai sur vos exemples, puis la mise en place et les tests avec vous.",
+  },
+  {
+    q: "Est-ce que ça marche avec mes outils ?",
+    a: "Dans la plupart des cas, oui : votre messagerie (Gmail, Outlook), vos tableurs (Excel, Google Sheets), votre logiciel de devis ou de facturation s'il permet un export ou une connexion. On le vérifie ensemble pendant l'échange de 15 minutes.",
+  },
+  {
+    q: "Et mes données, elles vont où ?",
+    a: "Elles restent les vôtres. Je n'utilise que ce qui sert à l'automatisation, rien n'est revendu ni réutilisé ailleurs, et je peux signer un accord de confidentialité avant de commencer. Pour les tâches sensibles, l'IA propose et c'est vous qui validez avant tout envoi.",
+  },
+  {
+    q: "Et après la livraison ?",
+    a: "L'automatisation est à vous, avec une notice simple. Vous pouvez continuer seul, ou prendre le suivi mensuel, sans engagement, pour les corrections et les petites évolutions.",
   },
   {
     q: "Comment on démarre ?",
-    a: "Un appel de 30 minutes gratuit pour cadrer le besoin, puis une proposition écrite (périmètre, prix, livrable). Vous validez, on lance.",
-  },
-  {
-    q: "Quels outils ?",
-    a: "Docker, N8N, OpenAI/Ollama, Supabase, GCP et des outils de monitoring. Le détail technique complet est sur la page Parcours.",
+    a: "Un échange de 15 minutes, gratuit : vous me décrivez la tâche qui vous fait perdre du temps. Je reviens avec une proposition écrite (ce qui est fait, le prix, le délai). Vous validez, on lance.",
+    link: { label: "Réserver 15 min →", href: CALENDAR_URL },
   },
 ];

@@ -9,7 +9,8 @@
     "lint": "eslint",
     "ingest": "tsx scripts/ingest.ts",
     "ingest-ax": "tsx scripts/ingest-ax.ts",
-    "banter-audio": "tsx scripts/generate-banter-audio.ts"
+    "banter-audio": "tsx scripts/generate-banter-audio.ts",
+    "test": "tsx --test tests/*.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

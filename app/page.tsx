@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 import HomeHero from "@/components/home/HomeHero";
-import HomeManifesto from "@/components/home/HomeManifesto";
+import HomeProblems from "@/components/home/HomeProblems";
+import HomeFeaturedDemo from "@/components/home/HomeFeaturedDemo";
+import HomeSteps from "@/components/home/HomeSteps";
 import OffersTeaser from "@/components/home/OffersTeaser";
 import ProjectsStrip from "@/components/home/ProjectsStrip";
-import VegaTeaser from "@/components/home/VegaTeaser";
-import HomeStats from "@/components/home/HomeStats";
 import HomeCta from "@/components/home/HomeCta";
 
-// Server component : conserve le SEO. Chaque section est 'use client' et gère
-// ses propres animations (reveal au scroll, compteurs, fond vidéo-ready).
+// Server component. Ordre : promesse → problèmes (1 démo chacun) → démo phare →
+// méthode → offres → preuves → à propos + CTA final.
 export const metadata: Metadata = {
-  title: "Axel Remillat — Mise en production IA pour PME & startups",
+  title: "Axel Remillat — J'automatise les tâches répétitives de votre PME",
   description:
-    "Ingénieur IA. Je fais passer vos projets IA du prototype à la production : agents, RAG, automatisations — fiables, monitorés, conformes. Preuves testables en ligne.",
+    "Devis, commandes, relances, documents : moins de ressaisie, des réponses plus rapides. Démos testables sur votre métier avant de signer.",
 };
 
 export default function HomePage() {
   return (
     <main>
       <HomeHero />
-      <HomeManifesto />
+      <HomeProblems />
+      <HomeFeaturedDemo />
+      <HomeSteps />
       <OffersTeaser />
       <ProjectsStrip />
-      <VegaTeaser />
-      <HomeStats />
       <HomeCta />
     </main>
   );

@@ -1,0 +1,52 @@
+import type { Metier } from "./types";
+
+// Menuiserie / fenêtres — fabrication + pose. Prix HT d'exemple.
+export const MENUISERIE: Metier = {
+  id: "menuiserie",
+  label: "Menuiserie / fenêtres",
+  entreprise: "Atelier Boisclair",
+  activite: "Fenêtres, portes et volets sur mesure, fourniture et pose.",
+  tva: 0.2,
+  remises: [{ seuil: 8000, taux: 0.05 }],
+  minimum_ht: 250,
+  livraison: { libelle: "Livraison sur chantier", frais: 90, franco: 3000, delai_jours: 2 },
+  catalogue: [
+    { ref: "FEN-PVC-60", nom: "Fenêtre PVC 1 vantail 60×75 cm", categorie: "fenêtres", description: "Double vitrage 4/20/4, blanc, oscillo-battant.", unite: "pièce", prix_unitaire: 289, delai_jours: 21 },
+    { ref: "FEN-PVC-100", nom: "Fenêtre PVC 2 vantaux 100×125 cm", categorie: "fenêtres", description: "Double vitrage isolant, blanc, poignée centrée.", unite: "pièce", prix_unitaire: 459, delai_jours: 21 },
+    { ref: "FEN-PVC-120", nom: "Fenêtre PVC 2 vantaux 120×135 cm", categorie: "fenêtres", description: "Double vitrage isolant, blanc ou gris anthracite.", unite: "pièce", prix_unitaire: 529, delai_jours: 21 },
+    { ref: "FEN-ALU-120", nom: "Fenêtre aluminium 2 vantaux 120×135 cm", categorie: "fenêtres", description: "Profilé fin, rupture de pont thermique, teinte au choix.", unite: "pièce", prix_unitaire: 890, delai_jours: 28 },
+    { ref: "FEN-BOIS-100", nom: "Fenêtre bois chêne 2 vantaux 100×125 cm", categorie: "fenêtres", description: "Chêne massif, lasure incolore, double vitrage.", unite: "pièce", prix_unitaire: 980, delai_jours: 35 },
+    { ref: "PF-PVC-240", nom: "Porte-fenêtre coulissante PVC 240×215 cm", categorie: "portes-fenêtres baies coulissantes", description: "2 vantaux coulissants, seuil bas.", unite: "pièce", prix_unitaire: 1490, delai_jours: 28 },
+    { ref: "PF-ALU-240", nom: "Baie coulissante aluminium 240×215 cm", categorie: "portes-fenêtres baies coulissantes", description: "Grand vitrage, fermeture 3 points.", unite: "pièce", prix_unitaire: 2390, delai_jours: 35 },
+    { ref: "VR-ELEC-120", nom: "Volet roulant électrique 120 cm", categorie: "volets", description: "Coffre rénovation, moteur filaire, lames alu.", unite: "pièce", prix_unitaire: 420, delai_jours: 21 },
+    { ref: "VR-SOL-120", nom: "Volet roulant solaire 120 cm", categorie: "volets", description: "Sans câblage, panneau solaire, télécommande.", unite: "pièce", prix_unitaire: 590, delai_jours: 21 },
+    { ref: "PE-ALU-90", nom: "Porte d'entrée aluminium 90×215 cm", categorie: "portes d'entrée", description: "Serrure 5 points, isolation renforcée.", unite: "pièce", prix_unitaire: 2190, delai_jours: 35 },
+    { ref: "PE-ACIER-90", nom: "Porte d'entrée acier 90×215 cm", categorie: "portes d'entrée", description: "Serrure 3 points, finition laquée.", unite: "pièce", prix_unitaire: 1290, delai_jours: 28 },
+    { ref: "POSE-FEN", nom: "Pose d'une fenêtre en rénovation", categorie: "pose", description: "Dépose de l'ancienne fenêtre, pose, calfeutrement.", unite: "fenêtre", prix_unitaire: 180, delai_jours: 0 },
+    { ref: "POSE-PF", nom: "Pose d'une porte-fenêtre, baie ou porte", categorie: "pose", description: "Dépose, pose, réglages et finitions.", unite: "pièce posée", prix_unitaire: 290, delai_jours: 0 },
+    { ref: "POSE-VR", nom: "Pose d'un volet roulant", categorie: "pose", description: "Fixation, raccordement, réglage des fins de course.", unite: "volet", prix_unitaire: 120, delai_jours: 0 },
+    { ref: "EVAC", nom: "Évacuation des anciennes menuiseries", categorie: "pose", description: "Enlèvement et recyclage en déchetterie agréée.", unite: "forfait chantier", prix_unitaire: 150, delai_jours: 0 },
+    { ref: "METRE", nom: "Prise de cotes sur place", categorie: "pose", description: "Métré précis par un technicien avant fabrication.", unite: "forfait", prix_unitaire: 90, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "Rénovation maison", texte: "Bonjour, je rénove une maison à Tours : 4 fenêtres PVC 100×125 et une porte-fenêtre coulissante, pose comprise. Vous pouvez me chiffrer ça ?" },
+    { label: "Volets local pro", texte: "Il me faudrait 6 volets roulants électriques de 120 cm pour notre local à Lyon, avec la pose. Quel délai ?" },
+    { label: "Hors catalogue", texte: "Je voudrais une véranda alu d'environ 15 m² et changer la porte d'entrée (alu) d'une maison à Nantes. C'est possible ?" },
+  ],
+  politique: {
+    garantie: "Garantie 10 ans sur les menuiseries, 5 ans sur les moteurs de volets, 2 ans sur la pose.",
+    paiement: "Acompte de 30 % à la commande, solde à la fin de la pose. Virement ou chèque.",
+    delais: "Fabrication 3 à 5 semaines selon le matériau, pose planifiée dès réception.",
+    tva: "TVA 20 % pour les professionnels. 10 % possible pour la rénovation d'un logement de plus de 2 ans (attestation client).",
+    metre: "La prise de cotes sur place est obligatoire avant fabrication : elle confirme les dimensions du devis.",
+  },
+  sav: [
+    { id: "M1", question: "Ma fenêtre ferme mal ou frotte", reponse: "Un réglage des paumelles suffit souvent. Sous garantie pose (2 ans), un technicien passe gratuitement sous 10 jours ouvrés." },
+    { id: "M2", question: "Condensation entre les deux vitres", reponse: "C'est un défaut d'étanchéité du vitrage : il est remplacé gratuitement pendant 10 ans." },
+    { id: "M3", question: "Mon volet roulant ne répond plus", reponse: "Vérifiez le disjoncteur puis la pile de la télécommande. Si rien ne change, le moteur est garanti 5 ans : nous intervenons sous 7 jours ouvrés." },
+    { id: "M4", question: "Délai de fabrication et de pose", reponse: "3 à 5 semaines de fabrication selon le matériau, puis pose planifiée avec vous dès réception." },
+    { id: "M5", question: "Entretien des fenêtres PVC et alu", reponse: "Eau savonneuse, pas de produit abrasif. Graissez les pièces mobiles une fois par an." },
+    { id: "M6", question: "Paiement et acompte", reponse: "30 % d'acompte à la commande, le solde à la fin de la pose, par virement ou chèque." },
+  ],
+  savExemples: ["J'ai de la buée entre les deux vitres, c'est normal ?", "Mon volet roulant électrique ne répond plus", "Vous posez aussi des portails ?"],
+};

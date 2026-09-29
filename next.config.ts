@@ -5,6 +5,11 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: path.resolve(__dirname),
   },
+  // CSS inliné dans le <head> : supprime la requête bloquante au premier affichage.
+  // Les visiteurs arrivent surtout d'un mail de prospection (première visite).
+  experimental: {
+    inlineCss: true,
+  },
   async redirects() {
     return [
       // Renommage /preuves → /projets (308 permanent), slug conservé

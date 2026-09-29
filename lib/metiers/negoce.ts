@@ -1,0 +1,51 @@
+import type { Metier } from "./types";
+
+// Négoce B2B : matériaux et fournitures de chantier. Prix HT d'exemple.
+export const NEGOCE: Metier = {
+  id: "negoce",
+  label: "Négoce B2B",
+  entreprise: "Négoce Martel Matériaux",
+  activite: "Matériaux et fournitures pour les pros du bâtiment, livrés sur chantier.",
+  tva: 0.2,
+  remises: [{ seuil: 3000, taux: 0.05 }, { seuil: 1000, taux: 0.03 }],
+  minimum_ht: 100,
+  livraison: { libelle: "Livraison camion-grue sur chantier", frais: 65, franco: 1500, delai_jours: 2 },
+  catalogue: [
+    { ref: "CIM-35", nom: "Ciment CEM II 32,5 R — sac 35 kg", categorie: "gros œuvre", description: "Ciment gris pour maçonnerie et béton courant.", unite: "sac", prix_unitaire: 8.9, delai_jours: 0 },
+    { ref: "MORT-25", nom: "Mortier prêt à gâcher — sac 25 kg", categorie: "gros œuvre", description: "Montage de blocs et petits scellements.", unite: "sac", prix_unitaire: 7.5, delai_jours: 0 },
+    { ref: "PARP-20", nom: "Parpaing creux 20×20×50", categorie: "gros œuvre", description: "Bloc béton creux B40.", unite: "pièce", prix_unitaire: 1.65, delai_jours: 0 },
+    { ref: "SABLE-BB", nom: "Sable 0/4 — big bag 1 t", categorie: "granulats", description: "Sable de rivière lavé.", unite: "big bag", prix_unitaire: 69, delai_jours: 0 },
+    { ref: "GRAV-BB", nom: "Gravier 4/10 — big bag 1 t", categorie: "granulats", description: "Gravillon roulé lavé.", unite: "big bag", prix_unitaire: 75, delai_jours: 0 },
+    { ref: "BA13", nom: "Plaque de plâtre BA13 250×120", categorie: "plâtrerie", description: "Plaque standard, bords amincis.", unite: "plaque", prix_unitaire: 7.9, delai_jours: 0 },
+    { ref: "MONT-48", nom: "Montant métallique 48 mm — 2,50 m", categorie: "plâtrerie ossature", description: "Montant galvanisé pour cloison.", unite: "pièce", prix_unitaire: 3.6, delai_jours: 0 },
+    { ref: "RAIL-48", nom: "Rail métallique 48 mm — 3 m", categorie: "plâtrerie ossature", description: "Rail galvanisé pour cloison.", unite: "pièce", prix_unitaire: 3.2, delai_jours: 0 },
+    { ref: "VIS-PLACO", nom: "Vis placo 3,5×25 — boîte de 1000", categorie: "plâtrerie quincaillerie", description: "Vis phosphatées pointe aiguille.", unite: "boîte", prix_unitaire: 14.9, delai_jours: 0 },
+    { ref: "LV-100", nom: "Laine de verre 100 mm — rouleau 6 m²", categorie: "isolation", description: "Isolant semi-rigide, R = 2,5.", unite: "rouleau", prix_unitaire: 29.9, delai_jours: 0 },
+    { ref: "OSB-18", nom: "Panneau OSB3 18 mm 250×125", categorie: "bois panneaux", description: "Panneau structurel milieu humide.", unite: "panneau", prix_unitaire: 24.5, delai_jours: 0 },
+    { ref: "CHEV-4M", nom: "Chevron sapin 63×75 — 4 m", categorie: "bois charpente", description: "Sapin traité classe 2.", unite: "pièce", prix_unitaire: 9.8, delai_jours: 0 },
+    { ref: "GANTS-12", nom: "Gants de manutention — lot de 12", categorie: "EPI équipement", description: "Enduction nitrile, taille 9.", unite: "lot", prix_unitaire: 18.5, delai_jours: 0 },
+    { ref: "CASQUE", nom: "Casque de chantier", categorie: "EPI équipement", description: "Norme EN 397, serrage crémaillère.", unite: "pièce", prix_unitaire: 9.9, delai_jours: 0 },
+    { ref: "PALETTE", nom: "Consigne palette", categorie: "logistique", description: "Remboursée au retour de la palette.", unite: "pièce", prix_unitaire: 12, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "Commande cloisons", texte: "Pour un chantier à Villeurbanne : 80 plaques BA13, 120 montants de 48, 60 rails et 10 boîtes de vis. Livraison mardi possible ?" },
+    { label: "Gros œuvre", texte: "Il me faut 3 big bags de sable, 40 sacs de ciment et 200 parpaings, livrés sur chantier à Grenoble." },
+    { label: "Hors catalogue", texte: "Vous avez du bardage bois douglas ? Et 30 panneaux OSB 18 mm, livraison à Ajaccio." },
+  ],
+  politique: {
+    paiement: "Compte pro : paiement à 30 jours fin de mois après ouverture. Sinon carte ou virement à la commande.",
+    livraison: "Livraison camion-grue sous 48 h en France métropolitaine continentale, offerte dès 1 500 € HT.",
+    remises: "Remise de 3 % dès 1 000 € HT, 5 % dès 3 000 € HT.",
+    retours: "Retour accepté sous 30 jours pour les produits non entamés, hors commandes spéciales.",
+    horaires: "Dépôt ouvert du lundi au vendredi 7 h - 17 h, le samedi 8 h - 12 h.",
+  },
+  sav: [
+    { id: "N1", question: "Délai de livraison sur chantier", reponse: "Livraison camion-grue sous 48 h ouvrées en France métropolitaine continentale." },
+    { id: "N2", question: "Ouvrir un compte professionnel", reponse: "Envoyez un Kbis et un RIB : le compte est ouvert sous 48 h, paiement à 30 jours fin de mois." },
+    { id: "N3", question: "Retourner des produits non utilisés", reponse: "Retour sous 30 jours pour les produits non entamés, avoir émis à réception au dépôt." },
+    { id: "N4", question: "Remises sur volume", reponse: "3 % dès 1 000 € HT, 5 % dès 3 000 € HT, appliqués automatiquement." },
+    { id: "N5", question: "Palettes consignées", reponse: "Chaque palette est consignée 12 € HT, remboursés quand elle revient au dépôt." },
+    { id: "N6", question: "Horaires du dépôt", reponse: "Du lundi au vendredi 7 h - 17 h, le samedi 8 h - 12 h." },
+  ],
+  savExemples: ["Comment ouvrir un compte pro ?", "Je peux rendre 10 sacs de ciment non ouverts ?", "Vous louez des mini-pelles ?"],
+};

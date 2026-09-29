@@ -2,6 +2,7 @@ import Image from "next/image";
 import StarField from "@/components/contact/StarField";
 import FreqRow from "@/components/contact/FreqRow";
 import ContactForm from "@/components/contact/ContactForm";
+import ContactPrefill from "@/components/contact/ContactPrefill";
 import { CALENDAR_URL } from "@/lib/site-config";
 
 // Server component : conserve le SEO (metadata). StarField & ContactForm sont
@@ -17,6 +18,7 @@ export default function ContactPage() {
   return (
     <main style={{ background: "var(--color-bg)", position: "relative", minHeight: "100vh" }}>
       <StarField />
+      <ContactPrefill />
 
       {/* HERO */}
       <section

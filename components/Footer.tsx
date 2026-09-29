@@ -32,7 +32,7 @@ export default function Footer() {
           ))}
           <Link
             href="/ops"
-            className="text-xs font-mono text-muted/70 hover:text-orange transition-colors"
+            className="text-xs font-mono text-muted hover:text-orange transition-colors"
           >
             /ops
           </Link>
