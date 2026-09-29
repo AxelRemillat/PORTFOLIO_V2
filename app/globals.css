@@ -386,3 +386,11 @@ body {
   .timeline-watermark { left: 0 !important; transform: none !important; }
   .timeline-year-label { text-align: left !important; }
 }
+
+/* Révélation au scroll SANS JavaScript (home, /pme) : animation pilotée par le
+   défilement là où le navigateur la supporte, contenu simplement visible ailleurs. */
+@keyframes rvIn { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+@supports (animation-timeline: view()) {
+  .rv { animation: rvIn linear both; animation-timeline: view(); animation-range: entry 0% entry 35%; }
+}
+@media (prefers-reduced-motion: reduce) { .rv { animation: none; } }

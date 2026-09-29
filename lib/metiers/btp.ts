@@ -1,0 +1,52 @@
+import type { Metier } from "./types";
+
+// BTP / rénovation intérieure. Prix HT d'exemple, fourniture standard incluse.
+export const BTP: Metier = {
+  id: "btp",
+  label: "BTP / rénovation",
+  entreprise: "Rénov'Artisans",
+  activite: "Rénovation intérieure : cloisons, peinture, sols, électricité, salles de bain.",
+  tva: 0.1,
+  remises: [],
+  minimum_ht: 500,
+  livraison: { libelle: "Déplacement et installation de chantier", frais: 0, franco: null, delai_jours: 10 },
+  catalogue: [
+    { ref: "DEM-CLOISON", nom: "Démolition de cloison non porteuse", categorie: "démolition", description: "Dépose, mise en sacs, hors évacuation.", unite: "m²", prix_unitaire: 35, delai_jours: 0 },
+    { ref: "PLACO-CLOISON", nom: "Cloison placo BA13 isolée", categorie: "plâtrerie cloisons", description: "Ossature métal, laine minérale, bandes et enduit.", unite: "m²", prix_unitaire: 58, delai_jours: 0 },
+    { ref: "PLACO-DOUBLAGE", nom: "Doublage isolant de mur", categorie: "plâtrerie isolation", description: "Doublage collé, isolant 10 cm.", unite: "m²", prix_unitaire: 49, delai_jours: 0 },
+    { ref: "PEINT-MUR", nom: "Peinture des murs, 2 couches", categorie: "peinture", description: "Préparation, sous-couche et 2 couches mates.", unite: "m²", prix_unitaire: 24, delai_jours: 0 },
+    { ref: "PEINT-PLAF", nom: "Peinture des plafonds, 2 couches", categorie: "peinture", description: "Préparation, 2 couches blanc mat.", unite: "m²", prix_unitaire: 28, delai_jours: 0 },
+    { ref: "SOL-CARRELAGE", nom: "Pose de carrelage au sol", categorie: "sols", description: "Carrelage standard 60×60 fourni, colle et joints.", unite: "m²", prix_unitaire: 75, delai_jours: 5 },
+    { ref: "SOL-PARQUET", nom: "Parquet stratifié posé", categorie: "sols", description: "Stratifié 8 mm, sous-couche, plinthes.", unite: "m²", prix_unitaire: 42, delai_jours: 5 },
+    { ref: "SOL-RAGREAGE", nom: "Ragréage du sol", categorie: "sols", description: "Mise à niveau avant pose de revêtement.", unite: "m²", prix_unitaire: 18, delai_jours: 0 },
+    { ref: "ELEC-PRISE", nom: "Création d'une prise électrique", categorie: "électricité", description: "Saignée, gaine, prise 16 A, raccordement.", unite: "unité", prix_unitaire: 85, delai_jours: 0 },
+    { ref: "ELEC-TABLEAU", nom: "Mise aux normes du tableau électrique", categorie: "électricité", description: "Tableau neuf, différentiels, attestation.", unite: "forfait", prix_unitaire: 1250, delai_jours: 5 },
+    { ref: "SDB-COMPLETE", nom: "Rénovation complète de salle de bain (≤ 5 m²)", categorie: "plomberie salle de bain", description: "Dépose, douche à l'italienne, meuble vasque, faïence.", unite: "forfait", prix_unitaire: 6900, delai_jours: 10 },
+    { ref: "WC-SUSPENDU", nom: "Remplacement par un WC suspendu", categorie: "plomberie", description: "Bâti-support, cuvette, habillage.", unite: "unité", prix_unitaire: 890, delai_jours: 5 },
+    { ref: "ISO-COMBLES", nom: "Isolation des combles perdus", categorie: "isolation", description: "Laine soufflée 30 cm.", unite: "m²", prix_unitaire: 32, delai_jours: 5 },
+    { ref: "PROTECTION", nom: "Protection et nettoyage de chantier", categorie: "chantier", description: "Bâches, protection des sols, nettoyage final.", unite: "forfait", prix_unitaire: 250, delai_jours: 0 },
+    { ref: "EVAC-GRAVATS", nom: "Évacuation des gravats", categorie: "chantier", description: "Benne et mise en décharge.", unite: "forfait", prix_unitaire: 390, delai_jours: 0 },
+    { ref: "MO-JOUR", nom: "Journée d'ouvrier qualifié", categorie: "main-d'œuvre", description: "Travaux divers en régie.", unite: "jour", prix_unitaire: 380, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "Appartement 60 m²", texte: "Rénovation d'un appartement de 60 m² à Lille : peinture des murs (150 m²) et des plafonds (60 m²), parquet stratifié dans les chambres (25 m²). Vous pouvez faire un devis ?" },
+    { label: "Cloison + prises", texte: "Je veux couper un bureau en deux : une cloison placo de 12 m² avec 2 prises électriques. Budget serré." },
+    { label: "Hors catalogue", texte: "Salle de bain complète à refaire et installation d'une pompe à chaleur dans une maison à Bordeaux, c'est jouable ?" },
+  ],
+  politique: {
+    garantie: "Garantie décennale et garantie de parfait achèvement d'un an. Attestation d'assurance fournie avec le devis.",
+    paiement: "Acompte de 30 % au démarrage, situations de travaux, solde à la réception du chantier.",
+    delais: "Démarrage sous 2 à 3 semaines selon le planning, durée selon le volume de travaux.",
+    tva: "TVA 10 % pour la rénovation d'un logement de plus de 2 ans, 20 % pour les locaux professionnels ou le neuf.",
+    visite: "Une visite technique gratuite confirme les surfaces et l'état des supports avant le devis définitif.",
+  },
+  sav: [
+    { id: "B1", question: "Fissure apparue après les travaux", reponse: "Pendant l'année de parfait achèvement, nous reprenons gratuitement. Envoyez une photo, un compagnon passe sous 15 jours." },
+    { id: "B2", question: "Délai avant le démarrage du chantier", reponse: "Comptez 2 à 3 semaines après signature du devis, selon le planning des équipes." },
+    { id: "B3", question: "Assurance et garantie décennale", reponse: "Nous sommes couverts en décennale ; l'attestation est jointe à chaque devis." },
+    { id: "B4", question: "Visite technique avant devis", reponse: "La visite technique est gratuite et prend environ 45 minutes." },
+    { id: "B5", question: "TVA réduite en rénovation", reponse: "TVA 10 % pour un logement de plus de 2 ans, sur attestation simplifiée signée par le client." },
+    { id: "B6", question: "Paiement des travaux", reponse: "30 % à la signature, situations de travaux, solde à la réception." },
+  ],
+  savExemples: ["Une fissure est apparue au plafond 3 mois après les travaux", "Vous avez la garantie décennale ?", "Vous faites aussi les piscines ?"],
+};

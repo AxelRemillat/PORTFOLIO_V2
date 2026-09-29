@@ -1,81 +1,103 @@
-import { CATALOGUE, ZONES, ENTREPRISE, REMISE_PALIERS, TVA_TAUX, FRANCO_HT, type Produit } from "./mobibureau-data";
+import type { Metier, Article } from "@/lib/metiers";
 
-// Outils déterministes de l'agent : fonctions pures sur les données Mobibureau.
-// Toute valeur chiffrée (prix, stock, délai) provient d'ici — jamais du LLM.
+// Outils déterministes de l'agent devis : fonctions pures sur la fiche métier.
+// Toute valeur chiffrée (prix, délai, TVA) provient d'ici — jamais du LLM.
+// Une demande hors catalogue ne donne jamais un « non » sec : la ligne passe
+// « à chiffrer » et une question est ajoutée pour le client.
 const r2 = (n: number) => Math.round(n * 100) / 100;
-const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-const pub = (p: Produit) => ({ ref: p.ref, nom: p.nom, categorie: p.categorie, description: p.description, prix_unitaire: p.prix_unitaire, stock: p.stock, delai_base_jours: p.delai_base_jours, options: p.options });
+export const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+const STOP = new Set(["pour", "avec", "des", "une", "les", "vous", "sur", "dans", "est", "que", "qui", "par", "pas", "plus", "bonjour", "merci", "faire", "devis"]);
+const stem = (t: string) => (t.length > 3 ? t.replace(/[sx]$/, "") : t);
 
-export function rechercher_produits({ requete }: { requete: string }) {
-  const tokens = norm(requete || "").split(/[^a-z0-9]+/).filter((t) => t.length >= 3);
-  const scored = CATALOGUE.map((p) => {
-    const hay = norm(`${p.nom} ${p.categorie} ${p.description} ${p.ref}`);
-    const score = tokens.reduce((s, t) => s + (hay.includes(t) ? 1 : 0), 0);
-    return { p, score };
-  }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score).slice(0, 8);
-  return { produits: scored.map((x) => pub(x.p)) };
+// Destinations hors zone habituelle : devis possible, frais et délai à confirmer.
+const HORS_ZONE = ["corse", "ajaccio", "bastia", "porto-vecchio", "guadeloupe", "martinique", "guyane", "cayenne", "reunion", "mayotte", "belgique", "suisse", "luxembourg"];
+
+export interface LigneDemandee { ref: string; quantite: number }
+export interface LigneHors { designation: string; quantite?: number; unite?: string }
+
+function tokens(text: string) {
+  return norm(text).split(/[^a-z0-9]+/).filter((t) => (t.length >= 3 || /^\d{2,}$/.test(t)) && !STOP.has(t)).map(stem);
 }
 
-export function verifier_stock({ ref, quantite }: { ref: string; quantite: number }) {
-  const p = CATALOGUE.find((x) => x.ref === ref);
-  if (!p) return { trouve: false, ref, disponible: false, stock: 0, delai_jours: 0 };
-  const q = Math.max(1, Math.round(quantite || 1));
-  return { trouve: true, ref, nom: p.nom, disponible: p.stock >= q, stock: p.stock, quantite_demandee: q, delai_jours: p.delai_base_jours };
+export function rechercher_articles(m: Metier, { requete }: { requete: string }) {
+  const tk = tokens(requete || "");
+  const scored = m.catalogue.map((a) => {
+    const hay = norm(`${a.nom} ${a.categorie} ${a.description} ${a.ref}`);
+    return { a, score: tk.reduce((s, t) => s + (hay.includes(t) ? 1 : 0), 0) };
+  }).filter((x) => x.score > 0).sort((x, y) => y.score - x.score).slice(0, 8);
+  const articles = scored.map(({ a }) => ({ ref: a.ref, nom: a.nom, unite: a.unite, prix_unitaire: a.prix_unitaire, delai_jours: a.delai_jours, description: a.description }));
+  return articles.length
+    ? { articles }
+    : { articles, conseil: "Rien d'équivalent au catalogue : ajoute la ligne dans hors_catalogue de calculer_devis (elle sera « à chiffrer ») et pose une question au client." };
 }
 
-export function verifier_livraison({ ville }: { ville: string }) {
-  const z = ZONES.find((x) => norm(x.ville) === norm(ville || ""));
-  if (!z) return { ville, livrable: false, delai_jours: 0, frais: 0, raison: "zone hors couverture" };
-  return { ville: z.ville, livrable: z.livrable, delai_jours: z.delai_jours, frais: z.frais, ...(z.livrable ? {} : { raison: "zone hors couverture" }) };
+export function verifier_livraison(m: Metier, { ville }: { ville?: string }) {
+  const v = norm(ville || "");
+  if (!v) return { ville: null, a_confirmer: true, question: "À quelle adresse faut-il livrer ou intervenir ?" };
+  if (HORS_ZONE.some((z) => v.includes(z))) {
+    return { ville, a_confirmer: true, question: `${ville} est hors de notre zone habituelle : acceptez-vous un transport spécifique (frais et délai à confirmer) ?` };
+  }
+  const { libelle, frais, franco, delai_jours } = m.livraison;
+  return { ville, a_confirmer: false, libelle, frais, franco, delai_jours };
 }
 
-export function calculer_devis({ lignes, ville }: { lignes: { ref: string; quantite: number }[]; ville?: string }) {
-  const detail = (lignes || []).map((l) => {
-    const p = CATALOGUE.find((x) => x.ref === l.ref);
-    const q = Math.max(1, Math.round(l.quantite || 1));
-    if (!p) return { designation: `Référence inconnue (${l.ref})`, quantite: q, prix_unitaire: 0, montant: 0, _delai: 0 };
-    return { designation: p.nom, quantite: q, prix_unitaire: p.prix_unitaire, montant: r2(p.prix_unitaire * q), _delai: p.delai_base_jours };
-  });
-  const sous_total_ht = r2(detail.reduce((s, l) => s + l.montant, 0));
-  const palier = REMISE_PALIERS.find((pa) => sous_total_ht >= pa.seuil);
-  const remise = { taux: palier?.taux ?? 0, montant: r2(sous_total_ht * (palier?.taux ?? 0)) };
-  const total_apres_remise = r2(sous_total_ht - remise.montant);
+const ligne = (a: Article, q: number) => ({ ref: a.ref, designation: a.nom, unite: a.unite, quantite: q, prix_unitaire: a.prix_unitaire, montant: r2(a.prix_unitaire * q), _delai: a.delai_jours });
 
-  const z = ville ? ZONES.find((x) => norm(x.ville) === norm(ville)) : undefined;
-  const franco = total_apres_remise >= FRANCO_HT;
-  const frais_livraison = z?.livrable && !franco ? z.frais : 0;
-  const delaiProduit = detail.reduce((m, l) => Math.max(m, l._delai), 0);
-  const delai_livraison = z?.livrable ? delaiProduit + z.delai_jours : delaiProduit;
+export function calculer_devis(m: Metier, { lignes, hors_catalogue, ville }: { lignes?: LigneDemandee[]; hors_catalogue?: LigneHors[]; ville?: string }) {
+  const questions: string[] = [];
+  const a_chiffrer = (hors_catalogue || []).filter((h) => h?.designation).map((h) => ({ designation: String(h.designation), quantite: Number(h.quantite) || 1, unite: h.unite || "à préciser" }));
+  const chiffrees: (ReturnType<typeof ligne> & { tva: number })[] = [];
+  for (const l of lignes || []) {
+    const a = m.catalogue.find((x) => x.ref === l.ref);
+    const q = Number(l.quantite) > 0 ? r2(Number(l.quantite)) : 1;
+    if (!a) { a_chiffrer.push({ designation: `Article ${l.ref}`, quantite: q, unite: "à préciser" }); continue; }
+    chiffrees.push({ ...ligne(a, q), tva: a.tva ?? m.tva });
+  }
+  for (const h of a_chiffrer) questions.push(`« ${h.designation} » n'est pas dans notre catalogue standard : pouvez-vous préciser dimensions, quantité et finition pour qu'on le chiffre ?`);
 
-  const base_ht = r2(total_apres_remise + frais_livraison);
-  const tva_montant = r2(base_ht * TVA_TAUX);
-  const total_ttc = r2(base_ht + tva_montant);
-  const lignes_out = detail.map(({ designation, quantite, prix_unitaire, montant }) => ({ designation, quantite, prix_unitaire, montant }));
-  return { lignes: lignes_out, sous_total_ht, remise, tva_montant, total_ttc, frais_livraison, franco, delai_livraison, ville: z?.ville ?? ville ?? null };
+  const sous_total_ht = r2(chiffrees.reduce((s, l) => s + l.montant, 0));
+  const palier = m.remises.find((p) => sous_total_ht >= p.seuil);
+  const taux = palier?.taux ?? 0;
+  const remise = { taux, montant: r2(sous_total_ht * taux) };
+  const net_ht = r2(sous_total_ht - remise.montant);
+
+  const zone = verifier_livraison(m, { ville });
+  if (zone.question) questions.push(zone.question);
+  const offert = m.livraison.franco !== null && net_ht >= m.livraison.franco;
+  const frais_livraison = zone.a_confirmer || offert ? 0 : m.livraison.frais;
+  const total_ht = r2(net_ht + frais_livraison);
+  if (chiffrees.length && total_ht < m.minimum_ht) questions.push(`Le minimum de commande est de ${m.minimum_ht} € HT : souhaitez-vous compléter la commande ?`);
+
+  // TVA par taux : remise répartie au prorata, livraison au taux du métier.
+  const bases = new Map<number, number>();
+  for (const l of chiffrees) bases.set(l.tva, (bases.get(l.tva) ?? 0) + l.montant * (1 - taux));
+  if (frais_livraison) bases.set(m.tva, (bases.get(m.tva) ?? 0) + frais_livraison);
+  const tva = [...bases].map(([t, base]) => ({ taux: t, base: r2(base), montant: r2(base * t) }));
+  const tva_montant = r2(tva.reduce((s, x) => s + x.montant, 0));
+
+  const delai = chiffrees.reduce((d, l) => Math.max(d, l._delai), 0) + m.livraison.delai_jours;
+  return {
+    lignes: chiffrees.map(({ ref, designation, unite, quantite, prix_unitaire, montant }) => ({ ref, designation, unite, quantite, prix_unitaire, montant })),
+    a_chiffrer, sous_total_ht, remise, frais_livraison, livraison_offerte: offert, total_ht, tva, tva_montant,
+    total_ttc: r2(total_ht + tva_montant), delai_jours: delai, ville: ville ?? null,
+    complet: a_chiffrer.length === 0 && !zone.a_confirmer && chiffrees.length > 0, questions,
+  };
 }
 
-export function infos_entreprise({ sujet }: { sujet: string }) {
+export function infos_entreprise(m: Metier, { sujet }: { sujet: string }) {
   const s = norm(sujet || "");
-  const key = Object.keys(ENTREPRISE).find((k) => s.includes(k) || norm(ENTREPRISE[k]).includes(s));
-  if (key) return { sujet: key, reponse: ENTREPRISE[key] };
-  return { sujet, infos: ENTREPRISE }; // renvoie tout si le sujet n'est pas ciblé
+  const key = Object.keys(m.politique).find((k) => s.includes(norm(k)) || norm(m.politique[k]).includes(s));
+  if (key) return { sujet: key, reponse: m.politique[key] };
+  return { sujet, infos: m.politique };
 }
 
-export const TOOL_FNS: Record<string, (args: Record<string, unknown>) => unknown> = {
-  rechercher_produits: (a) => rechercher_produits(a as { requete: string }),
-  verifier_stock: (a) => verifier_stock(a as { ref: string; quantite: number }),
-  verifier_livraison: (a) => verifier_livraison(a as { ville: string }),
-  calculer_devis: (a) => calculer_devis(a as { lignes: { ref: string; quantite: number }[]; ville?: string }),
-  infos_entreprise: (a) => infos_entreprise(a as { sujet: string }),
-};
+export type DevisCalcule = ReturnType<typeof calculer_devis>;
 
-// Schémas OpenAI (function-calling). `finaliser` clôt la boucle avec le livrable ;
-// le devis chiffré est réattaché côté serveur (jamais réécrit ici).
-export const TOOL_SCHEMAS = [
-  { type: "function", function: { name: "rechercher_produits", description: "Cherche des produits du catalogue Mobibureau par mots-clés (catégorie, nom, description). Retourne réfs, prix, stock, délai, options.", parameters: { type: "object", properties: { requete: { type: "string", description: "Mots-clés produit, ex. 'bureau assis-debout' ou 'cabine acoustique'" } }, required: ["requete"] } } },
-  { type: "function", function: { name: "verifier_stock", description: "Vérifie la disponibilité d'une référence pour une quantité.", parameters: { type: "object", properties: { ref: { type: "string" }, quantite: { type: "number" } }, required: ["ref", "quantite"] } } },
-  { type: "function", function: { name: "verifier_livraison", description: "Vérifie si une ville est livrable, avec délai de transport et frais.", parameters: { type: "object", properties: { ville: { type: "string" } }, required: ["ville"] } } },
-  { type: "function", function: { name: "calculer_devis", description: "Calcule un devis chiffré (remises par paliers, TVA 20%, livraison offerte au-delà d'un seuil, délai global) à partir de lignes ref+quantité.", parameters: { type: "object", properties: { lignes: { type: "array", items: { type: "object", properties: { ref: { type: "string" }, quantite: { type: "number" } }, required: ["ref", "quantite"] } }, ville: { type: "string" } }, required: ["lignes"] } } },
-  { type: "function", function: { name: "infos_entreprise", description: "Répond aux questions générales : garantie, sav, paiement, livraison, delais, horaires, minimum de commande.", parameters: { type: "object", properties: { sujet: { type: "string", description: "Sujet, ex. 'garantie', 'paiement', 'délais de livraison'" } }, required: ["sujet"] } } },
-  { type: "function", function: { name: "finaliser", description: "Clôt le traitement et produit le livrable. À appeler une seule fois, en dernier. Tu dois TOUJOURS fournir un email client personnalisé, quel que soit le cas (devis, demande partielle, livraison impossible, question générale).", parameters: { type: "object", properties: { faisable: { type: "boolean" }, email: { type: "string", description: "Email client personnalisé, prêt à envoyer — OBLIGATOIRE dans TOUS les cas (devis chiffré, refus avec alternative, ou réponse à une question générale)." }, reponse: { type: "string", description: "Réponse courte au client pour une question générale (optionnel, l'email reste obligatoire)" }, creneaux: { type: "array", description: "2 créneaux d'appel proposés avec le client", items: { type: "object", properties: { jour: { type: "string", description: "ex. 'Mardi'" }, heure: { type: "string", description: "ex. '14h'" } }, required: ["jour", "heure"] } }, note: { type: "string", description: "Alternative/explication si partiel ou non faisable, sinon vide" } }, required: ["faisable", "email"] } } },
-] as const;
+export function createToolFns(m: Metier): Record<string, (args: Record<string, unknown>) => unknown> {
+  return {
+    rechercher_articles: (a) => rechercher_articles(m, a as { requete: string }),
+    verifier_livraison: (a) => verifier_livraison(m, a as { ville?: string }),
+    calculer_devis: (a) => calculer_devis(m, a as Parameters<typeof calculer_devis>[1]),
+    infos_entreprise: (a) => infos_entreprise(m, a as { sujet: string }),
+  };
+}

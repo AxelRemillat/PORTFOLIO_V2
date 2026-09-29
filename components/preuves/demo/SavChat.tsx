@@ -10,22 +10,22 @@ import { SAV_CSS } from "./savCss";
 import { runWorkflow, GENERIC_ERRORS } from "./workflow-types";
 import type { WorkflowConfig } from "./workflow-types";
 import type { SavData } from "./SavResult";
+import MetierPicker from "@/components/demo-kit/MetierPicker";
+import { METIERS, getMetier, type Metier, type MetierId } from "@/lib/metiers";
 
-const WELCOME =
-  "Bonjour 👋 Je suis l'assistant de Flowbit. Posez-moi une question sur nos offres, la facturation, l'API ou vos projets.";
-const SUGGESTIONS = [
-  "Quels sont vos tarifs ?",
-  "Puis-je essayer gratuitement ?",
-  "Proposez-vous une API et des intégrations ?",
-];
+const welcome = (m: Metier) =>
+  `Bonjour 👋 Je suis l'assistant de ${m.entreprise}. Posez-moi une question sur nos délais, garanties, paiements ou commandes.`;
 
 const MIN_MS = 1200; // durée mini d'animation, lisible même si l'API répond vite
 type PipePhase = "idle" | "running" | "done" | "error";
 
-// Onglet SAV rendu en CHAT conversationnel (RAG). Chaque message est traité
-// indépendamment par la route /api/demo/sav ; tout l'historique reste visible.
+// Onglet SAV rendu en CHAT conversationnel. Le visiteur choisit un métier : la
+// base de connaissance d'exemple suit (lib/metiers). Chaque message est traité
+// indépendamment par /api/demo/sav ; changer de métier repart de zéro.
 export default function SavChat({ config }: { config: WorkflowConfig }) {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [{ role: "assistant", text: WELCOME }]);
+  const [metierId, setMetierId] = useState<MetierId>("menuiserie");
+  const metier = getMetier(metierId) ?? METIERS[0];
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [{ role: "assistant", text: welcome(METIERS[0]) }]);
   const [sending, setSending] = useState(false);
   const [pipeIndex, setPipeIndex] = useState(-1);   // node actif du pipeline
   const [pipePhase, setPipePhase] = useState<PipePhase>("idle");
@@ -46,6 +46,13 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
   // Nettoyage des timers au démontage (changement d'onglet).
   useEffect(() => () => clearTimers(), []);
 
+  const pick = (id: MetierId) => {
+    const m = getMetier(id);
+    if (!m || sending) return;
+    setMetierId(id);
+    setMessages([{ role: "assistant", text: welcome(m) }]);
+  };
+
   const send = async (q: string) => {
     if (sending) return;
     clearTimers();
@@ -63,7 +70,7 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
       minDelay = new Promise((r) => { timers.current.push(window.setTimeout(r, MIN_MS)); });
     }
 
-    const [res] = await Promise.all([runWorkflow(config.endpoint, config.inputField, q, ""), minDelay]);
+    const [res] = await Promise.all([runWorkflow(config.endpoint, config.inputField, q, "", { metier: metier.id }), minDelay]);
     clearTimers();
 
     if (res.ok && res.result != null) {
@@ -83,10 +90,11 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
   return (
     <div className="wc-card wc-chat" style={accentVars}>
       <style>{SAV_CSS}</style>
+      <MetierPicker metiers={METIERS} value={metier.id} onChange={pick} disabled={sending} label="Votre métier" />
       <div className="wc-chat-ctx">
         <div>
-          <p className="wc-chat-ctx-t">Assistant support — <b>Flowbit</b>, SaaS de gestion de projet &amp; facturation pour freelances et agences</p>
-          <p className="wc-chat-ctx-s">Démo d&apos;un chatbot RAG branché sur la base de connaissance d&apos;une entreprise.</p>
+          <p className="wc-chat-ctx-t">Service client — <b>{metier.entreprise}</b>, {metier.activite.charAt(0).toLowerCase() + metier.activite.slice(1)}</p>
+          <p className="wc-chat-ctx-s">Base de questions-réponses d&apos;exemple : chez vous, l&apos;assistant répond à partir de vos propres documents.</p>
         </div>
         <span className="wc-chat-pill">réponses sourcées</span>
       </div>
@@ -109,7 +117,7 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
       </div>
 
       <div className="wc-chat-suggs">
-        {SUGGESTIONS.map((s) => (
+        {metier.savExemples.map((s) => (
           <button key={s} type="button" className="wc-chat-sugg" disabled={sending} onClick={() => send(s)}>{s}</button>
         ))}
       </div>

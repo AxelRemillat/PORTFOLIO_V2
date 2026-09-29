@@ -9,9 +9,9 @@ import OffresCta from "@/components/offres/OffresCta";
 // ses propres animations (reveal au scroll).
 export const metadata: Metadata = {
   alternates: { canonical: "/offres" },
-  title: "Offres — Axel Remillat | Mise en production IA",
+  title: "Offres et tarifs — Axel Remillat | Automatisation pour PME",
   description:
-    "Trois offres claires pour PME et startups : audit express, déploiement production et run mensuel monitoré. Passez votre IA du prototype à la production, sans surprise.",
+    "Audit dès 290 €, automatisation clé en main dès 1 200 €, suivi dès 190 €/mois, mise en production IA dès 1 900 €. Prix fixés avant de commencer.",
 };
 
 export default function OffresPage() {

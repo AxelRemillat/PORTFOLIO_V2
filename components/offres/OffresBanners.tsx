@@ -2,11 +2,11 @@
 
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 
-// Deux bandeaux transverses : option conformité AI Act + tarifs de lancement.
+// Bandeau transverse : conformité au règlement européen sur l'IA (AI Act).
 export default function OffresBanners() {
   return (
     <section style={{ padding: "4vh 6vw", maxWidth: "1000px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-      {/* Sceau transversal — Conformité AI Act « by design » (vaut pour les 3 offres) */}
+      {/* Sceau transversal — Conformité AI Act « by design » (vaut pour toutes les offres) */}
       <ScrollReveal>
         <div
           style={{
@@ -59,9 +59,9 @@ export default function OffresBanners() {
               ✓ Conformité AI Act — by design
             </span>
             <p style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", lineHeight: 1.65, color: "var(--color-text)" }}>
-              Chaque mise en production intègre les exigences du règlement européen sur
-              l&apos;IA : classification du risque, documentation technique, transparence et
-              traçabilité. Vous déployez votre IA en règle, sans mauvaise surprise réglementaire.
+              Chaque automatisation respecte le règlement européen sur l&apos;IA : le niveau de
+              risque est évalué, le fonctionnement documenté, et ce que fait l&apos;IA reste
+              traçable. Vous l&apos;utilisez en règle, sans mauvaise surprise.
             </p>
             <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--color-muted)", fontStyle: "italic" }}>
               Intégré « by design » — accompagnement technique aligné sur le règlement, pas une certification légale ni un conseil juridique.
@@ -70,22 +70,6 @@ export default function OffresBanners() {
         </div>
       </ScrollReveal>
 
-      {/* Tarifs de lancement */}
-      <ScrollReveal delay={0.08}>
-        <div
-          style={{
-            border: "1px dashed var(--color-border)",
-            borderRadius: 14,
-            padding: "1.5rem 1.75rem",
-            textAlign: "center",
-          }}
-        >
-          <p style={{ margin: 0, fontSize: "0.95rem", lineHeight: 1.6, color: "var(--color-text)" }}>
-            <span style={{ fontWeight: 700, color: "var(--color-orange)" }}>Tarifs de lancement</span> — ils
-            augmenteront avec le carnet de références. Les premiers clients sont les mieux servis.
-          </p>
-        </div>
-      </ScrollReveal>
     </section>
   );
 }

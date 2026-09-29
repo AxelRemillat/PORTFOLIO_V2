@@ -1,65 +1,25 @@
-"use client";
-
 import Link from "next/link";
-import type { CSSProperties } from "react";
-import ScrollReveal from "@/components/parcours/ScrollReveal";
 import SectionLabel from "@/components/parcours/SectionLabel";
+import { OFFERS } from "@/components/offres/offres-data";
+import { section, h2, lead, card, grid } from "./homeStyles";
 
-// Teaser des 3 offres (détail complet sur /offres). Mini-cards nom + une ligne
-// + prix « à partir de ». Reveal au scroll, hover sobre (reduced-motion OK).
-const TEASERS = [
-  { name: "Diagnostic", line: "Votre système IA au banc d'essai.", price: "dès 490 €", accent: "#f97316" },
-  { name: "Mise en production", line: "Du prototype à la production.", price: "1 900 à 4 900 €", accent: "#10b981" },
-  { name: "Suivi mensuel", line: "Votre IA sous surveillance.", price: "dès 690 €/mois", accent: "#a855f7" },
-];
-
+// Les 4 offres en cartes courtes (source unique : offres-data), détail sur /offres.
 export default function OffersTeaser() {
   return (
-    <section id="offres" style={{ padding: "8vh 6vw", maxWidth: "1100px", margin: "0 auto" }}>
-      <ScrollReveal>
-        <SectionLabel>02 // OFFRES</SectionLabel>
-        <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)", margin: "0 0 0.5rem" }}>
-          Trois offres, un cap : la production
-        </h2>
-        <p style={{ fontSize: "0.9rem", color: "#7a7a92", margin: "0 0 2rem", fontFamily: "var(--font-mono)" }}>
-          Un périmètre, un prix, un livrable.
-        </p>
-      </ScrollReveal>
-
-      <div
-        style={{
-          display: "grid",
-          gap: "1.25rem",
-          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
-        }}
-      >
-        {TEASERS.map((o, i) => (
-          <ScrollReveal key={o.name} delay={i * 0.08}>
-            <Link
-              href="/offres"
-              className="flex flex-col h-full no-underline transition-transform duration-200 hover:-translate-y-1 motion-reduce:transition-none motion-reduce:hover:translate-y-0"
-              style={{
-                background: "rgba(255,255,255,0.02)",
-                border: `1px solid ${o.accent}33`,
-                borderRadius: 14,
-                padding: "1.5rem",
-                "--tw-shadow-color": o.accent,
-              } as CSSProperties}
-            >
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", fontWeight: 700, color: o.accent, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                {`0${i + 1}`}
-              </span>
-              <h3 style={{ margin: "0.6rem 0 0.4rem", fontSize: "1.15rem", fontWeight: 800, color: "#fff" }}>
-                {o.name}
-              </h3>
-              <p style={{ margin: "0 0 1rem", fontSize: "0.85rem", lineHeight: 1.5, color: "rgba(255,255,255,0.62)" }}>
-                {o.line}
-              </p>
-              <span style={{ marginTop: "auto", fontFamily: "var(--font-mono)", fontSize: "0.85rem", fontWeight: 700, color: o.accent }}>
-                {o.price}
-              </span>
-            </Link>
-          </ScrollReveal>
+    <section id="offres" style={section()}>
+      <div className="rv">
+        <SectionLabel>04 // OFFRES</SectionLabel>
+        <h2 style={h2}>Des prix clairs, fixés avant de commencer</h2>
+        <p style={lead}>Un périmètre, un prix, un délai. Pas de dépassement surprise.</p>
+      </div>
+      <div style={grid(240)}>
+        {OFFERS.map((o) => (
+          <Link key={o.name} href="/offres" style={{ ...card, borderTop: `3px solid ${o.accent}`, display: "flex", flexDirection: "column", gap: "0.5rem", textDecoration: "none" }}
+            data-umami-event="offre" data-umami-event-offre={o.name}>
+            <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#fff" }}>{o.name}</h3>
+            <p style={{ margin: 0, fontSize: "0.88rem", lineHeight: 1.5, color: "#b6b6c8" }}>{o.pitch}</p>
+            <span className="font-mono" style={{ marginTop: "auto", paddingTop: "0.5rem", fontSize: "0.92rem", fontWeight: 700, color: "#fff" }}>{o.price}</span>
+          </Link>
         ))}
       </div>
     </section>

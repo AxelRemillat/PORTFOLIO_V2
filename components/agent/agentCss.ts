@@ -1,4 +1,4 @@
-// Styles de la démo « Agent commercial » (/agent). Injecté par AgentDemo en plus de
+// Styles de la démo « Agent devis » (/agent). Injecté par AgentDemo en plus de
 // WORKFLOW_CSS (tokens --wc-* + classes wc-card/btn/mr-table/res-reply). Accent rose
 // local --ag, appliqué à l'en-tête d'identité ET à la carte de démo.
 export const AGENT_CSS = `
@@ -84,6 +84,14 @@ export const AGENT_CSS = `
 
 .ag-alt { display:flex; gap:.6rem; align-items:flex-start; padding:.85rem 1rem; border-radius:12px; margin:0 0 1.1rem; background:#fff5e6; border:1.5px solid #f0b661; color:#a15c00; font-size:.9rem; }
 .ag-alt b { font-weight:800; }
+
+/* Métiers : bandeau « catalogue d'exemple », catalogue repliable, lignes à chiffrer, questions */
+.ag-sample { margin:0; padding:.7rem .95rem; border-radius:10px; background:#eff6ff; border:1.5px dashed #2563eb; color:#1e3a8a; font-size:.92rem; }
+.ag-cat { margin-top:1rem; font-size:.88rem; color:var(--wc-text); }
+.ag-cat summary { cursor:pointer; font-weight:700; color:var(--wc-muted); padding:.3rem 0; }
+.ag-cat .ag-devis { margin-top:.6rem; max-height:320px; overflow:auto; }
+.ag-todo td { color:#a15c00; font-style:italic; background:#fff9ef; }
+.ag-qs { margin:0; padding-left:1.2rem; display:flex; flex-direction:column; gap:.45rem; font-size:.92rem; line-height:1.5; color:var(--wc-text); }
 
 @media (max-width:560px) {
   .ag-cal-slot.is-proposed { padding:4px 6px; font-size:.72rem; }

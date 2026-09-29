@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import DemoSwitch from "@/components/demo-kit/DemoSwitch";
 import AutomationTabs from "@/components/preuves/demo/AutomationTabs";
 import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 
@@ -8,9 +8,9 @@ import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 // démos : une barre de 5 onglets → le WorkflowCanvas de l'onglet actif.
 export const metadata: Metadata = {
   alternates: { canonical: "/automatisations" },
-  title: "Tester les automatisations n8n — Axel Remillat",
+  title: "Démos d'automatisation pour PME — Axel Remillat",
   description:
-    "Testez en direct mes automatisations métier n8n pour PME, mises en scène comme dans l'éditeur n8n : tri d'email, compte rendu, nettoyage data, facture, SAV.",
+    "Testez en direct des automatisations pour PME : tri des emails, comptes rendus, fichier clients et doublons, factures, service client adapté à votre métier.",
 };
 
 export default function AutomatisationsPage() {
@@ -20,12 +20,12 @@ export default function AutomatisationsPage() {
       <div className="wc-grid" aria-hidden />
 
       <div className="wc-inner">
-        <Link href="/projets" className="wc-back">← Retour aux projets</Link>
-        <p className="wc-kicker">Automatisations n8n // démos testables</p>
-        <h1 className="wc-h1">Testez mes automatisations</h1>
+        <DemoSwitch current="/automatisations" />
+        <p className="wc-kicker">Démos testables // automatisations</p>
+        <h1 className="wc-h1">Testez les automatisations</h1>
         <p className="wc-lead">
-          Des workflows métier réels, mis en scène comme dans l&apos;éditeur n8n. Choisissez une
-          automatisation et lancez-la.
+          Des tâches répétitives de PME, traitées en quelques secondes. Choisissez une démo, lancez un
+          exemple ou essayez avec le vôtre.
         </p>
 
         <AutomationTabs />

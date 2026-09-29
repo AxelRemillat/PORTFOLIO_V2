@@ -4,7 +4,7 @@ import type { CSSProperties } from "react";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 import { OFFERS } from "./offres-data";
 
-// Les 3 offres en cards détaillées. Reveal au scroll, accent par offre.
+// Les 4 offres en cards détaillées (2 × 2 sur grand écran). Reveal au scroll.
 export default function OffresList() {
   return (
     <section style={{ padding: "2vh 6vw 4vh", maxWidth: "1150px", margin: "0 auto" }}>
@@ -13,10 +13,8 @@ export default function OffresList() {
           display: grid;
           gap: 1.5rem;
           align-items: stretch;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
         }
-        /* Tablette : 2 colonnes */
-        @media (max-width: 900px) { .offres-grid { grid-template-columns: repeat(2, 1fr); } }
         /* Mobile : 1 colonne empilée */
         @media (max-width: 640px) { .offres-grid { grid-template-columns: 1fr; } }
       `}</style>
@@ -36,7 +34,7 @@ export default function OffresList() {
               } as CSSProperties}
             >
               <span style={{ fontFamily: "var(--font-mono)", fontSize: "0.7rem", fontWeight: 700, color: o.accent, letterSpacing: "0.12em", textTransform: "uppercase" }}>
-                {o.num} // {o.kind}
+                {`${o.num} // ${o.kind}`}
               </span>
               <h2 style={{ margin: "0.7rem 0 0.5rem", fontSize: "1.5rem", fontWeight: 800, color: "#fff" }}>
                 {o.name}

@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
+import { offersForPrompt } from "@/components/offres/offres-data";
 
 // RAG pour l'assistant A.X — réutilise l'infra Supabase pgvector + OpenAI déjà
 // en place dans le projet (cf. lib/supabase.ts, scripts/ingest-ax.ts).
@@ -21,10 +22,8 @@ Perso : tennis avec son père, très bon cuisinier (famille de gourmets), a gran
 Contact : UNIQUEMENT email axel@axelremillat.com et LinkedIn linkedin.com/in/axel-remillatesmelyon. Rendez-vous : appel découverte de 30 min gratuit, à réserver via la page /contact.
 
 ## Offres freelance (page /offres)
-- 01 Diagnostic (audit express) : "Votre système IA au banc d'essai avant le décollage." À partir de 490 € (forfait), délai 1 semaine. Livrables : revue d'architecture/code/infra, tests de robustesse, rapport priorisé de quick wins, restitution d'1h.
-- 02 Mise en production (déploiement production) : "Votre RAG, agent ou automatisation déployé proprement — et qui le reste." 1 900 à 4 900 € selon périmètre. Livrables : conteneurisation Docker, pipeline CI/CD, monitoring et alerting, journalisation traçable, documentation et passation.
-- 03 Suivi mensuel (run mensuel) : "Je veille sur votre IA pendant que vous dirigez votre entreprise." À partir de 690 €/mois (2 jours), sans engagement au-delà du mois en cours. Inclus : surveillance continue, maintenance, évaluations qualité, mises à jour de modèles, rapport mensuel.
-Entonnoir : audit → déploiement → run. Option transverse AI Act : journalisation & traçabilité (logs, horodatage, archivage) — accompagnement technique, pas un conseil juridique. Démarrage : appel découverte 30 min gratuit → proposition écrite (périmètre, prix, livrable) → go. Tarifs de lancement, amenés à augmenter. VEGA ne négocie aucun tarif et ne fait pas de devis : renvoi vers /contact ou l'appel découverte.
+${offersForPrompt()}
+Entonnoir : audit → automatisation clé en main → suivi ; mise en production IA pour les équipes qui ont déjà un prototype. Option transverse AI Act : journalisation & traçabilité (logs, horodatage, archivage) — accompagnement technique, pas un conseil juridique. Démarrage : appel découverte 30 min gratuit → proposition écrite (périmètre, prix, livrable) → go. VEGA ne négocie aucun tarif et ne fait pas de devis : renvoi vers /contact ou l'appel découverte.
 
 ## Preuves (page /projets — testables sur pièces)
 - VEGA — Assistant RAG (LIVE) : un CV qu'on interroge à la voix, pipeline RAG complet en production sur ce site (ingestion → embeddings → pgvector → gpt-4o-mini → TTS). Garde-fous tokens/jour et rate-limit par IP. Testable sur /demos, architecture sur /projets/vega.
