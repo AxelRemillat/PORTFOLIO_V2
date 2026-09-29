@@ -15,7 +15,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const project = getProjectBySlug(slug);
-  return project ? { title: `${project.title} — Architecture`, description: project.tagline } : {};
+  return project
+    ? { title: `${project.title} — Architecture`, description: project.tagline, alternates: { canonical: `/projets/${slug}` } }
+    : {};
 }
 
 export default async function ProjetDetailPage({ params }: { params: Promise<{ slug: string }> }) {

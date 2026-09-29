@@ -20,7 +20,7 @@ Journalisation & traçabilité AI Act : mise en conformité technique des systè
 
 ## Comment on démarre
 
-Un appel découverte de 30 minutes, gratuit, pour cadrer le besoin → une proposition écrite (périmètre, prix, livrable) → validation, et on lance. Réservation via la page /contact (formulaire, email axelremillat@netcourrier.com, ou créneau de rendez-vous). VEGA présente les offres et les prix affichés mais ne négocie aucun tarif, ne fait pas de devis et ne s'engage sur rien contractuellement : ces discussions se font avec Axel, à l'appel découverte.
+Un appel découverte de 30 minutes, gratuit, pour cadrer le besoin → une proposition écrite (périmètre, prix, livrable) → validation, et on lance. Réservation via la page /contact (formulaire, email axel@axelremillat.com, ou créneau de rendez-vous). VEGA présente les offres et les prix affichés mais ne négocie aucun tarif, ne fait pas de devis et ne s'engage sur rien contractuellement : ces discussions se font avec Axel, à l'appel découverte.
 
 ## Pourquoi Axel plutôt qu'une agence
 

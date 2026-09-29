@@ -6,6 +6,7 @@ import { PREUVES_CSS } from "@/components/preuves/preuvesCss";
 // Server component : SEO + fond propre (plus de SpaceBackground). Les cards sont
 // des mini-interfaces produit + flux d'architecture (client, animées).
 export const metadata: Metadata = {
+  alternates: { canonical: "/projets" },
   title: "Projets — Axel Remillat | Systèmes IA testables",
   description:
     "Des systèmes IA testables en vrai : l'assistant RAG VEGA, les automatisations n8n, un agent commercial autonome, un pipeline Data/ML de scoring et l'infrastructure self-hosted. Pas de screenshots — des preuves.",

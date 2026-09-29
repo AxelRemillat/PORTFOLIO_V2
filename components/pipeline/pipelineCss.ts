@@ -2,7 +2,7 @@
 // de WORKFLOW_CSS (shell wc-page) + AGENT_CSS (étapes ag-step réutilisées). Accent
 // cyan local. Scopé .pl-demo → n'affecte rien d'autre.
 export const PIPELINE_CSS = `
-.pl-demo { --pl:#0891b2; --pl-weak:#0891b21a; --ag:#0891b2; --ag-weak:#0891b21a; }
+.pl-demo { --pl:#0e7490; --pl-weak:#0e74901a; --ag:#0e7490; --ag-weak:#0e74901a; }
 
 .pl-tools { display:flex; flex-wrap:wrap; gap:9px; margin:0 0 1.1rem; }
 .pl-tool { font-size:.85rem; font-weight:600; font-family:inherit; cursor:pointer; padding:8px 14px;

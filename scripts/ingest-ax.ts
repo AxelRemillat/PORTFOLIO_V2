@@ -1,7 +1,7 @@
 /**
  * Ingestion de la base de connaissances A.X (profil personnel d'Axel).
  * Lit content/ax-knowledge/*.md → chunks → embeddings → table `ax_documents`.
- * Séparé du script RISE/portfolio (scripts/ingest.ts → portfolio_chunks).
+ * Séparé du script RISE/portfolio (ancien script portfolio, retiré).
  *
  * Prérequis : .env.local avec SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, OPENAI_API_KEY
  * Table à créer au préalable : scripts/setup-ax-table.sql (SQL Editor Supabase)

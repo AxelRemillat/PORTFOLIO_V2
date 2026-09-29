@@ -7,9 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "ingest": "tsx scripts/ingest.ts",
     "ingest-ax": "tsx scripts/ingest-ax.ts",
-    "banter-audio": "tsx scripts/generate-banter-audio.ts"
+    "banter-audio": "tsx scripts/generate-banter-audio.ts",
+    "test:contact": "tsx scripts/contact.test.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

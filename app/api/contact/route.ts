@@ -1,48 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { handleContact, type SendMail } from "@/lib/contact/handler";
+import { checkRateLimit } from "@/lib/demo-rate-limit";
 
-// Créer un compte gratuit sur resend.com → API Keys → coller la clé dans .env.local
-// (RESEND_API_KEY=re_XXXX). Le from utilise le domaine par défaut du free tier.
-const resend = new Resend(process.env.RESEND_API_KEY);
+export const runtime = "nodejs";
 
-const DEST = "atlas.flaeme@gmail.com";
+// Envoi via Resend, expéditeur axel@axelremillat.com (domaine à vérifier dans
+// Resend : voir README « Formulaire de contact »). Le repli sur
+// onboarding@resend.dev est géré dans lib/contact/handler.ts.
+const send: SendMail = async (mail) => {
+  const key = process.env.RESEND_API_KEY;
+  if (!key) return { ok: false, error: "RESEND_API_KEY absente." };
+  const { error } = await new Resend(key).emails.send({
+    from: mail.from,
+    to: mail.to,
+    replyTo: mail.replyTo,
+    subject: mail.subject,
+    html: mail.html,
+    text: mail.text,
+  });
+  if (!error) return { ok: true };
+  // Resend répond 403 « The <domaine> domain is not verified » tant que les DNS ne sont pas validés.
+  const domainNotVerified = /not verified|domain/i.test(error.message ?? "") && (error.statusCode === 403 || error.statusCode === 422 || error.statusCode == null);
+  return { ok: false, error: error.message ?? "erreur Resend", domainNotVerified };
+};
+
+// IP du visiteur : premier élément de x-forwarded-for (posé par Vercel).
+const ipOf = (req: NextRequest) => req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, subject, message } = await req.json();
-
-    if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      return NextResponse.json(
-        { error: "Nom, email et message sont requis." },
-        { status: 400 },
-      );
-    }
-
-    const html = `
-      <h2>Nouveau message — Portfolio</h2>
-      <p><strong>Nom :</strong> ${name}</p>
-      <p><strong>Email :</strong> ${email}</p>
-      <p><strong>Sujet :</strong> ${subject ?? "—"}</p>
-      <p><strong>Message :</strong></p>
-      <p>${String(message).replace(/\n/g, "<br/>")}</p>
-    `;
-
-    const { error } = await resend.emails.send({
-      from: "Portfolio <onboarding@resend.dev>",
-      to: DEST,
-      replyTo: email,
-      subject: `[Portfolio] ${subject ?? "Message"} — de ${name}`,
-      html,
-    });
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ success: true }, { status: 200 });
+    const result = await handleContact({ ip: ipOf(req), rawBody: await req.text() }, { send, rateLimit: checkRateLimit });
+    return NextResponse.json(result.body, { status: result.status });
   } catch {
-    return NextResponse.json(
-      { error: "Erreur serveur, réessaie." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
   }
 }

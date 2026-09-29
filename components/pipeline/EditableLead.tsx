@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { score, bucket } from "./model";
 import type { Lead, Taille, Secteur, Source } from "./leads-data";
 
@@ -44,21 +45,24 @@ export default function EditableLead({ lead, onChange }: { lead: Lead; onChange:
   );
 }
 
+// `useId` : chaque champ a un libellé explicitement associé (nom accessible).
 function Sel({ label, v, opts, on }: { label: string; v: string; opts: string[]; on: (v: string) => void }) {
+  const id = useId();
   return (
     <div className="pl-field">
-      <label>{label}</label>
-      <select className="pl-in" value={v} onChange={(e) => on(e.target.value)}>
+      <label htmlFor={id}>{label}</label>
+      <select id={id} className="pl-in" value={v} onChange={(e) => on(e.target.value)}>
         {opts.map((o) => <option key={o} value={o}>{o}</option>)}
       </select>
     </div>
   );
 }
 function Num({ label, v, on }: { label: string; v: number; on: (v: string) => void }) {
+  const id = useId();
   return (
     <div className="pl-field">
-      <label>{label}</label>
-      <input className="pl-in" type="number" value={v} onChange={(e) => on(e.target.value)} />
+      <label htmlFor={id}>{label}</label>
+      <input id={id} className="pl-in" type="number" value={v} onChange={(e) => on(e.target.value)} />
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { OPS_METRICS } from "./ops-data";
 // Server component : conserve le SEO. Squelette statique — les valeurs
 // viendront de ops-data.ts quand le monitoring réel sera câblé.
 export const metadata: Metadata = {
+  // Tuiles encore en « câblage en cours » : ni indexée, ni dans le sitemap ni dans le menu.
+  robots: { index: false, follow: false },
   title: "Ops — Axel Remillat | Salle des machines",
   description:
     "Le monitoring de ce site, en public : uptime, latence VEGA, requêtes et coût par réponse.",
@@ -90,7 +92,7 @@ export default function OpsPage() {
                   fontSize: "2.4rem",
                   fontWeight: 700,
                   lineHeight: 1,
-                  color: m.value ? "var(--color-text)" : "#3a3a5c",
+                  color: m.value ? "var(--color-text)" : "var(--color-muted)",
                 }}
               >
                 {m.value ?? "—"}

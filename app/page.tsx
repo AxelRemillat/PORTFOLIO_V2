@@ -10,6 +10,7 @@ import HomeCta from "@/components/home/HomeCta";
 // Server component : conserve le SEO. Chaque section est 'use client' et gère
 // ses propres animations (reveal au scroll, compteurs, fond vidéo-ready).
 export const metadata: Metadata = {
+  alternates: { canonical: "/" },
   title: "Axel Remillat — Mise en production IA pour PME & startups",
   description:
     "Ingénieur IA. Je fais passer vos projets IA du prototype à la production : agents, RAG, automatisations — fiables, monitorés, conformes. Preuves testables en ligne.",
