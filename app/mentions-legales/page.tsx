@@ -26,15 +26,17 @@ export default function MentionsLegalesPage() {
         <br />
         Adresse : 61 chemin de Pré Longe, 38350 Oris-en-Rattier, France
         <br />
+        Téléphone : <a className={link} href="tel:+33749727192">07 49 72 71 92</a>
+        <br />
         Contact : <a className={link} href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </p>
       <p className={p}>Directeur de la publication : Axel Remillat.</p>
 
       <h2 className={h2}>Hébergeur</h2>
       <p className={p}>
-        Vercel Inc.
+        Vercel Inc.,
         <br />
-        440 N Barranca Ave #4133, Covina, CA 91723, États-Unis
+        440 N Barranca Ave #4133, Covina, CA 91723, USA
         <br />
         <a className={link} href="https://vercel.com" target="_blank" rel="noopener noreferrer">vercel.com</a>
       </p>
