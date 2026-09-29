@@ -58,7 +58,7 @@ export default function PanelVega({ reduce }: { reduce: boolean }) {
           .hsv-on i,.hsv-caret{animation:none;} .hsv-status i::after{content:"···";animation:none;}
         }
       `}</style>
-      <Link href="/demos" className="hs-panel hsv" aria-label="VEGA — parler à l'assistant">
+      <Link href="/demos" className="hs-panel hsv">
         <div className="hs-bar">
           <span className="hsv-av" />
           <span className="hs-title">VEGA — assistant RAG</span>

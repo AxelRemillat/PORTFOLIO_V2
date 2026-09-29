@@ -10,6 +10,7 @@ import HomeCta from "@/components/home/HomeCta";
 // Server component. Ordre : promesse → problèmes (1 démo chacun) → démo phare →
 // méthode → offres → preuves → à propos + CTA final.
 export const metadata: Metadata = {
+  alternates: { canonical: "/" },
   title: "Axel Remillat — J'automatise les tâches répétitives de votre PME",
   description:
     "Devis, commandes, relances, documents : moins de ressaisie, des réponses plus rapides. Démos testables sur votre métier avant de signer.",

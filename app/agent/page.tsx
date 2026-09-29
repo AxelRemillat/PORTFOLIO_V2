@@ -8,6 +8,7 @@ import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 // scopé .wc-page). Le visiteur choisit son métier, envoie une demande type et
 // obtient un devis structuré, les questions à poser et l'email de réponse.
 export const metadata: Metadata = {
+  alternates: { canonical: "/agent" },
   title: "Agent devis — testez sur votre métier | Axel Remillat",
   description:
     "Choisissez votre métier (menuiserie, BTP, négoce, boulangerie-traiteur, services), envoyez une demande client : l'agent prépare le devis HT/TVA/TTC, les questions à poser et l'email de réponse.",

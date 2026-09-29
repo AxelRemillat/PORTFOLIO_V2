@@ -15,7 +15,7 @@ export const AGENT_CSS = `
 .ag-bot { display:flex; gap:14px; align-items:flex-start; padding:1rem 1.1rem; border-radius:14px; background:var(--ag-weak); border:1.5px solid var(--ag); }
 .ag-bot-avatar { flex-shrink:0; width:46px; height:46px; border-radius:12px; display:grid; place-items:center; color:#fff; background:var(--ag); box-shadow:0 4px 14px #ec489955; }
 .ag-bot-name { margin:0 0 .3rem; font-size:1.15rem; font-weight:900; color:var(--wc-text); display:flex; align-items:center; gap:9px; }
-.ag-bot-tag { font-family:var(--font-mono); font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#be185d; background:#fff; border:1px solid var(--ag); border-radius:999px; padding:2px 8px; }
+.ag-bot-tag { font-family:var(--font-mono); font-size:.6rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:color-mix(in srgb, var(--ag) 60%, #000); background:#fff; border:1px solid var(--ag); border-radius:999px; padding:2px 8px; }
 .ag-bot-desc { margin:0; font-size:.9rem; line-height:1.55; color:var(--wc-text); }
 .ag-bot-desc b { color:var(--ag); font-weight:700; }
 

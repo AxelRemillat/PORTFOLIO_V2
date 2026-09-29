@@ -8,6 +8,7 @@ import { CALENDAR_URL } from "@/lib/site-config";
 // Server component : conserve le SEO (metadata). StarField & ContactForm sont
 // 'use client', FreqRow est statique.
 export const metadata = {
+  alternates: { canonical: "/contact" },
   title: "Contact — Axel Remillat",
   description: "Contacter Axel Remillat — email, LinkedIn, téléphone, CV et formulaire.",
 };
@@ -143,7 +144,7 @@ export default function ContactPage() {
 
       {/* COORDONNÉES */}
       <section style={{ padding: `0 ${PAD}`, borderTop: "1px solid var(--color-border)" }}>
-        <FreqRow num="01" type="Email" value="axelremillat@netcourrier.com" href="mailto:axelremillat@netcourrier.com" />
+        <FreqRow num="01" type="Email" value="axel@axelremillat.com" href="mailto:axel@axelremillat.com" />
         {/* FreqRow ajoute déjà ↗ + target _blank / rel noopener sur les liens http */}
         <FreqRow num="02" type="LinkedIn" value="Voir mon profil" href="https://linkedin.com/in/axel-remillatesmelyon" />
         <FreqRow num="03" type="Téléphone" value="+33 7 49 72 71 92" href="tel:+33749727192" />

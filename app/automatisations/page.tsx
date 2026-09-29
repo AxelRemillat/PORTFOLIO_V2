@@ -7,6 +7,7 @@ import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 // .wc-page via WORKFLOW_CSS, n'affecte pas le thème sombre global). Conteneur des
 // démos : une barre de 5 onglets → le WorkflowCanvas de l'onglet actif.
 export const metadata: Metadata = {
+  alternates: { canonical: "/automatisations" },
   title: "Démos d'automatisation pour PME — Axel Remillat",
   description:
     "Testez en direct des automatisations pour PME : tri des emails, comptes rendus, fichier clients et doublons, factures, service client adapté à votre métier.",

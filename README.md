@@ -17,7 +17,7 @@ Construit avec Next.js (App Router, TypeScript), Tailwind CSS v4, Supabase (pgve
 | `/parcours` | Parcours académique & professionnel (graphe de compétences) |
 | `/contact` | Formulaire de contact (Resend) + prise de RDV |
 | `/demos` | **VEGA** — assistant IA du site (RAG vocal sur le parcours d'Axel) |
-| `/ops` | Salle des machines — monitoring public (en cours de câblage) |
+| `/ops` | Salle des machines — monitoring (en cours de câblage : `noindex`, hors menu et sitemap) |
 
 ---
 
@@ -56,12 +56,20 @@ Voir **`.env.example`** pour la liste complète et les emplacements (aucune vale
 |----------|------|
 | `OPENAI_API_KEY` | Embeddings + génération (VEGA / RAG) |
 | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Base pgvector du RAG VEGA (server-side) |
-| `RESEND_API_KEY` | Envoi du formulaire de contact |
+| `RESEND_API_KEY` | Envoi du formulaire de contact (voir « Formulaire de contact ») |
 | `N8N_DEMO_SECRET` | Secret partagé site → n8n (header `x-demo-secret`) |
 | `N8N_EMAIL_TRIAGE_WEBHOOK_URL` … `N8N_SAV_WEBHOOK_URL` | Les 5 webhooks n8n des démos `/automatisations` |
 | `DEMO_EMAIL_TRIAGE_ENABLED` … `DEMO_SAV_ENABLED` | Kill-switch par démo (`true` pour activer) |
 | `NEXT_PUBLIC_UMAMI_WEBSITE_ID`, `NEXT_PUBLIC_UMAMI_SCRIPT_URL` | Analytics Umami (prod uniquement) |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | *(optionnel)* rate-limit distribué des démos ; sinon fallback mémoire |
+
+---
+
+## Formulaire de contact (Resend)
+
+`/api/contact` valide les champs côté serveur (longueurs, sujet parmi 4), échappe tout ce qui entre dans le HTML du mail, écarte les robots (champ piège) et limite le débit (Upstash, 3 messages/min et 10/jour par IP). Le mail part de `axel@axelremillat.com` vers `axel@axelremillat.com`, avec `reply-to` = email du visiteur. Tant que le domaine n'est pas vérifié dans Resend, l'envoi bascule tout seul sur `onboarding@resend.dev` (qui n'écrit qu'au titulaire du compte Resend).
+
+**Vérifier le domaine** : Resend → Domains → Add Domain `axelremillat.com`, puis ajouter dans Cloudflare (DNS only, nuage gris) les enregistrements que Resend affiche : un `TXT` DKIM (`resend._domainkey`), un `MX` + un `TXT` SPF sur le sous-domaine `send`, et, en option, un `TXT` DMARC (`_dmarc`). Les valeurs exactes sont propres au compte : à copier depuis Resend. Test local sans envoi réel : `npm run test:contact`.
 
 ---
 
@@ -92,7 +100,7 @@ app/
     chat/ tts/            VEGA (RAG) + synthèse vocale
     contact/              Formulaire (Resend)
     demo/                 Routes sécurisées vers n8n : email-triage, meeting-notes,
-                          data-clean, invoice, sav (+ rag)
+                          data-clean, invoice, sav
 
 components/
   home/ offres/ parcours/ contact/ demos/ ui/
@@ -105,6 +113,7 @@ lib/
   projects-data.ts        Données des projets
 scripts/
   ingest-ax.ts            Ingestion Supabase (VEGA)
+  contact.test.ts         Test local du formulaire de contact (mock d'envoi)
   setup-ax-table.sql      Schéma pgvector
 public/samples/           Jeux d'essai des démos (CSV, audio, factures)
 ```

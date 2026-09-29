@@ -8,6 +8,7 @@ import { AGENT_CSS } from "@/components/agent/agentCss";
 // /agent. Démo 100 % client-side d'un pipeline data → ML → prédiction : scoring
 // de leads (proba de conversion), avec explicabilité. Aucune API, aucun secret.
 export const metadata: Metadata = {
+  alternates: { canonical: "/pipeline" },
   title: "Pipeline Data/ML en production — Axel Remillat",
   description:
     "Démo testable d'un pipeline data → ML → prédiction : scoring de leads (probabilité de conversion). Ingestion, nettoyage, feature engineering, régression logistique et explicabilité, en direct et 100 % client-side.",

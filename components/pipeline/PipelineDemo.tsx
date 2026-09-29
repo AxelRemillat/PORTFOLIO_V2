@@ -34,7 +34,7 @@ export default function PipelineDemo() {
     }, 350);
   };
 
-  const accent = { "--wc-accent": "#0891b2", "--wc-accent-weak": "#0891b21a" } as CSSProperties;
+  const accent = { "--wc-accent": "#0e7490", "--wc-accent-weak": "#0e74901a" } as CSSProperties;
   const running = phase === "running";
   const chaud = run ? run.scored.filter((s) => s.label === "chaud").length : 0;
   const pctChaud = run ? Math.round((chaud / run.scored.length) * 100) : 0;

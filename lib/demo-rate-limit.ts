@@ -14,13 +14,14 @@ export type RateResult = { ok: true } | { ok: false; scope: "ip" | "global" };
 // flood scripté ou un volume anormal est coupé.
 const LIMITS: Record<string, { perMin: number; perDay: number; globalDay: number }> = {
   vega: { perMin: 30, perDay: 250, globalDay: 4000 },      // chat VEGA
-  vegarag: { perMin: 30, perDay: 250, globalDay: 4000 },   // ancien RAG portfolio
   tts: { perMin: 20, perDay: 120, globalDay: 1500 },       // voix (ElevenLabs = rare)
   email: { perMin: 15, perDay: 80, globalDay: 2000 },
   meeting: { perMin: 15, perDay: 80, globalDay: 2000 },
   dataclean: { perMin: 15, perDay: 80, globalDay: 2000 },
   invoice: { perMin: 15, perDay: 80, globalDay: 2000 },
   sav: { perMin: 15, perDay: 80, globalDay: 2000 },
+  // Formulaire de contact : un humain envoie 1 message ; strict par IP, plafond global bas.
+  contact: { perMin: 3, perDay: 10, globalDay: 200 },
   agent: { perMin: 10, perDay: 40, globalDay: 1000 },      // consomme plus de tokens/run
 };
 const DEFAULT = { perMin: 15, perDay: 80, globalDay: 2000 };

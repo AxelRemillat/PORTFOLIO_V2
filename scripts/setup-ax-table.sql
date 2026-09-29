@@ -5,7 +5,7 @@
 --
 -- NOTE dimension : on utilise vector(1536), pas 3072.
 --  1) Le projet génère déjà ses embeddings text-embedding-3-large en 1536 dims
---     (cf. scripts/ingest.ts et lib/ax-rag.ts) → cohérence indispensable.
+--     (cf. scripts/ingest-ax.ts et lib/ax-rag.ts) → cohérence indispensable.
 --  2) L'index ivfflat/hnsw de pgvector ne supporte PAS plus de 2000 dimensions :
 --     un vector(3072) ferait échouer la création d'index ci-dessous.
 
