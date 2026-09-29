@@ -2,7 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import OpenAI from "openai";
 
 // RAG pour l'assistant A.X — réutilise l'infra Supabase pgvector + OpenAI déjà
-// en place dans le projet (cf. lib/supabase.ts, app/api/demo/rag, scripts/ingest).
+// en place dans le projet (cf. lib/supabase.ts, scripts/ingest-ax.ts).
 //
 // ⚠️ Le projet utilise les variables SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY
 //    (pas les NEXT_PUBLIC_*), et les embeddings sont stockés en 1536 dimensions
@@ -18,7 +18,7 @@ Né en 2004. Étudiant ingénieur 4e année à l'ESME (groupe IONIS), spé Big D
 En parallèle, Axel accompagne PME et startups en freelance (1 à 2 jours par semaine) : mise en production et fiabilisation de systèmes IA. Réponse sous 24-48h ouvrées, pas d'astreinte.
 Compétences : Python, SQL, React, FastAPI, Supabase, Firebase, N8N, API OpenAI, Google Cloud (BigQuery, Cloud Run, Vertex AI), Docker, Power BI, Figma, Git. Profil hybride tech + marketing + produit ; utilise les IA génératives comme copilotes de dev en gardant l'architecture et les contraintes.
 Perso : tennis avec son père, très bon cuisinier (famille de gourmets), a grandi entouré d'animaux (grand-père au passé de cowboy), famille de musiciens et d'enseignants de lettres, passionné de cinéma, a joué le renard dans une pièce du Petit Prince enfant.
-Contact : UNIQUEMENT email axelremillat@netcourrier.com et LinkedIn linkedin.com/in/axel-remillatesmelyon. Rendez-vous : appel découverte de 30 min gratuit, à réserver via la page /contact.
+Contact : UNIQUEMENT email axel@axelremillat.com et LinkedIn linkedin.com/in/axel-remillatesmelyon. Rendez-vous : appel découverte de 30 min gratuit, à réserver via la page /contact.
 
 ## Offres freelance (page /offres)
 - 01 Diagnostic (audit express) : "Votre système IA au banc d'essai avant le décollage." À partir de 490 € (forfait), délai 1 semaine. Livrables : revue d'architecture/code/infra, tests de robustesse, rapport priorisé de quick wins, restitution d'1h.

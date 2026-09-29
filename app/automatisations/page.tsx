@@ -7,6 +7,7 @@ import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 // .wc-page via WORKFLOW_CSS, n'affecte pas le thème sombre global). Conteneur des
 // démos : une barre de 5 onglets → le WorkflowCanvas de l'onglet actif.
 export const metadata: Metadata = {
+  alternates: { canonical: "/automatisations" },
   title: "Tester les automatisations n8n — Axel Remillat",
   description:
     "Testez en direct mes automatisations métier n8n pour PME, mises en scène comme dans l'éditeur n8n : tri d'email, compte rendu, nettoyage data, facture, SAV.",

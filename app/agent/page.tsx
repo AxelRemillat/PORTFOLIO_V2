@@ -8,6 +8,7 @@ import { WORKFLOW_CSS } from "@/components/preuves/demo/workflowCanvasCss";
 // WORKFLOW_CSS, scopé .wc-page). Démo d'un agent IA (function-calling) qui traite
 // une demande client de bout en bout : outils, décisions, livrable en 3 onglets.
 export const metadata: Metadata = {
+  alternates: { canonical: "/agent" },
   title: "Agent commercial autonome — Axel Remillat",
   description:
     "Démo testable d'un agent IA autonome (OSCAR) : collez une demande client, il raisonne, appelle ses outils (catalogue, stock, livraison, devis) et produit devis + email + créneau. Trace visible en direct.",

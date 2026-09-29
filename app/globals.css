@@ -7,7 +7,7 @@
   --color-orange: #f97316;
   --color-blue: #60a5fa;
   --color-text: #e2e8f0;
-  --color-muted: #64748b;
+  --color-muted: #8a9aab; /* ≥ 4.5:1 sur --color-bg et --color-surface (était #64748b, ~4:1) */
   --font-sans: var(--font-geist-sans), system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
@@ -47,7 +47,7 @@ body {
 .parcours-skill-tag:hover { border-color: var(--color-orange); }
 
 .parcours-cta {
-  display: inline-block; background: var(--color-orange); color: #fff;
+  display: inline-block; background: var(--color-orange); color: var(--color-bg);
   padding: 1rem 2rem; border-radius: 9999px; font-weight: 600;
   box-shadow: 0 0 30px rgba(249, 115, 22, 0.3);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -216,7 +216,7 @@ body {
   transition: border-bottom-color 0.2s ease;
 }
 .contact-field:focus { border-bottom-color: var(--color-orange); }
-.contact-field::placeholder { color: #3a3a5c; }
+.contact-field::placeholder { color: #7b8ba0; }
 .contact-field option { background: var(--color-surface); }
 
 /* ── Démos — curseur de streaming A.X ───────────────────────────────────── */

@@ -1,13 +1,14 @@
 import Link from "next/link";
 
-// Mêmes liens que la navbar + LinkedIn. /ops volontairement discret (mono,
-// petit) : la salle des machines se découvre, elle ne se met pas en avant.
+// Mêmes liens que la navbar + LinkedIn + mentions légales. /ops n'est plus
+// listée : ses tuiles affichent « câblage en cours » (page noindex).
 const links = [
   { href: "/offres", label: "Offres" },
   { href: "/projets", label: "Projets" },
   { href: "/demos", label: "VEGA 1.0" },
   { href: "/parcours", label: "Parcours" },
   { href: "/contact", label: "Contact" },
+  { href: "/mentions-legales", label: "Mentions légales" },
   { href: "https://www.linkedin.com/in/axel-remillatesmelyon", label: "LinkedIn" },
 ];
 
@@ -30,12 +31,6 @@ export default function Footer() {
               {link.label}
             </Link>
           ))}
-          <Link
-            href="/ops"
-            className="text-xs font-mono text-muted/70 hover:text-orange transition-colors"
-          >
-            /ops
-          </Link>
         </div>
       </div>
     </footer>

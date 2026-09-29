@@ -8,6 +8,7 @@ import OffresCta from "@/components/offres/OffresCta";
 // Server component : conserve le SEO. Chaque section est 'use client' et gère
 // ses propres animations (reveal au scroll).
 export const metadata: Metadata = {
+  alternates: { canonical: "/offres" },
   title: "Offres — Axel Remillat | Mise en production IA",
   description:
     "Trois offres claires pour PME et startups : audit express, déploiement production et run mensuel monitoré. Passez votre IA du prototype à la production, sans surprise.",

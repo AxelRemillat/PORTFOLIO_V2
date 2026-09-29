@@ -51,7 +51,7 @@ export default function HomeHero() {
           <div className="parcours-fade flex flex-col sm:flex-row gap-4 mt-4" style={{ animationDelay: "0.85s" }}>
             <Link
               href="/offres"
-              className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-orange text-white font-semibold text-sm hover:bg-orange/90 transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
+              className="inline-flex items-center justify-center px-8 py-4 rounded-xl bg-orange text-bg font-semibold text-sm hover:bg-orange/90 transition-all duration-200 hover:scale-[1.03] hover:shadow-[0_0_32px_rgba(249,115,22,0.4)]"
             >
               Découvrir les offres
             </Link>

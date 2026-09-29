@@ -26,7 +26,7 @@ export const WORKFLOW_CSS = `
   background:var(--wc-surface); border:1.5px solid var(--wc-border-strong); border-radius:12px; padding:11px 16px;
   box-shadow:0 1px 2px rgba(30,34,48,0.04);
   transition:color .18s ease, border-color .18s ease, background .18s ease, box-shadow .18s ease; }
-.wc-tab-num { font-family:var(--font-mono); font-size:.72rem; font-weight:700; letter-spacing:.02em; color:var(--tab-accent); }
+.wc-tab-num { font-family:var(--font-mono); font-size:.72rem; font-weight:700; letter-spacing:.02em; color:color-mix(in srgb, var(--tab-accent) 55%, #000); }
 .wc-tab-ico { color:var(--tab-accent); display:inline-flex; }
 .wc-tab-ico svg { width:17px; height:17px; display:block; }
 .wc-tab:hover { border-color:var(--tab-accent); background:var(--tab-weak); box-shadow:0 3px 10px -4px var(--tab-accent); }
