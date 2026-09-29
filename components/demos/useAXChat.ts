@@ -15,7 +15,7 @@ interface Msg { role: "user" | "assistant"; content: string; }
 const MEMORY_MAX_MSGS = 12;
 
 const GREETING =
-  "Tiens, un visiteur. Moi c'est VEGA, l'IA qui sait à peu près tout sur Axel Remillat. Vas-y, pose-moi une question sur lui.";
+  "Bonjour, je suis VEGA, l'assistante d'Axel Remillat. Dites-moi votre métier : je vous explique ce qui peut être automatisé chez vous, comment ça se passe, et à partir de combien.";
 
 // ── Voix de REPLI (navigateur) si l'API OpenAI TTS échoue. Pitch naturel (1.0)
 //    pour éviter l'effet robot. Priorité aux voix locales fiables. ──

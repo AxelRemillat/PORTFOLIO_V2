@@ -76,10 +76,10 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
         onChange={(e) => setVal(e.target.value)}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        placeholder="interroge VEGA…"
+        placeholder="Posez votre question…"
         maxLength={500}
         disabled={disabled}
-        aria-label="Pose ta question à VEGA"
+        aria-label="Posez votre question à VEGA"
       />
       {supported && (
         <button

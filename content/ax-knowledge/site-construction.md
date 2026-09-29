@@ -1,7 +1,0 @@
-# Le site — Construction
-
-Le portfolio est développé en Next.js (App Router, TypeScript), déployé sur Vercel, avec Supabase (PostgreSQL + pgvector) pour les données et le RAG, OpenAI pour l'IA et la voix, React Three Fiber/Three.js pour la 3D, et Google Analytics 4 pour la mesure. Budget infrastructure : 10 à 30 € par mois.
-
-Structure du site : l'accueil pose le positionnement freelance d'Axel — « Votre IA en production. Fiable, monitorée, conforme. » ; /offres détaille les trois offres packagées (Diagnostic, Mise en production, Suivi mensuel) avec l'option AI Act et la FAQ ; /projets regroupe les trois preuves techniques (VEGA, automatisations N8N, infrastructure self-hosted) avec leurs fiches détail /projets/vega, /projets/n8n et /projets/infra ; /demos héberge VEGA ; /parcours retrace le profil, les compétences et les expériences d'Axel ; /contact permet d'écrire, d'appeler ou de réserver un appel découverte ; /ops est la « salle des machines » — le monitoring du site rendu public (uptime, latence de VEGA, requêtes, coût par réponse ; câblage des métriques en cours). L'ancien mini-jeu 3D a été retiré lors du pivot freelance du site.
-
-Axel a tout construit lui-même en s'appuyant sur des agents IA (Claude Code notamment) comme copilotes de développement — démarche assumée et revendiquée : c'est exactement le métier qu'il vise, concevoir et piloter des systèmes construits avec l'IA. Il définit l'architecture, les contraintes et le design, itère par prompts structurés, et garde la maîtrise du code. Le site n'est pas open source à ce jour.
