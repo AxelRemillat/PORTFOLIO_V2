@@ -4,7 +4,6 @@ import { setSpeechAudioEl } from "./speechAudioBus";
 import { playAudioSynced, speakSynced, revealByTimer } from "./revealSync";
 import { getRate, getPaused, setPaused as setCtrlPaused } from "./speechControl";
 import { hasIntroPlayed, markIntroPlayed } from "./useIntroOnce";
-import { BANTER_AUDIO } from "./banterAudio";
 
 type OrbState = "idle" | "thinking" | "speaking";
 interface Msg { role: "user" | "assistant"; content: string; }
@@ -44,7 +43,7 @@ export function useAXChat() {
   const [showText, setShowText]       = useState(false);
   const [isVoiceOn, setIsVoiceOn]     = useState(true);      // voix active par défaut
   const [started, setStarted]         = useState(false);
-  const [introDone, setIntroDone]     = useState(false);     // intro terminée OU sautée (session) → banter autorisé
+  const [introDone, setIntroDone]     = useState(false);     // intro terminée OU sautée (session)
   const [conversation, setConversation] = useState<Msg[]>([]); // tours courants (exposés pour la persistance)
 
   const history    = useRef<Msg[]>([]);
@@ -54,8 +53,8 @@ export function useAXChat() {
   const greetedRef = useRef(false);
   const orbStateRef = useRef<OrbState>("idle"); // lecture fraîche de l'état (guard de speak)
   orbStateRef.current = orbState;
-  // Nature de la parole en cours : "banter" (intro/répliques ambiantes) ou
-  // "answer" (vraie réponse). stopBanter ne coupe QUE le banter, jamais une réponse.
+  // Nature de la parole en cours : "banter" (message d'accueil) ou "answer"
+  // (vraie réponse). stopBanter ne coupe QUE l'accueil, jamais une réponse.
   const speakKind = useRef<"none" | "banter" | "answer">("none");
 
   // File audio ordonnée + contrôle d'interruption
@@ -152,25 +151,14 @@ export function useAXChat() {
       }
 
       let blob: Blob | null = null;
-      // Répliques d'inactivité pré-générées (public/banter/*.mp3) : servies en
-      // statique → zéro crédit TTS. Absent/404 → on retombe sur /api/tts.
-      const cachedUrl = BANTER_AUDIO[clean];
-      if (cachedUrl) {
-        try {
-          const res = await fetch(cachedUrl);
-          if (res.ok) blob = await res.blob();
-        } catch { /* fichier manquant → /api/tts ci-dessous */ }
-      }
-      if (!blob) {
-        try {
-          const res = await fetch("/api/tts", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: clean }),
-          });
-          if (res.ok) blob = await res.blob();
-        } catch { /* réseau KO → repli plus bas */ }
-      }
+      try {
+        const res = await fetch("/api/tts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: clean }),
+        });
+        if (res.ok) blob = await res.blob();
+      } catch { /* réseau KO → repli plus bas */ }
 
       if (cancelled()) return;
 
@@ -201,10 +189,10 @@ export function useAXChat() {
   }
 
   // Fait dire une réplique autonome à VEGA via LE MÊME pipeline (orbe + texte
-  // synchronisé + TTS/repli). Utilisé par l'intro et par les répliques d'inactivité.
+  // synchronisé + TTS/repli). Utilisé par le message d'accueil.
   // Si la voix est coupée, le texte défile quand même (géré par ttsEnqueue).
   function sayLine(text: string) {
-    speakKind.current = "banter"; // intro + répliques ambiantes = coupables
+    speakKind.current = "banter"; // message d'accueil = coupable
     resetReveal();
     setDisplayText("");
     setFullText(text); // taille de police calculée sur le texte complet
@@ -213,7 +201,7 @@ export function useAXChat() {
     ttsChain.current.then(() => { speakKind.current = "none"; setOrbState("idle"); setShowText(false); });
   }
 
-  // Coupe IMMÉDIATEMENT une réplique ambiante en cours (texte animé + TTS) et
+  // Coupe IMMÉDIATEMENT le message d'accueil en cours (texte animé + TTS) et
   // remet l'orbe au repos — mais NE touche jamais à une vraie réponse en cours.
   const stopBanter = useCallback(() => {
     if (speakKind.current !== "banter") return;
@@ -246,7 +234,7 @@ export function useAXChat() {
       greetedRef.current = true;
       markIntroPlayed();                 // marque le flag de session
       sayLine(GREETING);
-      ttsChain.current.then(() => setIntroDone(true)); // intro terminée → banter autorisé
+      ttsChain.current.then(() => setIntroDone(true)); // intro terminée
     };
     const cleanup = () => {
       window.removeEventListener("pointerdown", greet);

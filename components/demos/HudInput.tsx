@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useSpeechToText } from "./useSpeechToText";
-import { setTyping, setMicActive } from "./inputActivity";
 
 interface Props {
   disabled: boolean;
@@ -26,19 +25,10 @@ const MicIcon = () => (
 
 export default function HudInput({ disabled, onSubmit, prefill }: Props) {
   const [val, setVal] = useState("");
-  const [focused, setFocused] = useState(false);
   const ref = useRef<HTMLInputElement>(null);
 
   // Redonne le focus à l'input dès le retour en idle (continuité clavier)
   useEffect(() => { if (!disabled) ref.current?.focus(); }, [disabled]);
-
-  // Publie l'état « saisie active » (champ focus + non vide) pour couper/suspendre
-  // le banter ambiant. Neutralisé quand le champ est désactivé (VEGA parle/réfléchit).
-  useEffect(() => {
-    setTyping(!disabled && focused && val.trim().length > 0);
-  }, [disabled, focused, val]);
-  // Reset au démontage (évite un état « actif » figé côté module singleton).
-  useEffect(() => () => { setTyping(false); setMicActive(false); }, []);
 
   // Suggestion cliquée → écrite dans la barre, focus : l'utilisateur n'a plus qu'à valider
   useEffect(() => {
@@ -56,9 +46,6 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
   });
   const onMic = () => { dictBase.current = val.trim(); toggle(); };
 
-  // Micro en écoute → saisie active (canal oral).
-  useEffect(() => { setMicActive(listening); }, [listening]);
-
   const submit = () => {
     const t = val.trim();
     if (!t || disabled) return;
@@ -74,8 +61,6 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
         className="hud-field"
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
         placeholder="Posez votre question…"
         maxLength={500}
         disabled={disabled}
