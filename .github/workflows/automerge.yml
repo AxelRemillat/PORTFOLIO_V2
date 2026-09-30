@@ -1,0 +1,124 @@
+# Auto-merge des PR, repris d'ORION_AUTOMATION.
+#
+# Quand la CI d'une PR se termine en succès, ce workflow la merge (squash) si
+# elle remplit TOUTES les conditions ci-dessous :
+#
+#   - PR ouverte vers master, non brouillon ;
+#   - branche de tête en claude/, fix/, feat/ ou chore/ ;
+#   - PR venue de CE dépôt (pas d'un fork) et ouverte par AxelRemillat :
+#     le dépôt est PUBLIC, n'importe qui peut ouvrir une PR depuis un fork ;
+#   - pas de label « no-automerge » ;
+#   - CI verte sur le commit de tête ACTUEL (un vieux run vert ne suffit pas).
+#
+# Un brouillon n'est jamais mergé. Le passer en « prête » relance la CI
+# (ready_for_review, cf. ci.yml), dont la fin redéclenche ce workflow.
+name: Auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: "Numéro de la PR à merger (mêmes conditions, CI verte comprise)"
+        required: true
+        type: number
+
+# Une seule PR mergée à la fois.
+concurrency:
+  group: automerge
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+
+jobs:
+  merge:
+    name: Merger la PR si tout est vert
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'pull_request')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      OWNER: ${{ github.repository_owner }}
+      # Variables issues de la PR : passées par l'environnement, jamais
+      # interpolées dans le script (un nom de branche n'est pas du code).
+      PR_INPUT: ${{ inputs.pr }}
+      RUN_SHA: ${{ github.event.workflow_run.head_sha }}
+      RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+    steps:
+      - name: Vérifier les conditions et merger
+        run: |
+          set -euo pipefail
+          skip() { echo "::notice::Pas de merge : $1"; exit 0; }
+
+          # --- Quelle PR ? ----------------------------------------------------
+          if [ -n "${PR_INPUT:-}" ]; then
+            number="$PR_INPUT"
+          else
+            number=$(gh pr list --state open --base master --head "$RUN_BRANCH" \
+              --json number,headRefOid \
+              --jq "map(select(.headRefOid == \"$RUN_SHA\")) | .[0].number // empty")
+            [ -n "$number" ] || skip "aucune PR ouverte vers master pour $RUN_BRANCH@$RUN_SHA (commit dépassé ?)"
+          fi
+
+          fields=state,isDraft,baseRefName,headRefName,headRefOid,labels,mergeable,statusCheckRollup,isCrossRepository,author
+          pr=$(gh pr view "$number" --json "$fields")
+          field() { jq -r "$1" <<<"$pr"; }
+
+          # --- Conditions -----------------------------------------------------
+          [ "$(field .state)" = "OPEN" ] || skip "PR #$number non ouverte"
+          [ "$(field .baseRefName)" = "master" ] || skip "PR #$number ne vise pas master"
+          [ "$(field .isDraft)" = "false" ] || skip "PR #$number en brouillon"
+          [ "$(field .isCrossRepository)" = "false" ] || skip "PR #$number venue d'un fork"
+          [ "$(field .author.login)" = "$OWNER" ] || skip "PR #$number ouverte par $(field .author.login), pas par $OWNER"
+          head_branch=$(field .headRefName)
+          [[ "$head_branch" =~ ^(claude|fix|feat|chore)/ ]] || skip "branche $head_branch hors préfixes autorisés"
+          if field '.labels[].name' | grep -qx "no-automerge"; then skip "label no-automerge sur la PR #$number"; fi
+
+          head_sha=$(field .headRefOid)
+          if [ -z "${PR_INPUT:-}" ] && [ "$head_sha" != "$RUN_SHA" ]; then
+            skip "la PR #$number a avancé depuis ce run de CI"
+          fi
+          # Tous les checks du commit de tête doivent être verts. La CI vient de
+          # finir, mais un autre check (preview Vercel…) peut encore tourner : on
+          # l'attend jusqu'à 5 min plutôt que d'abandonner la PR.
+          checks='[.statusCheckRollup[]
+            | select((.workflowName // "") != "Auto-merge")
+            | {name: (.name // .context),
+               done: ((.status // "COMPLETED") == "COMPLETED" and ((.state // "") | IN("PENDING","EXPECTED") | not)),
+               ok: ((.conclusion // .state) | IN("SUCCESS","NEUTRAL","SKIPPED"))}]'
+          for attempt in $(seq 1 10); do
+            failed=$(field "$checks | map(select(.done and (.ok | not)) | .name) | join(\", \")")
+            [ -z "$failed" ] || skip "checks en échec sur $head_sha : $failed"
+            running=$(field "$checks | map(select(.done | not) | .name) | join(\", \")")
+            [ -n "$running" ] || break
+            [ "$attempt" -lt 10 ] || skip "checks encore en cours après 5 min : $running"
+            echo "En attente de : $running"
+            sleep 30
+            pr=$(gh pr view "$number" --json "$fields")
+            [ "$(field .headRefOid)" = "$head_sha" ] || skip "la PR #$number a avancé pendant l'attente"
+          done
+
+          # --- Merge ----------------------------------------------------------
+          if [ "$(field .mergeable)" = "CONFLICTING" ]; then
+            gh pr comment "$number" --body "Conflit avec master : rebase nécessaire"
+            skip "conflit avec master sur la PR #$number"
+          fi
+          if ! gh pr merge "$number" --squash --delete-branch --match-head-commit "$head_sha"; then
+            if [ "$(gh pr view "$number" --json mergeable --jq .mergeable)" = "CONFLICTING" ]; then
+              gh pr comment "$number" --body "Conflit avec master : rebase nécessaire"
+              skip "conflit avec master sur la PR #$number"
+            fi
+            echo "::error::Merge de la PR #$number impossible (voir le log ci-dessus)."
+            exit 1
+          fi
+          echo "PR #$number mergée (squash) sur $head_sha." >> "$GITHUB_STEP_SUMMARY"
