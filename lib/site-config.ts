@@ -1,7 +1,7 @@
 // Config simple des liens externes du site (un seul endroit à mettre à jour).
 
-// Réservation d'un appel découverte (Cal.eu — agenda Google synchronisé)
-export const CALENDAR_URL = "https://cal.eu/axel-remillat/appel-decouverte";
+// Réservation d'un appel découverte (Google Agenda, prise de rendez-vous)
+export const CALENDAR_URL = "https://calendar.app.google/dwAR7ea7tgAehwv48";
 
 // URL publique du site : base des URLs absolues (canonical, Open Graph, sitemap).
 // À surcharger via NEXT_PUBLIC_SITE_URL si le domaine de production diffère.

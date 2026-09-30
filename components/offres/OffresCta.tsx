@@ -5,7 +5,7 @@ import ScrollReveal from "@/components/parcours/ScrollReveal";
 import { CALENDAR_URL } from "@/lib/site-config";
 import { btnMain, btnAlt } from "@/components/home/homeStyles";
 
-// CTA final de /offres : réserver 15 min (Cal.eu) ou écrire via /contact.
+// CTA final de /offres : réserver 15 min (Google Agenda) ou écrire via /contact.
 export default function OffresCta() {
   return (
     <section style={{ padding: "6vh 6vw 18vh", textAlign: "center" }}>

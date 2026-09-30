@@ -4,7 +4,7 @@ Axel Remillat automatise les tâches répétitives des PME avec l'IA : devis, co
 
 ## Étape 1 — Un échange de 15 minutes, gratuit
 
-Le dirigeant décrit la tâche qui lui fait perdre du temps : ce qui arrive, ce qu'il en fait, avec quels outils. C'est gratuit et sans engagement. On le réserve en ligne avec le bouton « Réserver 15 min » (agenda Cal.eu). À l'issue de l'échange, Axel envoie une proposition écrite : ce qui sera fait, le prix, le délai. Rien ne démarre sans validation.
+Le dirigeant décrit la tâche qui lui fait perdre du temps : ce qui arrive, ce qu'il en fait, avec quels outils. C'est gratuit et sans engagement. On le réserve en ligne avec le bouton « Réserver 15 min » (Google Agenda). À l'issue de l'échange, Axel envoie une proposition écrite : ce qui sera fait, le prix, le délai. Rien ne démarre sans validation.
 
 ## Étape 2 — Un essai sur vos vrais exemples
 
