@@ -1,0 +1,61 @@
+# Vérification de chaque PR vers master : lint (cliquet), types, tests, build.
+# Aucune clé : le build et les tests tournent sans .env (les clients Supabase,
+# OpenAI et Resend ne s'initialisent qu'à l'appel).
+name: CI
+
+on:
+  pull_request:
+    branches: [master]
+    # `ready_for_review` : une PR passée de brouillon à prête relance la CI, donc
+    # l'auto-merge (déclenché par la fin de la CI).
+    types: [opened, synchronize, reopened, ready_for_review]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Vérifier la PR
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Scripts npm appelés et définis
+        run: |
+          node -e '
+            const s = require("./package.json").scripts;
+            const missing = Object.entries(s).flatMap(([name, cmd]) =>
+              [...cmd.matchAll(/npm run ([\w:.-]+)/g)].map((m) => m[1]).filter((c) => !(c in s)).map((c) => `${name} → ${c}`));
+            if (missing.length) { console.error("Scripts appelés mais absents :", missing.join(", ")); process.exit(1); }
+            console.log("Scripts npm : tous définis.");
+          '
+
+      # Cliquet : aucune NOUVELLE erreur ESLint par fichier (eslint-baseline.json).
+      # Les erreurs antérieures à la CI ne bloquent pas ; `npm run lint:baseline`
+      # abaisse la référence quand on en corrige.
+      - name: Lint
+        run: npm run lint:ratchet
+
+      - name: Types
+        run: npx tsc --noEmit
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build

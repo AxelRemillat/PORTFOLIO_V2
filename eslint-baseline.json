@@ -1,0 +1,23 @@
+{
+  "components/contact/StarField.tsx": 1,
+  "components/demos/CoreRays.tsx": 5,
+  "components/demos/FloatingInput.tsx": 1,
+  "components/demos/HudInput.tsx": 1,
+  "components/demos/NeuralField.tsx": 3,
+  "components/demos/NeuralFilaments.tsx": 4,
+  "components/demos/SoundToggle.tsx": 1,
+  "components/demos/SurfaceField.tsx": 4,
+  "components/demos/SurfaceWaves.tsx": 3,
+  "components/demos/ThinkingIndicator.tsx": 1,
+  "components/demos/useConversationHistory.ts": 1,
+  "components/demos/useFitText.ts": 1,
+  "components/demos/useIdleBanter.ts": 4,
+  "components/demos/useRotatingSuggestions.ts": 1,
+  "components/demos/useSpeechToText.ts": 3,
+  "components/parcours/NodePanel.tsx": 1,
+  "components/parcours/ScrollReveal.tsx": 1,
+  "components/parcours/SkillsSection.tsx": 1,
+  "components/pipeline/PipelineLive.tsx": 1,
+  "components/ui/NebulaBackground.tsx": 8,
+  "components/ui/SpaceBackground.tsx": 6
+}
