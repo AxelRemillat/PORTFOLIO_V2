@@ -11,7 +11,6 @@ import QuestionList from "@/components/demos/QuestionList";
 import HistoryContent from "@/components/demos/HistoryContent";
 import MobileDrawer from "@/components/demos/MobileDrawer";
 import { useAXChat } from "@/components/demos/useAXChat";
-import { useIdleBanter } from "@/components/demos/useIdleBanter";
 import { useConversationHistory } from "@/components/demos/useConversationHistory";
 import { useSpeechControls } from "@/components/demos/useSpeechControls";
 import type { Conversation } from "@/components/demos/useConversationHistory";
@@ -31,10 +30,6 @@ export default function DemosPage() {
   const ax = useAXChat();
   const hist = useConversationHistory();
   const ctrl = useSpeechControls();
-
-  // Répliques d'inactivité : uniquement une fois l'intro terminée, jamais pendant
-  // que VEGA parle/réfléchit ou que l'utilisateur tape (géré dans le hook).
-  useIdleBanter({ enabled: ax.introDone, orbState: ax.orbState, speak: ax.speak, cancelBanter: ax.stopBanter });
 
   // Suppression de la conversation en cours : retire de l'historique + reset chat (idle).
   const deleteConv = () => { if (hist.activeId) hist.remove(hist.activeId); ax.newConversation(); };

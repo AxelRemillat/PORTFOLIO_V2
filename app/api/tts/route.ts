@@ -6,7 +6,7 @@ export const runtime = "nodejs";
 
 const MAX_TTS_CHARS = 600; // borne le coût par requête (ElevenLabs = crédits)
 // Cache mémoire des phrases identiques → ne repaie jamais 2× le même texte
-// (best-effort, per-instance). Le banter ambiant est déjà servi en statique côté client.
+// (best-effort, per-instance).
 const ttsCache = new Map<string, Buffer>();
 const CACHE_MAX = 60;
 function cacheSet(key: string, buf: Buffer) {
