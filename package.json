@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:ratchet": "node scripts/lint-ratchet.mjs",
+    "lint:baseline": "node scripts/lint-ratchet.mjs --update",
     "ingest-ax": "tsx scripts/ingest-ax.ts",
     "build-ax": "tsx scripts/build-ax-knowledge.ts",
     "eval-vega": "tsx scripts/eval-vega.ts",
