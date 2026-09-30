@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CALENDAR_URL } from "@/lib/site-config";
 
-// Bloc de fin de démo « Et chez vous ? » : réserver 15 min (Cal.eu) ou décrire
+// Bloc de fin de démo « Et chez vous ? » : réserver 15 min (Google Agenda) ou décrire
 // son besoin (/contact, sujet prérempli). Deux thèmes : clair (pages démo wc-*)
 // et sombre (reste du site). Clics suivis par Umami (data-umami-event).
 const CSS = `

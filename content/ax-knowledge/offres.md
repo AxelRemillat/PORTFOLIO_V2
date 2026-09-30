@@ -41,4 +41,4 @@ Ce que vous obtenez : votre prototype rendu fiable et stable au quotidien ; une 
 
 **Comment on démarre ?** Un échange de 15 minutes, gratuit : vous me décrivez la tâche qui vous fait perdre du temps. Je reviens avec une proposition écrite (ce qui est fait, le prix, le délai). Vous validez, on lance.
 
-Réserver l'échange de 15 minutes : https://cal.eu/axel-remillat/appel-decouverte
+Réserver l'échange de 15 minutes : https://calendar.app.google/dwAR7ea7tgAehwv48
