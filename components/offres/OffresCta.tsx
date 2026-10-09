@@ -25,11 +25,11 @@ export default function OffresCta() {
         </p>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.9rem", justifyContent: "center" }}>
           <a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" style={btnMain}
-            data-umami-event="cta-reserver" data-umami-event-origine="offres">
+            data-ax-event="cta_rdv" data-ax-page="offres">
             Réserver 15 min
           </a>
           <Link href="/contact?sujet=Offres%20%3A%20je%20voudrais%20un%20devis" style={btnAlt}
-            data-umami-event="cta-besoin" data-umami-event-origine="offres">
+            data-ax-event="sortie" data-ax-cible="contact" data-ax-page="offres">
             Me décrire votre besoin
           </Link>
         </div>

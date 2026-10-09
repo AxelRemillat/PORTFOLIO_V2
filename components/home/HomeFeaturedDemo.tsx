@@ -41,7 +41,7 @@ export default function HomeFeaturedDemo({ origine = "home" }: { origine?: strin
           </p>
         </div>
         <div>
-          <Link href="/agent" style={btnMain} data-umami-event="cta-demo" data-umami-event-origine={`${origine}-demo-phare`}>
+          <Link href="/agent" style={btnMain} data-ax-event="demo_start" data-ax-demo="agent" data-ax-page={`${origine}-demo-phare`}>
             Tester sur mon métier
           </Link>
         </div>

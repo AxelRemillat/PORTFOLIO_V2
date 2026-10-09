@@ -20,9 +20,9 @@ export default function VegaChezVous() {
       <style>{CSS}</style>
       <span className="vcv-t">Et chez vous ?</span>
       <a className="vcv-main" href={CALENDAR_URL} target="_blank" rel="noopener noreferrer"
-        data-umami-event="cta-reserver" data-umami-event-origine="vega">Réserver 15 min</a>
+        data-ax-event="cta_rdv" data-ax-page="vega">Réserver 15 min</a>
       <Link className="vcv-alt" href={contactHref("Démo VEGA : un assistant comme celui-ci pour mon entreprise")}
-        data-umami-event="cta-besoin" data-umami-event-origine="vega">Me décrire votre besoin</Link>
+        data-ax-event="sortie" data-ax-cible="contact" data-ax-page="vega">Me décrire votre besoin</Link>
     </div>
   );
 }

@@ -11,7 +11,6 @@
   "components/demos/ThinkingIndicator.tsx": 1,
   "components/demos/useConversationHistory.ts": 1,
   "components/demos/useFitText.ts": 1,
-  "components/demos/useIdleBanter.ts": 4,
   "components/demos/useRotatingSuggestions.ts": 1,
   "components/demos/useSpeechToText.ts": 3,
   "components/parcours/NodePanel.tsx": 1,

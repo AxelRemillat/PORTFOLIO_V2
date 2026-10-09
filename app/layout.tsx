@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Analytics from "@/components/Analytics";
+import Attribution from "@/components/Attribution";
+import TrackClicks from "@/components/TrackClicks";
 import Navbar from "@/components/Navbar";
 import ConditionalFooter from "@/components/ConditionalFooter";
 import { SITE_NAME, SITE_TAGLINE, SITE_URL } from "@/lib/site-config";
@@ -42,6 +44,8 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-bg text-text">
         <Analytics />
+        <Attribution />
+        <TrackClicks />
         <Navbar />
         {/* Chaque page porte son propre <main> : un seul repère « main » par page. */}
         <div className="flex-1 pt-16">{children}</div>

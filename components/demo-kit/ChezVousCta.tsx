@@ -3,7 +3,8 @@ import { CALENDAR_URL } from "@/lib/site-config";
 
 // Bloc de fin de démo « Et chez vous ? » : réserver 15 min (Google Agenda) ou décrire
 // son besoin (/contact, sujet prérempli). Deux thèmes : clair (pages démo wc-*)
-// et sombre (reste du site). Clics suivis par Umami (data-umami-event).
+// et sombre (reste du site). Clics suivis par les attributs data-ax-* (voir
+// components/TrackClicks.tsx et docs/tracking.md).
 const CSS = `
 .cv { margin:2rem 0 0; padding:1.5rem 1.4rem; border-radius:16px; text-align:center; }
 .cv-light { background:#fff; border:1.5px solid var(--wc-border-strong); }
@@ -36,11 +37,11 @@ export default function ChezVousCta({
       </p>
       <div className="cv-row">
         <a className="cv-a cv-main" href={CALENDAR_URL} target="_blank" rel="noopener noreferrer"
-          data-umami-event="cta-reserver" data-umami-event-origine={demo}>
+          data-ax-event="cta_rdv" data-ax-page={demo}>
           Réserver 15 min
         </a>
         <Link className="cv-a cv-alt" href={contactHref(sujet)}
-          data-umami-event="cta-besoin" data-umami-event-origine={demo}>
+          data-ax-event="sortie" data-ax-cible="contact" data-ax-page={demo}>
           Me décrire votre besoin
         </Link>
       </div>

@@ -20,11 +20,11 @@ export default function HomeHero({
         <h1 className="hh-title">{title}</h1>
         <p className="hh-sub">{subtitle}</p>
         <div className="hh-ctas">
-          <Link href="/agent" style={btnMain} data-umami-event="cta-demo" data-umami-event-origine={origine}>
+          <Link href="/agent" style={btnMain} data-ax-event="demo_start" data-ax-demo="agent" data-ax-page={origine}>
             Tester une démo
           </Link>
           <a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" style={btnAlt}
-            data-umami-event="cta-reserver" data-umami-event-origine={origine}>
+            data-ax-event="cta_rdv" data-ax-page={origine}>
             Réserver 15 min
           </a>
         </div>
