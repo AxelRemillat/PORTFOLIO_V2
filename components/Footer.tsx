@@ -9,7 +9,7 @@ const links = [
   { href: "/parcours", label: "Parcours" },
   { href: "/contact", label: "Contact" },
   { href: "/mentions-legales", label: "Mentions légales" },
-  { href: "https://www.linkedin.com/in/axel-remillatesmelyon", label: "LinkedIn" },
+  { href: "https://www.linkedin.com/in/axel-remillatesmelyon", label: "LinkedIn", cible: "linkedin" },
 ];
 
 export default function Footer() {
@@ -23,6 +23,8 @@ export default function Footer() {
           {links.map((link) => (
             <Link
               key={link.href}
+              data-ax-event={"cible" in link ? "sortie" : undefined}
+              data-ax-cible={"cible" in link ? link.cible : undefined}
               href={link.href}
               target={link.href.startsWith("http") ? "_blank" : undefined}
               rel={link.href.startsWith("http") ? "noopener noreferrer" : undefined}

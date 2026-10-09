@@ -23,7 +23,7 @@ export default function HomeCta({ origine = "home", about = true }: { origine?: 
           Une tâche qui vous fait perdre du temps ?
         </p>
         <a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" style={btnMain}
-          data-umami-event="cta-reserver" data-umami-event-origine={`${origine}-final`}>
+          data-ax-event="cta_rdv" data-ax-page={`${origine}-final`}>
           Parlons de votre cas — 15 min
         </a>
       </div>

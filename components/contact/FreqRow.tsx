@@ -5,6 +5,8 @@ interface FreqRowProps {
   type: string;
   value: string;
   href?: string;
+  /** Étiquette du clic sortant (docs/tracking.md) : « linkedin », « github »… */
+  cible?: string;
   download?: boolean;
   badge?: string;
 }
@@ -35,7 +37,7 @@ const badgeStyle: CSSProperties = {
 };
 
 // Une ligne de coordonnée style "fréquence" numérotée. <a> si href, sinon <div>.
-export default function FreqRow({ num, type, value, href, download, badge }: FreqRowProps) {
+export default function FreqRow({ num, type, value, href, download, badge, cible }: FreqRowProps) {
   const isExternal = href?.startsWith("http");
   const inner = (
     <>
@@ -66,6 +68,7 @@ export default function FreqRow({ num, type, value, href, download, badge }: Fre
       style={{ width: "100%" }}
       {...(download ? { download: true } : {})}
       {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      {...(cible ? { "data-ax-event": "sortie", "data-ax-cible": cible } : {})}
     >
       {inner}
     </a>

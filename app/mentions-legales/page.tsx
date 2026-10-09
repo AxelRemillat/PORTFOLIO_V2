@@ -78,7 +78,8 @@ export default function MentionsLegalesPage() {
       <p className={p}>
         Ce site utilise Umami, un outil de mesure d&apos;audience sans cookie : aucun cookie n&apos;est déposé et aucune bannière de
         consentement n&apos;est nécessaire. Les statistiques (pages vues, provenance générale) sont agrégées et ne permettent pas
-        de vous identifier.
+        de vous identifier. Sont également comptés, de la même façon anonyme, quelques gestes : ouverture d&apos;une démo,
+        clic vers la prise de rendez-vous, envoi du formulaire de contact. Jamais le contenu de ce que vous saisissez.
       </p>
 
       <h3 className="text-lg font-semibold mt-6 mb-2">Démos et assistant VEGA</h3>

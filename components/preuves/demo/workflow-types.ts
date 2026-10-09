@@ -1,4 +1,4 @@
-import { track } from "@/components/demo-kit/track";
+import { trackWithChannel } from "@/lib/analytics";
 import type { ReactNode } from "react";
 
 // Contrat data-driven d'une démo « workflow » (réutilisable pour les 5 démos).
@@ -66,18 +66,22 @@ export const GENERIC_ERRORS: Record<string, string> = {
 };
 
 // Textarea → JSON { [field]: value, hp, ...extra }. Chaque lancement est compté
-// dans Umami (« demo-automatisation », avec l'endpoint et le métier éventuel).
+// dans Umami : « demo_start » au lancement, « demo_result » si un résultat
+// revient. C'est l'écart entre les deux qui dit si la démo aboutit.
 export async function runWorkflow(
   endpoint: string, field: string, value: string, hp: string, extra?: Record<string, string>,
 ): Promise<WorkflowResponse> {
-  track("demo-automatisation", { demo: endpoint.split("/").pop() ?? endpoint, ...extra });
+  const demo = endpoint.split("/").pop() ?? endpoint;
+  trackWithChannel("demo_start", { demo, ...extra });
   try {
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...extra, [field]: value, hp }),
     });
-    return (await res.json()) as WorkflowResponse;
+    const parsed = (await res.json()) as WorkflowResponse;
+    if (parsed.ok) trackWithChannel("demo_result", { demo });
+    return parsed;
   } catch {
     return { ok: false, error: "default" };
   }
@@ -88,13 +92,16 @@ export async function runWorkflowFile(
   endpoint: string, field: string, file: File | null, hp: string,
 ): Promise<WorkflowResponse> {
   if (!file) return { ok: false, error: "invalid_input" };
-  track("demo-automatisation", { demo: endpoint.split("/").pop() ?? endpoint });
+  const demo = endpoint.split("/").pop() ?? endpoint;
+  trackWithChannel("demo_start", { demo });
   try {
     const fd = new FormData();
     fd.append(field, file);
     fd.append("hp", hp);
     const res = await fetch(endpoint, { method: "POST", body: fd });
-    return (await res.json()) as WorkflowResponse;
+    const parsed = (await res.json()) as WorkflowResponse;
+    if (parsed.ok) trackWithChannel("demo_result", { demo });
+    return parsed;
   } catch {
     return { ok: false, error: "default" };
   }

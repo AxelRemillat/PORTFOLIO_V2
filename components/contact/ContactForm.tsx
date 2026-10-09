@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { trackWithChannel } from "@/lib/analytics";
 import type { CSSProperties } from "react";
 import Link from "next/link";
 import { CONTACT_LIMITS, CONTACT_SUBJECTS, HONEYPOT_FIELD } from "@/lib/contact/schema";
@@ -46,12 +47,19 @@ export default function ContactForm() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, subject, message, [HONEYPOT_FIELD]: trap }),
       });
-      if (res.ok) return setStatus("sent");
+      if (res.ok) {
+        // Uniquement sur un envoi REUSSI : un contact compte quand il est parti.
+        // Jamais le contenu du formulaire — seulement la page et le canal.
+        trackWithChannel("contact_submit", { page: "contact" });
+        return setStatus("sent");
+      }
       // Le serveur renvoie un message lisible (validation, limite de débit).
       const payload = (await res.json().catch(() => null)) as { error?: string } | null;
       setErrorMsg(payload?.error ?? "");
+      trackWithChannel("contact_error", { page: "contact" });
       setStatus("error");
     } catch {
+      trackWithChannel("contact_error", { page: "contact" });
       setStatus("error");
     }
   }

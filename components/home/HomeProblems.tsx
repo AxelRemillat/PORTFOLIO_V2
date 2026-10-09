@@ -23,7 +23,7 @@ export default function HomeProblems() {
       <div style={grid(290)}>
         {TILES.map((x) => (
           <Link key={x.t} href={x.href} className="hp-tile" style={{ ...card, display: "flex", flexDirection: "column", gap: "0.6rem", textDecoration: "none" }}
-            data-umami-event="tuile-demo" data-umami-event-demo={x.demo}>
+            data-ax-event="demo_start" data-ax-demo={x.demo}>
             <h3 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#fff" }}>{x.t}</h3>
             <p style={{ margin: 0, fontSize: "0.92rem", lineHeight: 1.55, color: "#b6b6c8" }}>{x.d}</p>
             <span style={{ marginTop: "auto", paddingTop: "0.4rem", fontSize: "0.9rem", fontWeight: 700, color: "#fb923c" }}>Voir la démo →</span>

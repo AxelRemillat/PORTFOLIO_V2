@@ -7,7 +7,7 @@ import ResultSections, { type AgentResult } from "./ResultSections";
 import IdentityHeader from "./IdentityHeader";
 import CatalogueDetails from "./CatalogueDetails";
 import MetierPicker from "@/components/demo-kit/MetierPicker";
-import { track } from "@/components/demo-kit/track";
+import { trackWithChannel } from "@/lib/analytics";
 import { useFollowScroll } from "./useFollowScroll";
 import { AGENT_CSS } from "./agentCss";
 import { METIERS, getMetier, type MetierId } from "@/lib/metiers";
@@ -46,7 +46,8 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
 
   const run = async (demande: string) => {
     if (running || !demande.trim()) return;
-    track("demo-agent", { metier: metier.id });
+    // Nom stable (docs/tracking.md) et canal de la session recolle.
+    trackWithChannel("demo_start", { demo: `agent-${metier.id}` });
     setRunId((n) => n + 1);
     setPhase("running"); setTrace([]); setResult(null); setError(null);
     try {
@@ -55,7 +56,7 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
         body: JSON.stringify({ demande, metier: metier.id, hp }),
       });
       const data = await res.json();
-      if (data.ok && data.result) { setTrace(data.trace ?? []); setResult(data.result as AgentResult); setPhase("done"); }
+      if (data.ok && data.result) { setTrace(data.trace ?? []); setResult(data.result as AgentResult); setPhase("done"); trackWithChannel("demo_result", { demo: `agent-${metier.id}` }); }
       else { setError(ERRORS[data.error ?? "default"] ?? ERRORS.default); setPhase("error"); }
     } catch { setError(ERRORS.default); setPhase("error"); }
   };
