@@ -1,5 +1,13 @@
 // English twin of ops-data.ts: same metrics, same ids, values still unwired (null).
-import type { OpsMetric } from "./ops-data";
+import type { OpsMetric, OpsText } from "./ops-data";
+
+export const OPS_TEXT: OpsText = {
+  title: "Ops | Axel Remillat: the engine room",
+  description: "This site's monitoring, in public: uptime, VEGA latency, requests and cost per answer.",
+  kicker: "OPS // ENGINE ROOM",
+  intro: "This site's monitoring, in public. An engineer who sells you monitoring should show his own.",
+  wiring: "being wired up",
+};
 
 export const OPS_METRICS: OpsMetric[] = [
   { id: "uptime", label: "Site uptime", value: null, detail: "last 30 days" },

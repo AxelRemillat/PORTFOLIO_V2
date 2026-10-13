@@ -10,14 +10,17 @@ import PipelineLive from "./PipelineLive";
 import PredictionsTable from "./PredictionsTable";
 import PipelineCharts from "./PipelineCharts";
 import { PIPELINE_CSS } from "./pipelineCss";
+import { pipelineLabels } from "./labels";
+import { useLocale } from "@/lib/i18n/client";
 
 type Phase = "idle" | "running" | "done";
 const scoreAll = (leads: Lead[]): Scored[] =>
   leads.map((l) => { const p = score(l); return { ...l, proba: p, label: bucket(p) }; });
 
 export default function PipelineDemo() {
+  const L = pipelineLabels(useLocale());
   const [dsId, setDsId] = useState(DATASETS[0].id);
-  const [userLead, setUserLead] = useState<Lead>(blankLead());
+  const [userLead, setUserLead] = useState<Lead>(() => blankLead(L.blank));
   const [phase, setPhase] = useState<Phase>("idle");
   const [run, setRun] = useState<{ steps: StepData[]; scored: Scored[] } | null>(null);
   const dataset = useMemo(() => DATASETS.find((d) => d.id === dsId) ?? DATASETS[0], [dsId]);
@@ -29,7 +32,7 @@ export default function PipelineDemo() {
     window.setTimeout(() => {
       const leads = [userLead, ...dataset.leads];
       const scored = scoreAll(leads);
-      setRun({ steps: buildSteps(dataset.label, leads, scored), scored });
+      setRun({ steps: buildSteps(L.datasets[dataset.id] ?? dataset.label, leads, scored, L), scored });
       setPhase("done");
     }, 350);
   };
@@ -44,12 +47,12 @@ export default function PipelineDemo() {
     <div className="wc-card pl-demo" style={accent}>
       <style>{PIPELINE_CSS}</style>
 
-      <p className="wc-label">Dataset d&apos;exemple</p>
+      <p className="wc-label">{L.demo.sample}</p>
       <div className="pl-tools">
         {DATASETS.map((d) => (
           <button key={d.id} type="button" className={`pl-tool${d.id === dsId ? " on" : ""}`}
             onClick={() => setDsId(d.id)} disabled={running}>
-            {d.label} · {d.leads.length}
+            {L.datasets[d.id] ?? d.label} · {d.leads.length}
           </button>
         ))}
       </div>
@@ -58,15 +61,15 @@ export default function PipelineDemo() {
 
       <div className="wc-actions">
         <button type="button" className="wc-btn wc-primary" onClick={launch} disabled={running}>
-          {running ? "Pipeline en cours…" : "Lancer le pipeline →"}
+          {running ? L.demo.running : L.demo.run}
         </button>
       </div>
 
       {phase !== "idle" && (
         <>
-          <p className="ag-seclabel">Pipeline live</p>
+          <p className="ag-seclabel">{L.demo.live}</p>
           {running
-            ? <div className="ag-think ag-think-solo" aria-live="polite">démarrage<span /><span /><span /></div>
+            ? <div className="ag-think ag-think-solo" aria-live="polite">{L.demo.starting}<span /><span /><span /></div>
             : run && <PipelineLive key={dsId + "-" + userLead.pages_vues + "-" + userLead.budget_estime} steps={run.steps} />}
         </>
       )}
@@ -76,13 +79,13 @@ export default function PipelineDemo() {
           <div className="pl-insight" role="status">
             <span className="pl-insight-n">{pctChaud}%</span>
             <p className="pl-insight-t">
-              de leads <b>chauds</b> ({chaud}/{run.scored.length}). Lead au plus fort potentiel :{" "}
+              {L.demo.insight.leads}<b>{L.demo.insight.hot}</b> ({chaud}/{run.scored.length}). {L.demo.insight.top}{" "}
               <b>{topLead?.entreprise}</b> — {Math.round((topLead?.proba ?? 0) * 100)}%.
             </p>
           </div>
-          <p className="pl-seclabel">Prédictions</p>
+          <p className="pl-seclabel">{L.demo.predictions}</p>
           <PredictionsTable rows={run.scored} />
-          <p className="pl-seclabel">Analyse</p>
+          <p className="pl-seclabel">{L.demo.analysis}</p>
           <PipelineCharts rows={run.scored} />
         </div>
       )}

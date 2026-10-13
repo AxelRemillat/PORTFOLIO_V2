@@ -73,8 +73,8 @@ export const COLUMNS = [
 ];
 
 // Un lead « vierge » éditable par l'utilisateur (valeurs médianes plausibles).
-export function blankLead(): Lead {
-  return { id: "VOTRE-LEAD", entreprise: "Votre prospect", taille: "PME", secteur: "SaaS",
+export function blankLead(blank: { id: string; name: string } = { id: "VOTRE-LEAD", name: "Votre prospect" }): Lead {
+  return { id: blank.id, entreprise: blank.name, taille: "PME", secteur: "SaaS",
     source: "referral", pages_vues: 18, emails_ouverts: 7, essai_gratuit: true,
     anciennete_jours: 20, budget_estime: 12000, converti: 0 };
 }

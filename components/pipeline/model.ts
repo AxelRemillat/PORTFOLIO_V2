@@ -49,7 +49,7 @@ export function contributions(l: Lead) {
 
 // Importance GLOBALE des features = |poids| normalisé (0–1).
 export function importance() {
-  const arr = FEATURES.map((f) => ({ label: f.label, w: Math.abs(WEIGHTS[f.key] ?? 0) }));
+  const arr = FEATURES.map((f) => ({ key: f.key, label: f.label, w: Math.abs(WEIGHTS[f.key] ?? 0) }));
   const max = Math.max(...arr.map((a) => a.w)) || 1;
-  return arr.map((a) => ({ label: a.label, v: a.w / max })).sort((a, b) => b.v - a.v);
+  return arr.map((a) => ({ key: a.key, label: a.label, v: a.w / max })).sort((a, b) => b.v - a.v);
 }

@@ -1,16 +1,12 @@
 import ArchFlow from "../ArchFlow";
+import { useWindowsText } from "./windows-text";
 
 // Fenêtre « Pipeline Data/ML » de la card projet : aperçu des étapes du pipeline
 // façon console + bande de flux. Accent = var(--pv-accent) du projet (cyan).
-const LINES: [string, string][] = [
-  ["in", "303 leads · 11 colonnes"],
-  ["clean", "types normalisés · doublons retirés"],
-  ["feat", "10 features (one-hot · ratios)"],
-  ["model", "régression logistique → proba"],
-  ["out", "chaud / tiède / froid + explicabilité"],
-];
+// Lignes de la trace : windows-text.ts (une version par langue).
 
 export default function PipelineWindow() {
+  const t = useWindowsText().pipeline;
   return (
     <div className="pv-win">
       <style>{`
@@ -20,16 +16,16 @@ export default function PipelineWindow() {
         .plw-ico { font-size:9px; text-align:center; color:var(--pv-accent); }
         .plw-row.k-out .plw-ico, .plw-row.k-out span:last-child { color:#a9f0ff; font-weight:700; }
       `}</style>
-      <div className="pv-bar"><span className="pv-bdot" />pipeline · data → ml</div>
+      <div className="pv-bar"><span className="pv-bdot" />{t.bar}</div>
       <div className="plw-body">
-        {LINES.map(([kind, text], i) => (
+        {t.lines.map(([kind, text], i) => (
           <div key={i} className={`plw-row k-${kind}`}>
             <span className="plw-ico" aria-hidden>{kind === "in" ? "▤" : kind === "clean" ? "✎" : kind === "feat" ? "⑂" : kind === "model" ? "∿" : "◈"}</span>
             <span>{text}</span>
           </div>
         ))}
       </div>
-      <ArchFlow steps={["Ingest", "Clean", "Features", "Modèle", "Score"]} />
+      <ArchFlow steps={t.flow} />
     </div>
   );
 }

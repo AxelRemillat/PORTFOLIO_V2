@@ -1,6 +1,7 @@
 "use client";
 
 import ArchFlow from "../ArchFlow";
+import { useWindowsText } from "./windows-text";
 
 // Fenêtre n8n : mini-éditeur de workflow (canvas pointillé, nœuds n8n réels reliés,
 // impulsions qui circulent) + bande de flux. Accent = var(--pv-accent) du projet.
@@ -11,6 +12,7 @@ const NODES: [number, number, string][] = [
 const LINKS = [[0, 2], [1, 2], [2, 3], [2, 4], [3, 5], [4, 5]] as const;
 
 export default function WorkflowWindow() {
+  const t = useWindowsText().workflow;
   return (
     <div className="pv-win">
       <style>{`
@@ -20,7 +22,7 @@ export default function WorkflowWindow() {
         .pwf-node rect { fill:#07120e; stroke:var(--pv-accent); stroke-width:1.1; }
         .pwf-node text { fill:#d3f5e6; font-family:var(--font-mono); font-size:7px; letter-spacing:.02em; }
       `}</style>
-      <div className="pv-bar"><span className="pv-bdot" />n8n · éditeur de workflow</div>
+      <div className="pv-bar"><span className="pv-bdot" />{t.bar}</div>
       <div className="pwf-canvas">
         <svg viewBox="0 0 230 108" width="100%" height="104" fill="none" aria-hidden>
           {LINKS.map(([a, b], i) => (
@@ -38,7 +40,7 @@ export default function WorkflowWindow() {
           ))}
         </svg>
       </div>
-      <ArchFlow steps={["Webhook", "OpenAI", "Filtre", "Envoi"]} />
+      <ArchFlow steps={t.flow} />
     </div>
   );
 }
