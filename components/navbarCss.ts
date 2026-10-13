@@ -121,16 +121,22 @@ export const NAVBAR_CSS = `
         .nv-mobile a:hover, .nv-mobile a.nv-active { color: #ffffff; }
 
         /* Sélecteur FR | EN : toujours visible, desktop comme mobile (hors burger). */
-        .nv-lang { display: flex; align-items: center; gap: 6px; font-family: var(--font-geist-mono), monospace; }
-        .nv-lang-item { display: flex; align-items: center; gap: 6px; }
+        .nv-lang { display: flex; align-items: center; gap: 2px; font-family: var(--font-geist-mono), monospace; }
+        .nv-lang-item { display: flex; align-items: center; gap: 2px; }
         .nv-lang-sep { color: rgba(255,255,255,0.25); font-size: 12px; }
         .nv-lang a {
+          display: inline-flex; align-items: center; gap: 6px;
+          min-height: 32px; padding: 0 7px; border-radius: 7px;
           font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
-          color: rgba(255,255,255,0.5); text-decoration: none;
-          padding: 6px 2px; transition: color 0.2s ease;
+          color: rgba(255,255,255,0.6); text-decoration: none;
+          transition: color 0.2s ease, background-color 0.2s ease;
         }
         .nv-lang a:hover { color: rgba(255,255,255,0.9); }
-        .nv-lang a.nv-lang-on { color: #ffffff; }
+        /* Langue inactive : texte à 60 %, drapeau en pleine couleur. Active : blanc, fond léger, soulignement orange. */
+        .nv-lang a.nv-lang-on {
+          color: #ffffff; background: rgba(255,255,255,0.08);
+          box-shadow: inset 0 -2px 0 #f97316;
+        }
 
         @media (max-width: 1000px) { .nv-center { gap: 18px; } .nv-link { letter-spacing: 0.08em; } }
         @media (max-width: 768px) {

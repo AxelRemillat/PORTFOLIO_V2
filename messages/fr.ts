@@ -35,8 +35,8 @@ export const fr = {
   },
   switcher: {
     label: "Langue du site",
-    toFrench: "Version française",
-    toEnglish: "English version",
+    toFrench: "Français",
+    toEnglish: "English",
   },
   notFound: {
     metaTitle: "Page introuvable — Axel Remillat",

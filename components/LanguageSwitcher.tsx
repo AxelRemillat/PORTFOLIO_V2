@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { LOCALE_COOKIE, LOCALE_COOKIE_MAX_AGE, locales, type Locale } from "@/lib/i18n/config";
 import { useLocale, useMessages } from "@/lib/i18n/client";
 import { localizedHref } from "@/lib/i18n/paths";
+import { FlagFr, FlagGb } from "./Flags";
+
+const FLAGS: Record<Locale, () => React.JSX.Element> = { fr: FlagFr, en: FlagGb };
 
 /**
  * « FR | EN », en haut à droite, desktop ET mobile (jamais caché dans le burger).
@@ -31,7 +34,9 @@ export default function LanguageSwitcher() {
 
   return (
     <nav aria-label={t.label} className="nv-lang">
-      {locales.map((locale, index) => (
+      {locales.map((locale, index) => {
+        const Flag = FLAGS[locale];
+        return (
         <span key={locale} className="nv-lang-item">
           {index > 0 && <span aria-hidden className="nv-lang-sep">|</span>}
           <a
@@ -43,10 +48,12 @@ export default function LanguageSwitcher() {
             aria-label={locale === "fr" ? t.toFrench : t.toEnglish}
             className={locale === current ? "nv-lang-on" : undefined}
           >
+            <Flag />
             {locale.toUpperCase()}
           </a>
         </span>
-      ))}
+        );
+      })}
     </nav>
   );
 }

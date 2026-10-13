@@ -34,8 +34,8 @@ export const en: Messages = {
   },
   switcher: {
     label: "Site language",
-    toFrench: "Version française",
-    toEnglish: "English version",
+    toFrench: "Français",
+    toEnglish: "English",
   },
   notFound: {
     metaTitle: "Page not found — Axel Remillat",
