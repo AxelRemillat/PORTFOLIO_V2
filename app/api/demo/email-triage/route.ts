@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/demo-rate-limit";
+import { demoLocale } from "@/lib/demo-locale";
 
 export const runtime = "nodejs";
 
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
   if (process.env.DEMO_EMAIL_TRIAGE_ENABLED !== "true") return err(503, "demo_disabled");
 
   // b. parse + honeypot (hp rempli = bot → on n'appelle pas n8n)
-  let body: { email_text?: unknown; hp?: unknown };
+  let body: { email_text?: unknown; hp?: unknown; locale?: unknown };
   try {
     body = await req.json();
   } catch {
@@ -41,7 +42,8 @@ export async function POST(req: NextRequest) {
     const res = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-demo-secret": process.env.N8N_DEMO_SECRET ?? "" },
-      body: JSON.stringify({ email_text }),
+      // `locale` : langue de l'analyse et de la réponse (docs/n8n-modifications.md, § 3).
+      body: JSON.stringify({ email_text, locale: demoLocale(body.locale) }),
       signal: controller.signal,
     });
     if (!res.ok) return err(502, "upstream_error");

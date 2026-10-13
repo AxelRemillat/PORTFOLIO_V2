@@ -1,0 +1,52 @@
+import type { Metier } from "./types";
+
+// Windows & doors: manufacturing + installation. Sample prices excl. VAT.
+export const MENUISERIE: Metier = {
+  id: "menuiserie",
+  label: "Windows & doors",
+  entreprise: "Oakline Joinery",
+  activite: "Made-to-measure windows, doors and shutters, supplied and installed.",
+  tva: 0.2,
+  remises: [{ seuil: 8000, taux: 0.05 }],
+  minimum_ht: 250,
+  livraison: { libelle: "Delivery to site", frais: 90, franco: 3000, delai_jours: 2 },
+  catalogue: [
+    { ref: "FEN-PVC-60", nom: "PVC single-casement window 60×75 cm", categorie: "windows", description: "Double glazing 4/20/4, white, tilt-and-turn.", unite: "unit", prix_unitaire: 289, delai_jours: 21 },
+    { ref: "FEN-PVC-100", nom: "PVC double-casement window 100×125 cm", categorie: "windows", description: "Insulated double glazing, white, centered handle.", unite: "unit", prix_unitaire: 459, delai_jours: 21 },
+    { ref: "FEN-PVC-120", nom: "PVC double-casement window 120×135 cm", categorie: "windows", description: "Insulated double glazing, white or anthracite gray.", unite: "unit", prix_unitaire: 529, delai_jours: 21 },
+    { ref: "FEN-ALU-120", nom: "Aluminum double-casement window 120×135 cm", categorie: "windows", description: "Slim frame, thermal break, color of your choice.", unite: "unit", prix_unitaire: 890, delai_jours: 28 },
+    { ref: "FEN-BOIS-100", nom: "Oak wood double-casement window 100×125 cm", categorie: "windows", description: "Solid oak, clear wood stain, double glazing.", unite: "unit", prix_unitaire: 980, delai_jours: 35 },
+    { ref: "PF-PVC-240", nom: "Sliding PVC patio door 240×215 cm", categorie: "patio doors sliding doors", description: "2 sliding panels, low threshold.", unite: "unit", prix_unitaire: 1490, delai_jours: 28 },
+    { ref: "PF-ALU-240", nom: "Aluminum sliding patio door 240×215 cm", categorie: "patio doors sliding doors", description: "Large glazed area, 3-point locking.", unite: "unit", prix_unitaire: 2390, delai_jours: 35 },
+    { ref: "VR-ELEC-120", nom: "Electric roller shutter 120 cm", categorie: "shutters", description: "Retrofit box, wired motor, aluminum slats.", unite: "unit", prix_unitaire: 420, delai_jours: 21 },
+    { ref: "VR-SOL-120", nom: "Solar roller shutter 120 cm", categorie: "shutters", description: "No wiring, solar panel, remote control.", unite: "unit", prix_unitaire: 590, delai_jours: 21 },
+    { ref: "PE-ALU-90", nom: "Aluminum entry door 90×215 cm", categorie: "entry doors front doors", description: "5-point lock, extra insulation.", unite: "unit", prix_unitaire: 2190, delai_jours: 35 },
+    { ref: "PE-ACIER-90", nom: "Steel entry door 90×215 cm", categorie: "entry doors front doors", description: "3-point lock, lacquered finish.", unite: "unit", prix_unitaire: 1290, delai_jours: 28 },
+    { ref: "POSE-FEN", nom: "Window installation (renovation)", categorie: "installation", description: "Removal of the old window, installation, sealing.", unite: "window", prix_unitaire: 180, delai_jours: 0 },
+    { ref: "POSE-PF", nom: "Installation of a patio door, sliding door or entry door", categorie: "installation", description: "Removal, installation, adjustment and finishing.", unite: "door installed", prix_unitaire: 290, delai_jours: 0 },
+    { ref: "POSE-VR", nom: "Roller shutter installation", categorie: "installation", description: "Mounting, wiring, limit-stop adjustment.", unite: "shutter", prix_unitaire: 120, delai_jours: 0 },
+    { ref: "EVAC", nom: "Removal of old windows and doors", categorie: "installation", description: "Haul-away and recycling at a licensed facility.", unite: "flat rate per site", prix_unitaire: 150, delai_jours: 0 },
+    { ref: "METRE", nom: "On-site measurement", categorie: "installation", description: "Precise measurements taken by a technician before manufacturing.", unite: "flat rate", prix_unitaire: 90, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "House renovation", texte: "Hi, I'm renovating a house in Tours: 4 PVC windows 100×125 and a sliding patio door, installation included. Could you give me a quote?" },
+    { label: "Shutters for an office", texte: "We need 6 electric roller shutters, 120 cm, for our office in Lyon, installation included. What's the lead time?" },
+    { label: "Off-catalog", texte: "I'd like an aluminum conservatory of about 15 m² and a new aluminum entry door for a house in Nantes. Is that possible?" },
+  ],
+  politique: {
+    garantie: "10-year warranty on windows and doors, 5 years on shutter motors, 2 years on installation.",
+    paiement: "30% deposit when you order, balance once installation is complete. Bank transfer or check.",
+    delais: "Manufacturing takes 3 to 5 weeks depending on the material. Installation is scheduled as soon as we receive it.",
+    tva: "20% VAT for businesses. 10% may apply when renovating a home more than 2 years old (signed customer statement).",
+    metre: "On-site measurement is required before manufacturing: it confirms the dimensions in the quote.",
+  },
+  sav: [
+    { id: "M1", question: "My window doesn't close properly or rubs", reponse: "Adjusting the hinges is often enough. Under the 2-year installation warranty, a technician comes out free of charge within 10 business days." },
+    { id: "M2", question: "Condensation between the two panes", reponse: "That means the glazing seal has failed: we replace it free of charge for 10 years." },
+    { id: "M3", question: "My roller shutter has stopped responding", reponse: "Check the circuit breaker, then the remote battery. If nothing changes, the motor has a 5-year warranty: we come out within 7 business days." },
+    { id: "M4", question: "Manufacturing and installation lead time", reponse: "3 to 5 weeks of manufacturing depending on the material, then we schedule installation with you as soon as it arrives." },
+    { id: "M5", question: "Cleaning PVC and aluminum windows", reponse: "Soapy water, no abrasive products. Grease the moving parts once a year." },
+    { id: "M6", question: "Payment and deposit", reponse: "30% deposit when you order, balance at the end of installation, by bank transfer or check." },
+  ],
+  savExemples: ["There's fog between the two panes of glass. Is that normal?", "My electric roller shutter has stopped responding", "Do you install gates too?"],
+};

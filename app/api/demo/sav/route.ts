@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/demo-rate-limit";
+import { demoLocale } from "@/lib/demo-locale";
 import { getMetier } from "@/lib/metiers";
 
 export const runtime = "nodejs";
@@ -19,13 +20,15 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
   if (!(req.headers.get("content-type") ?? "").includes("application/json")) return err(400, "invalid_input");
-  let body: { question?: unknown; metier?: unknown; hp?: unknown };
+  let body: { question?: unknown; metier?: unknown; hp?: unknown; locale?: unknown };
   try { body = await req.json(); } catch { return err(400, "invalid_input"); }
 
   if (typeof body.hp === "string" && body.hp.trim() !== "") return err(400, "invalid_input");
   const q = body.question;
   if (typeof q !== "string" || q.trim() === "" || q.length > MAX_LEN) return err(400, "invalid_input");
-  const metier = getMetier(body.metier ?? "menuiserie");
+  const locale = demoLocale(body.locale);
+  // Base SAV dans la langue du visiteur (lib/metiers/*.en.ts en anglais).
+  const metier = getMetier(body.metier ?? "menuiserie", locale);
   if (!metier) return err(400, "invalid_input");
 
   { const rl = await checkRateLimit(ip, "sav"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
@@ -40,6 +43,7 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         question: q,
         metier: metier.id,
+        locale,
         entreprise: metier.entreprise,
         activite: metier.activite,
         base: metier.sav, // [{ id, question, reponse }]

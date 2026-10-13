@@ -33,6 +33,12 @@ const EL_MODEL  = process.env.ELEVENLABS_MODEL_ID || "eleven_multilingual_v2";
 // OpenAI (repli)
 const OAI_VOICE = process.env.OPENAI_TTS_VOICE || "coral";
 const OAI_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
+// Version anglaise (/en/demos) : même fournisseur, même modèle, même coût. La voix
+// ElevenLabs par défaut est multilingue ; ELEVENLABS_VOICE_ID_EN permet d'en choisir une autre.
+const EL_VOICE_EN = process.env.ELEVENLABS_VOICE_ID_EN || EL_VOICE;
+const OAI_INSTRUCTIONS_EN =
+  process.env.OPENAI_TTS_INSTRUCTIONS_EN ||
+  "Speak natural American English with a neutral accent. Soft, calm, warm and friendly female voice. Slow, steady pace, reassuring tone.";
 const OAI_INSTRUCTIONS =
   process.env.OPENAI_TTS_INSTRUCTIONS ||
   "Parle en français avec un accent parisien neutre et naturel (surtout PAS d'accent québécois ni anglophone). " +
@@ -44,9 +50,9 @@ function mp3(buf: Uint8Array) {
   });
 }
 
-async function elevenLabs(text: string): Promise<Buffer> {
+async function elevenLabs(text: string, en: boolean): Promise<Buffer> {
   const r = await fetch(
-    `https://api.elevenlabs.io/v1/text-to-speech/${EL_VOICE}?output_format=mp3_44100_128`,
+    `https://api.elevenlabs.io/v1/text-to-speech/${en ? EL_VOICE_EN : EL_VOICE}?output_format=mp3_44100_128`,
     {
       method: "POST",
       headers: {
@@ -70,13 +76,13 @@ async function elevenLabs(text: string): Promise<Buffer> {
   return Buffer.from(await r.arrayBuffer());
 }
 
-async function openaiTTS(text: string): Promise<Buffer> {
+async function openaiTTS(text: string, en: boolean): Promise<Buffer> {
   const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
   const speech = await openai.audio.speech.create({
     model: OAI_MODEL,
     voice: OAI_VOICE,
     input: text,
-    instructions: OAI_INSTRUCTIONS,
+    instructions: en ? OAI_INSTRUCTIONS_EN : OAI_INSTRUCTIONS,
   });
   return Buffer.from(await speech.arrayBuffer());
 }
@@ -89,6 +95,9 @@ export async function POST(req: NextRequest) {
   const text: string | undefined = body?.text;
   if (!text || typeof text !== "string" || !text.trim()) return jerr(400, "invalid_input");
   const input = text.slice(0, MAX_TTS_CHARS);
+  // Langue de la page (portfolio bilingue) : 'en' → voix et consigne anglaises. Défaut : français.
+  const en = body?.locale === "en";
+  const key = `${en ? "en" : "fr"}:${input}`;
 
   // Rate-limit généreux par IP + cap global/jour (ElevenLabs = ressource rare).
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
@@ -96,16 +105,16 @@ export async function POST(req: NextRequest) {
   if (!rl.ok) return jerr(429, rl.scope === "global" ? "demo_busy" : "rate_limited");
 
   // Cache : phrase déjà synthétisée → on la ressert sans repayer l'API.
-  const cached = ttsCache.get(input);
+  const cached = ttsCache.get(key);
   if (cached) return mp3(cached);
 
   // 1) ElevenLabs (prioritaire) — repli sur OpenAI si erreur
   if (EL_KEY) {
-    try { const buf = await elevenLabs(input); cacheSet(input, buf); return mp3(buf); } catch { /* → OpenAI */ }
+    try { const buf = await elevenLabs(input, en); cacheSet(key, buf); return mp3(buf); } catch { /* → OpenAI */ }
   }
   // 2) OpenAI
   if (process.env.OPENAI_API_KEY) {
-    try { const buf = await openaiTTS(input); cacheSet(input, buf); return mp3(buf); } catch { /* → 503 */ }
+    try { const buf = await openaiTTS(input, en); cacheSet(key, buf); return mp3(buf); } catch { /* → 503 */ }
   }
   // 3) Aucun provider dispo → le front bascule sur la voix du navigateur
   return jerr(503, "tts_unavailable");

@@ -1,0 +1,11 @@
+Company,Contact,Email,Phone,City
+Harper & Sons LLC,John Harper,contact@harper-sons.example.com,(555) 010-0001,Boston
+harper & sons llc,J. Harper,CONTACT@HARPER-SONS.EXAMPLE.COM,5550100001,boston
+ Harper  & Sons LLC ,John Harper,contact@harper-sons.example.com,555-010-0001,Boston
+Café Lumière Bakery,Mary Collins,mary@cafe-lumiere.example.com,(555) 010-0002,Portland
+CAFE LUMIERE BAKERY,Mary Collins,mary@cafe-lumiere.example.com,5550100002,Portland
+Oakridge Carpentry,Paul Bennett,p.bennett@oakridge-carpentry.example.com,(555) 010-0003,Denver
+Garner Supply Co.,Luke Garner,luke@garner-supply.example.com,(555) 010-0004,Austin
+garner supply co.,Luke Garner,luke@garner-supply.example.com,(555) 010-0004,Austin
+Élan Electric,Anne Rhodes,anne.rhodes@elan-electric.example.com,(555) 010-0005,Seattle
+Elan Electric,Anne Rhodes,anne.rhodes@elan-electric.example.com,5550100005,Seattle
