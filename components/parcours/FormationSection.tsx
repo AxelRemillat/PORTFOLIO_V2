@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import ScrollReveal from "./ScrollReveal";
 import SectionLabel from "./SectionLabel";
 
@@ -32,9 +33,9 @@ export default function FormationSection() {
               gap: "1rem",
             }}
           >
-            <a href="/contact" className="parcours-cta">
+            <Link href="/contact" className="parcours-cta">
               Réserver un appel →
-            </a>
+            </Link>
             <a href="/CV-Axel-Remillat-2026.pdf" download className="parcours-cta-outline">
               Télécharger mon CV (PDF)
             </a>

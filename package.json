@@ -13,6 +13,7 @@
     "build-ax": "tsx scripts/build-ax-knowledge.ts",
     "eval-vega": "tsx scripts/eval-vega.ts",
     "test": "tsx --test tests/*.test.ts && tsx scripts/contact.test.ts",
+    "i18n:check": "tsx scripts/i18n-check.ts",
     "test:contact": "tsx scripts/contact.test.ts"
   },
   "dependencies": {
