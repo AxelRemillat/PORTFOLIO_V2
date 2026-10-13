@@ -29,10 +29,11 @@ export const OG_LOCALE: Record<Locale, string> = { fr: "fr_FR", en: "en_US" };
  * sitemap, et indexation (noindex). Les pages /en restent ouvertes en direct,
  * pour que chacun puisse travailler dessus.
  *
- * Passe à `true` en UNE ligne quand les trois lots (socle + pages, démos,
- * VEGA/pipeline) sont livrés.
+ * Passée à `true` le 13/10/2026 : les trois lots (socle + pages, démos,
+ * VEGA/pipeline) sont livrés et `npm run i18n:check` passe sur les 17 pages /en.
+ * Revenir à `false` remet le site dans l'état d'avant, sans rien casser.
  */
-export const EN_PUBLIC = false;
+export const EN_PUBLIC = true;
 
 export const isLocale = (value: unknown): value is Locale =>
   typeof value === "string" && (locales as readonly string[]).includes(value);
