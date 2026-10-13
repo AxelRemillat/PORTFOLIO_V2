@@ -2,6 +2,7 @@
 
 import { Icon } from "./nodeIcons";
 import type { NodeIcon } from "./workflow-types";
+import { useDemoUi } from "./DemoUiContext";
 
 export interface Suggestion {
   id: string;
@@ -14,9 +15,10 @@ export interface Suggestion {
 export default function ReboundCard({
   suggestions, onSelect,
 }: { suggestions: Suggestion[]; onSelect?: (id: string) => void }) {
+  const ui = useDemoUi();
   return (
     <div className="wc-rebound" role="note">
-      <p className="wc-rebound-t">✅ Workflow terminé — envie d&apos;en voir un autre&nbsp;?</p>
+      <p className="wc-rebound-t">{ui.rebound}</p>
       <div className="wc-rebound-btns">
         {suggestions.map((s) => (
           <button key={s.id} type="button" className="wc-rebound-btn" onClick={() => onSelect?.(s.id)}>

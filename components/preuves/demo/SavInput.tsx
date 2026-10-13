@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useDemoUi } from "./DemoUiContext";
 
 // Barre de saisie du chat : Entrée = envoyer, Shift+Entrée = nouvelle ligne.
 // Désactivée pendant l'appel. Champ étiqueté via aria-label.
 export default function SavInput({ onSend, disabled }: { onSend: (q: string) => void; disabled: boolean }) {
+  const t = useDemoUi().sav;
   const [value, setValue] = useState("");
 
   const submit = () => {
@@ -21,14 +23,14 @@ export default function SavInput({ onSend, disabled }: { onSend: (q: string) => 
     <div className="wc-chat-input">
       <textarea
         className="wc-chat-field" rows={1} value={value} maxLength={500} disabled={disabled}
-        aria-label="Votre message" placeholder="Écrivez votre message…"
+        aria-label={t.inputAria} placeholder={t.placeholder}
         onChange={(e) => setValue(e.target.value)} onKeyDown={onKey}
       />
       <button
         type="button" className="wc-chat-send" onClick={submit}
-        disabled={disabled || !value.trim()} aria-label="Envoyer le message"
+        disabled={disabled || !value.trim()} aria-label={t.sendAria}
       >
-        Envoyer
+        {t.send}
       </button>
     </div>
   );

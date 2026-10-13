@@ -1,6 +1,7 @@
 "use client";
 
 import type { SavData } from "./SavResult";
+import { useDemoUi } from "./DemoUiContext";
 
 export interface ChatMessage {
   role: "user" | "assistant";
@@ -16,6 +17,7 @@ const confClass = (n: number) => (n >= 80 ? "is-hi" : n >= 60 ? "is-mid" : "is-l
 // compact : score de confiance coloré, puis badge « hors périmètre » (si hors_sujet)
 // ou chips des sources, et enfin les extraits consultés repliables.
 export default function SavBubble({ msg }: { msg: ChatMessage }) {
+  const t = useDemoUi().sav;
   if (msg.role === "user") {
     return (
       <div className="wc-chat-row is-user">
@@ -38,16 +40,16 @@ export default function SavBubble({ msg }: { msg: ChatMessage }) {
         {d && !msg.error && (
           <div className="wc-chat-foot">
             {conf != null && (
-              <div className={`wc-conf ${confClass(conf)}`} role="img" aria-label={`Score de confiance ${conf}%`}>
-                <span className="wc-conf-lbl">Confiance {conf}%</span>
+              <div className={`wc-conf ${confClass(conf)}`} role="img" aria-label={t.confidenceAria(conf)}>
+                <span className="wc-conf-lbl">{t.confidence(conf)}</span>
                 <span className="wc-conf-bar"><span className="wc-conf-fill" style={{ width: `${clamp(conf)}%` }} /></span>
               </div>
             )}
             {hs ? (
-              <span className="wc-chat-badge is-warn">⚠ hors périmètre — recentrage / transfert conseiller</span>
+              <span className="wc-chat-badge is-warn">{t.offTopic}</span>
             ) : sources.length > 0 && (
               <div className="wc-chat-src">
-                <span className="wc-chat-srclbl">Sources</span>
+                <span className="wc-chat-srclbl">{t.sourcesShort}</span>
                 {sources.map((s, i) => (
                   <span key={`${s.id ?? i}`} className="wc-sav-chip" title={s.question ?? undefined}>
                     <code>{String(s.id ?? "?")}</code>
@@ -57,7 +59,7 @@ export default function SavBubble({ msg }: { msg: ChatMessage }) {
             )}
             {!hs && extraits.length > 0 && (
               <details className="wc-sav-extraits wc-chat-extraits">
-                <summary>extraits consultés ({extraits.length})</summary>
+                <summary>{t.excerptsLower(extraits.length)}</summary>
                 <ul>
                   {extraits.map((e, i) => (
                     <li key={`${e.id ?? i}`}>

@@ -3,6 +3,7 @@
 import { Fragment } from "react";
 import { Icon } from "./nodeIcons";
 import type { WorkflowNode } from "./workflow-types";
+import { useDemoUi } from "./DemoUiContext";
 
 interface Props {
   nodes: WorkflowNode[];
@@ -13,8 +14,9 @@ interface Props {
 // Pipeline horizontal de nodes (style n8n). L'état de chaque node/connexion découle
 // de activeIndex + phase ; le point lumineux circule quand le flux avance.
 export default function NodePipeline({ nodes, activeIndex, phase }: Props) {
+  const ui = useDemoUi();
   return (
-    <div className="wc-pipe" role="list" aria-label="Étapes du workflow">
+    <div className="wc-pipe" role="list" aria-label={ui.pipelineAria}>
       {nodes.map((n, i) => {
         const done = i < activeIndex || (i === activeIndex && phase === "done");
         const active = i === activeIndex && phase === "running";

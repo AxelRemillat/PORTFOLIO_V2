@@ -2,6 +2,7 @@
 
 import DataPreview, { type ApercuRow } from "./DataPreview";
 import { DATACLEAN_CSS } from "./dataCleanCss";
+import { useDemoUi } from "./DemoUiContext";
 
 // Rendu dédié « nettoyage CSV » (thème clair, accent violet). Ordre : AVANT/APRÈS
 // dominant + download, puis « Détail de l'analyse » (stats, anomalies, normalisations,
@@ -26,13 +27,14 @@ export interface DataCleanData {
 }
 
 export default function DataCleanResult({ result }: { result: DataCleanData }) {
+  const t = useDemoUi().clean;
   const s = result.stats;
 
   const download = () => {
     const blob = new Blob([result.csv_nettoye], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url; a.download = "nettoye.csv";
+    a.href = url; a.download = t.fileName;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -42,24 +44,24 @@ export default function DataCleanResult({ result }: { result: DataCleanData }) {
       <style>{DATACLEAN_CSS}</style>
       <DataPreview apercu={result.apercu} />
       {result.apercu_doublons?.length ? (
-        <p className="wc-dc-dupes">+ <b>{s.duplicates_removed}</b> doublons supprimés</p>
+        <p className="wc-dc-dupes">+ <b>{s.duplicates_removed}</b> {t.dupesRemoved}</p>
       ) : null}
       <button type="button" className="wc-btn wc-primary wc-dc-dl" onClick={download}>
-        ⬇ Télécharger le CSV nettoyé
+        {t.download}
       </button>
 
-      <p className="wc-dc-detail-lbl">Détail de l&apos;analyse</p>
+      <p className="wc-dc-detail-lbl">{t.detail}</p>
 
       <div className="wc-dc-stats">
-        <span>lignes <b>{s.rows_in}</b> → <b>{s.rows_out}</b></span>
-        <span><b>{s.duplicates_removed}</b> doublons retirés</span>
-        <span><b>{s.issues_total}</b> anomalies</span>
-        <span>délimiteur <code>{s.delimiteur}</code></span>
+        <span>{t.rows} <b>{s.rows_in}</b> → <b>{s.rows_out}</b></span>
+        <span><b>{s.duplicates_removed}</b> {t.dupes}</span>
+        <span><b>{s.issues_total}</b> {t.issues}</span>
+        <span>{t.delimiter} <code>{s.delimiteur}</code></span>
       </div>
 
       {result.anomalies?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Anomalies</p>
+          <p className="wc-res-lbl">{t.anomalies}</p>
           <ul className="wc-dc-anos">
             {result.anomalies.map((a, i) => (
               <li key={`${a.type}${i}`}>
@@ -74,14 +76,14 @@ export default function DataCleanResult({ result }: { result: DataCleanData }) {
 
       {result.normalisations?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Normalisations appliquées</p>
+          <p className="wc-res-lbl">{t.normalizations}</p>
           <ul className="wc-dc-norms">{result.normalisations.map((n, i) => <li key={`${i}n`}>✓ {n}</li>)}</ul>
         </>
       )}
 
       {result.qualite_colonnes?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Qualité par colonne</p>
+          <p className="wc-res-lbl">{t.quality}</p>
           <div className="wc-dc-quality">
             {result.qualite_colonnes.map((c) => (
               <div key={c.colonne}>
@@ -89,7 +91,7 @@ export default function DataCleanResult({ result }: { result: DataCleanData }) {
                   <span>{c.colonne}</span>
                   <span className="wc-dc-col-type">{c.type} · {c.rempli_pct}%</span>
                 </div>
-                <div className="wc-dc-bar" role="img" aria-label={`${c.colonne} : rempli à ${c.rempli_pct}%`}>
+                <div className="wc-dc-bar" role="img" aria-label={t.filled(c.colonne, c.rempli_pct)}>
                   <div className="wc-dc-bar-fill" style={{ width: `${Math.max(0, Math.min(100, c.rempli_pct))}%` }} />
                 </div>
               </div>

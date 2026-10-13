@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { TOOL_META } from "@/lib/agent/tools-meta";
 import type { TraceItem } from "./TraceLive";
+import { useAgentUi } from "./AgentUiContext";
 
 const compact = (o: unknown) => { try { return JSON.stringify(o ?? {}); } catch { return "{}"; } };
 const pretty = (o: unknown) => { try { return JSON.stringify(o, null, 2); } catch { return "—"; } };
@@ -11,7 +11,8 @@ const pretty = (o: unknown) => { try { return JSON.stringify(o, null, 2); } catc
 // (fonction, description backend, args/résultat bruts, pseudo-code) se déplie au clic.
 export default function TraceStep({ item }: { item: TraceItem }) {
   const [open, setOpen] = useState(false);
-  const meta = item.fn ? TOOL_META[item.fn] : undefined;
+  const t = useAgentUi();
+  const meta = item.fn ? t.toolMeta[item.fn] : undefined;
 
   return (
     <div className={`ag-step t-${item.type}`}>
@@ -25,7 +26,7 @@ export default function TraceStep({ item }: { item: TraceItem }) {
           <>
             <button type="button" className="ag-step-more" aria-expanded={open} onClick={() => setOpen((o) => !o)}>
               <span className="ag-chev" aria-hidden>{open ? "▾" : "▸"}</span>
-              {open ? "Masquer le détail technique" : "Voir plus — détail technique"}
+              {open ? t.techHide : t.techShow}
             </button>
             <div className={`ag-tech-wrap${open ? " open" : ""}`}>
               <div className="ag-tech-inner">
@@ -36,13 +37,13 @@ export default function TraceStep({ item }: { item: TraceItem }) {
                   <pre className="ag-json">{pretty(item.rawArgs)}</pre>
                   {item.rawResult != null && (
                     <>
-                      <p className="ag-tech-lbl">données retournées</p>
+                      <p className="ag-tech-lbl">{t.techReturned}</p>
                       <pre className="ag-json">{pretty(item.rawResult)}</pre>
                     </>
                   )}
                   {meta?.pseudo?.length ? (
                     <>
-                      <p className="ag-tech-lbl">logique (extrait)</p>
+                      <p className="ag-tech-lbl">{t.techPseudo}</p>
                       <pre className="ag-pseudo">{meta.pseudo.join("\n")}</pre>
                     </>
                   ) : null}

@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { CALENDAR_URL } from "@/lib/site-config";
+import type { Locale } from "@/lib/i18n/config";
+import { localizedHref } from "@/lib/i18n/paths";
+import { demoPages } from "./demo-pages";
 
 // Bloc de fin de démo « Et chez vous ? » : réserver 15 min (Google Agenda) ou décrire
 // son besoin (/contact, sujet prérempli). Deux thèmes : clair (pages démo wc-*)
@@ -21,28 +24,29 @@ const CSS = `
 .cv-light .cv-alt { color:var(--wc-text); } .cv-dark .cv-alt { color:var(--color-text); }
 `;
 
-export function contactHref(sujet: string) {
-  return `/contact?sujet=${encodeURIComponent(sujet)}`;
+export function contactHref(sujet: string, locale: Locale = "fr") {
+  return localizedHref(`/contact?sujet=${encodeURIComponent(sujet)}`, locale);
 }
 
 export default function ChezVousCta({
-  demo, sujet, theme = "light", texte,
-}: { demo: string; sujet: string; theme?: "light" | "dark"; texte?: string }) {
+  demo, sujet, theme = "light", texte, locale = "fr",
+}: { demo: string; sujet: string; theme?: "light" | "dark"; texte?: string; locale?: Locale }) {
+  const t = demoPages(locale).cta;
   return (
-    <section className={`cv cv-${theme}`} aria-label="Et chez vous ?">
+    <section className={`cv cv-${theme}`} aria-label={t.aria}>
       <style>{CSS}</style>
-      <p className="cv-t">Et chez vous ?</p>
+      <p className="cv-t">{t.title}</p>
       <p className="cv-s">
-        {texte ?? "La même chose, avec vos documents, vos prix et vos outils. On regarde votre cas en 15 minutes, sans engagement."}
+        {texte ?? t.text}
       </p>
       <div className="cv-row">
         <a className="cv-a cv-main" href={CALENDAR_URL} target="_blank" rel="noopener noreferrer"
           data-ax-event="cta_rdv" data-ax-page={demo}>
-          Réserver 15 min
+          {t.book}
         </a>
-        <Link className="cv-a cv-alt" href={contactHref(sujet)}
+        <Link className="cv-a cv-alt" href={contactHref(sujet, locale)}
           data-ax-event="sortie" data-ax-cible="contact" data-ax-page={demo}>
-          Me décrire votre besoin
+          {t.describe}
         </Link>
       </div>
     </section>

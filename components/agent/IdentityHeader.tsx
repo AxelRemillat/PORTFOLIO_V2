@@ -1,12 +1,17 @@
+"use client";
+
 import type { Metier } from "@/lib/metiers";
+import { useAgentUi } from "./AgentUiContext";
 
 // En-tête d'identité : entreprise fictive du métier choisi + bandeau « catalogue
 // d'exemple », puis l'agent OSCAR (accent rose). SVG inline, aucune image externe.
 export default function IdentityHeader({ metier }: { metier: Metier }) {
+  const t = useAgentUi();
+  const b = t.botIntro;
   return (
     <div className="ag-id">
       <p className="ag-sample" role="note">
-        <b>Catalogue d&apos;exemple</b> — chez vous, l&apos;agent utilise votre catalogue et vos prix.
+        <b>{t.sampleCatalogue}</b>{t.sampleNote}
       </p>
       <div className="ag-brand-block">
         <div className="ag-brand">
@@ -29,10 +34,9 @@ export default function IdentityHeader({ metier }: { metier: Metier }) {
           </svg>
         </span>
         <div className="ag-bot-txt">
-          <p className="ag-bot-name">OSCAR <span className="ag-bot-tag">agent devis</span></p>
+          <p className="ag-bot-name">OSCAR <span className="ag-bot-tag">{t.botTag}</span></p>
           <p className="ag-bot-desc">
-            Il lit la demande du client, cherche dans le catalogue, puis prépare un <b>devis chiffré</b> (HT, TVA, TTC,
-            délai), les <b>questions à poser</b> s&apos;il manque une information, et l&apos;<b>email de réponse</b>.
+            {b.a}<b>{b.quote}</b>{b.b}<b>{b.questions}</b>{b.c}<b>{b.email}</b>{b.d}
           </p>
         </div>
       </div>

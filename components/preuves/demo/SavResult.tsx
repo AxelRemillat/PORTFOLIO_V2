@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SAV_CSS } from "./savCss";
+import { useDemoUi } from "./DemoUiContext";
 
 export interface SavSource { id?: string | number; question?: string | null }
 export interface SavExtrait { id?: string | number; question?: string | null; score?: number | string | null }
@@ -19,6 +20,8 @@ export interface SavData {
 // (trouve) vs « transfert conseiller » (anti-hallucination). Puis la réponse + Copier,
 // les sources citées (preuve d'ancrage) et les extraits consultés (repliable).
 export default function SavResult({ result }: { result: SavData }) {
+  const ui = useDemoUi();
+  const t = ui.sav;
   const [copied, setCopied] = useState(false);
   const ok = result.trouve === true;
   const reponse = result.reponse ?? "";
@@ -40,21 +43,21 @@ export default function SavResult({ result }: { result: SavData }) {
       <div className={`wc-sav-banner ${ok ? "is-ok" : "is-warn"}`} role="status">
         <span className="wc-sav-banner-ico" aria-hidden>{ok ? "✓" : "⚠"}</span>
         <span>{ok
-          ? "Réponse issue de la base de connaissance"
-          : "Non couvert par la base — transfert à un conseiller"}</span>
+          ? t.found
+          : t.notFound}</span>
       </div>
 
-      <p className="wc-res-lbl">Réponse</p>
+      <p className="wc-res-lbl">{t.answer}</p>
       <div className="wc-res-reply">
         {reponse && (
-          <button type="button" className="wc-res-copy" onClick={copy}>{copied ? "Copié ✓" : "Copier"}</button>
+          <button type="button" className="wc-res-copy" onClick={copy}>{copied ? ui.copied : ui.copy}</button>
         )}
         {reponse || "—"}
       </div>
 
       {sources.length > 0 && (
         <>
-          <p className="wc-res-lbl">Sources citées</p>
+          <p className="wc-res-lbl">{t.sources}</p>
           <div className="wc-sav-sources">
             {sources.map((s, i) => (
               <span key={`${s.id ?? i}`} className="wc-sav-chip">
@@ -67,7 +70,7 @@ export default function SavResult({ result }: { result: SavData }) {
 
       {extraits.length > 0 && (
         <details className="wc-sav-extraits">
-          <summary>Extraits consultés ({extraits.length})</summary>
+          <summary>{t.excerpts(extraits.length)}</summary>
           <ul>
             {extraits.map((e, i) => (
               <li key={`${e.id ?? i}`}>
