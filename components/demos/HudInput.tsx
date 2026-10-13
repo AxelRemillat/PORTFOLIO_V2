@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useSpeechToText } from "./useSpeechToText";
+import { useVegaUi } from "./vega-ui";
 
 interface Props {
   disabled: boolean;
@@ -39,10 +40,12 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
 
   // Dictée vocale : la transcription s'écrit en direct dans la barre (à la suite
   // de ce qui était déjà tapé), l'utilisateur valide lui-même à la fin.
+  const ui = useVegaUi();
   const dictBase = useRef("");
   const { supported, listening, toggle } = useSpeechToText({
     onText: (t) => setVal(dictBase.current ? `${dictBase.current} ${t}` : t),
     onEnd: () => ref.current?.focus(),
+    lang: ui.speechLang,
   });
   const onMic = () => { dictBase.current = val.trim(); toggle(); };
 
@@ -61,10 +64,10 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
         className="hud-field"
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        placeholder="Posez votre question…"
+        placeholder={ui.input.placeholder}
         maxLength={500}
         disabled={disabled}
-        aria-label="Posez votre question à VEGA"
+        aria-label={ui.input.aria}
       />
       {supported && (
         <button
@@ -72,14 +75,14 @@ export default function HudInput({ disabled, onSubmit, prefill }: Props) {
           className={`hud-glyph hud-mic${listening ? " hud-mic-on" : ""}`}
           onClick={onMic}
           disabled={disabled}
-          aria-label={listening ? "Arrêter la dictée" : "Dicter la question au micro"}
+          aria-label={listening ? ui.input.micStop : ui.input.micStart}
           aria-pressed={listening}
-          title={listening ? "J'écoute… (clic pour arrêter)" : "Commande vocale"}
+          title={listening ? ui.input.micListening : ui.input.micTitle}
         >
           <MicIcon />
         </button>
       )}
-      <button type="submit" className="hud-glyph" disabled={disabled || !val.trim()} aria-label="Envoyer" title="Envoyer">
+      <button type="submit" className="hud-glyph" disabled={disabled || !val.trim()} aria-label={ui.input.send} title={ui.input.send}>
         <SendIcon />
       </button>
     </form>

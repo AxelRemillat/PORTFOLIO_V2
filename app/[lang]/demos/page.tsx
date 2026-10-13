@@ -13,6 +13,7 @@ import MobileDrawer from "@/components/demos/MobileDrawer";
 import { useAXChat } from "@/components/demos/useAXChat";
 import { useConversationHistory } from "@/components/demos/useConversationHistory";
 import { useSpeechControls } from "@/components/demos/useSpeechControls";
+import { useVegaUi } from "@/components/demos/vega-ui";
 import type { Conversation } from "@/components/demos/useConversationHistory";
 
 // L'orbe R3F est chargé côté client uniquement (WebGL — pas de SSR).
@@ -30,6 +31,7 @@ export default function DemosPage() {
   const ax = useAXChat();
   const hist = useConversationHistory();
   const ctrl = useSpeechControls();
+  const ui = useVegaUi();
 
   // Suppression de la conversation en cours : retire de l'historique + reset chat (idle).
   const deleteConv = () => { if (hist.activeId) hist.remove(hist.activeId); ax.newConversation(); };
@@ -79,7 +81,7 @@ export default function DemosPage() {
       {/* Titre discret en haut (sous la navbar) */}
       <div style={{ position: "fixed", top: 76, width: "100%", textAlign: "center", zIndex: 20, pointerEvents: "none" }}>
         <p style={{ fontFamily: "monospace", fontSize: 11, color: "rgba(255,100,0,0.5)", letterSpacing: "0.2em" }}>
-          VEGA — IA DE PRÉSENTATION // AXEL REMILLAT
+          {ui.hudTitle}
         </p>
       </div>
 
@@ -106,7 +108,7 @@ export default function DemosPage() {
       {!isMobile && (
         <>
           <SidePanel
-            side="left" title="QUESTIONS" label="QUESTIONS" icon={QIcon} reduced={reduced} intro
+            side="left" title={ui.panels.questions} label={ui.panels.questions} icon={QIcon} reduced={reduced} intro
             open={openSide === "left"}
             onOpenChange={(v) => setOpenSide(v ? "left" : "none")}
           >
@@ -114,7 +116,7 @@ export default function DemosPage() {
           </SidePanel>
 
           <SidePanel
-            side="right" title="HISTORIQUE" label="HISTORIQUE" icon={HIcon} reduced={reduced} intro
+            side="right" title={ui.panels.history} label={ui.panels.history} icon={HIcon} reduced={reduced} intro
             open={openSide === "right"}
             onOpenChange={(v) => setOpenSide(v ? "right" : "none")}
           >
