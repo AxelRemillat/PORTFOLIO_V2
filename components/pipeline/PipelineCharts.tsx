@@ -2,6 +2,8 @@
 
 import { importance } from "./model";
 import type { Scored } from "./pipeline-steps";
+import { pipelineLabels } from "./labels";
+import { useLocale } from "@/lib/i18n/client";
 
 // Deux graphes SVG légers (inline, zéro dépendance) : distribution des scores
 // (histogramme 10 classes) + importance globale des features (barres).
@@ -12,12 +14,13 @@ export default function PipelineCharts({ rows }: { rows: Scored[] }) {
   const W = 264, H = 118, pad = 6;
   const bw = (W - pad * 2) / 10;
   const imp = importance();
+  const L = pipelineLabels(useLocale());
 
   return (
     <div className="pl-charts">
       <div className="pl-chart">
-        <p className="pl-chart-t">Distribution des scores</p>
-        <svg viewBox={`0 0 ${W} ${H + 20}`} width="100%" role="img" aria-label="Histogramme des scores de conversion">
+        <p className="pl-chart-t">{L.charts.dist}</p>
+        <svg viewBox={`0 0 ${W} ${H + 20}`} width="100%" role="img" aria-label={L.charts.distAria}>
           {bins.map((c, i) => {
             const h = (c / maxBin) * H;
             return (
@@ -35,11 +38,11 @@ export default function PipelineCharts({ rows }: { rows: Scored[] }) {
       </div>
 
       <div className="pl-chart">
-        <p className="pl-chart-t">Importance des features (|poids|)</p>
+        <p className="pl-chart-t">{L.charts.importance}</p>
         {imp.map((f) => (
-          <div className="pl-imp-row" key={f.label}>
+          <div className="pl-imp-row" key={f.key}>
             <div>
-              <p className="pl-imp-lbl">{f.label}</p>
+              <p className="pl-imp-lbl">{L.features[f.key] ?? f.label}</p>
               <div className="pl-imp-track"><div className="pl-imp-bar" style={{ width: `${Math.round(f.v * 100)}%` }} /></div>
             </div>
             <span className="pl-imp-val">{Math.round(f.v * 100)}</span>

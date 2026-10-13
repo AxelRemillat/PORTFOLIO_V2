@@ -12,6 +12,23 @@ export interface OpsMetric {
   detail: string;
 }
 
+/** Textes de la page /ops (jumeau anglais : ops-data.en.ts). */
+export interface OpsText {
+  title: string;
+  description: string;
+  kicker: string;
+  intro: string;
+  wiring: string;
+}
+
+export const OPS_TEXT: OpsText = {
+  title: "Ops — Axel Remillat | Salle des machines",
+  description: "Le monitoring de ce site, en public : uptime, latence VEGA, requêtes et coût par réponse.",
+  kicker: "OPS // SALLE DES MACHINES",
+  intro: "Le monitoring de ce site, en public. Parce qu'un ingénieur qui vous vend du monitoring doit montrer le sien.",
+  wiring: "câblage en cours",
+};
+
 export const OPS_METRICS: OpsMetric[] = [
   {
     id: "uptime",
