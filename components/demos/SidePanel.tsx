@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import type { CSSProperties, ReactNode } from "react";
 import SidePanelHandle from "./SidePanelHandle";
 import { usePanelDrag } from "./usePanelDrag";
+import { useVegaUi } from "./vega-ui";
 
 // ── Constantes réglables ────────────────────────────────────────────────────
 export const PANEL_W = 320; // largeur du panneau (px)
@@ -24,6 +25,7 @@ interface Props {
 }
 
 export default function SidePanel({ side, open, onOpenChange, title, label, icon, children, reduced, intro }: Props) {
+  const ui = useVegaUi();
   const isLeft = side === "left";
   const panelRef = useRef<HTMLElement>(null);
 
@@ -89,7 +91,7 @@ export default function SidePanel({ side, open, onOpenChange, title, label, icon
         transMs={TRANS_MS}
         onPointerDown={onPointerDown}
         onToggleKey={() => onOpenChange(!open)}
-        ariaLabel={`${open ? "Fermer" : "Ouvrir"} ${title}`}
+        ariaLabel={`${open ? ui.panels.close : ui.panels.open} ${title}`}
       />
     </>
   );

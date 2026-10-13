@@ -4,6 +4,8 @@ import { setSpeechAudioEl } from "./speechAudioBus";
 import { playAudioSynced, speakSynced, revealByTimer } from "./revealSync";
 import { getRate, getPaused, setPaused as setCtrlPaused } from "./speechControl";
 import { hasIntroPlayed, markIntroPlayed } from "./useIntroOnce";
+import { useLocale } from "@/lib/i18n/client";
+import { vegaUi } from "./vega-ui";
 
 type OrbState = "idle" | "thinking" | "speaking";
 interface Msg { role: "user" | "assistant"; content: string; }
@@ -13,16 +15,20 @@ interface Msg { role: "user" | "assistant"; content: string; }
 // pour l'historique latéral ; seul l'envoi à l'API est plafonné.
 const MEMORY_MAX_MSGS = 12;
 
-const GREETING =
-  "Bonjour, je suis VEGA, l'assistante d'Axel Remillat. Dites-moi votre métier : je vous explique ce qui peut être automatisé chez vous, comment ça se passe, et à partir de combien.";
 
 // ── Voix de REPLI (navigateur) si l'API OpenAI TTS échoue. Pitch naturel (1.0)
 //    pour éviter l'effet robot. Priorité aux voix locales fiables. ──
-function pickVoice(): SpeechSynthesisVoice | null {
+// Page anglaise (/en/demos) : voix anglaise d'abord, le français en dernier recours.
+function pickVoice(en = false): SpeechSynthesisVoice | null {
   if (typeof window === "undefined") return null;
   const vv = window.speechSynthesis.getVoices();
   if (!vv.length) return null;
-  const tests: Array<(v: SpeechSynthesisVoice) => boolean> = [
+  const tests: Array<(v: SpeechSynthesisVoice) => boolean> = en ? [
+    v => /^en[-_]US/i.test(v.lang) && /female|samantha|aria|jenny|zira|google/i.test(v.name),
+    v => /^en[-_]US/i.test(v.lang),
+    v => /^en/i.test(v.lang),
+    v => v.localService,
+  ] : [
     v => /fr[-_]/i.test(v.lang) && /female|hortense|julie|caroline|amelie|denise|google/i.test(v.name),
     v => /fr[-_]/i.test(v.lang),
     v => /^en/i.test(v.lang),
@@ -36,6 +42,10 @@ function pickVoice(): SpeechSynthesisVoice | null {
 }
 
 export function useAXChat() {
+  // Langue de la page : réponses, voix, messages et salutation de VEGA (portfolio bilingue).
+  const locale = useLocale();
+  const ui = vegaUi(locale);
+  const en = locale === "en";
   const [orbState, setOrbState]       = useState<OrbState>("idle");
   const [displayText, setDisplayText] = useState("");
   const [fullText, setFullText]       = useState("");        // réponse complète (pour le fit-text)
@@ -93,7 +103,7 @@ export function useAXChat() {
 
   // Charger la voix de repli (asynchrone côté navigateur)
   useEffect(() => {
-    const load = () => { voiceRef.current = pickVoice(); };
+    const load = () => { voiceRef.current = pickVoice(en); };
     load();
     window.speechSynthesis?.addEventListener("voiceschanged", load);
     return () => window.speechSynthesis?.removeEventListener("voiceschanged", load);
@@ -120,10 +130,10 @@ export function useAXChat() {
       onFirstSpeak();
       return revealByTimer(text, emit, cancelled, getPaused);
     }
-    if (!voiceRef.current) voiceRef.current = pickVoice();
+    if (!voiceRef.current) voiceRef.current = pickVoice(en);
     const u = new SpeechSynthesisUtterance(text);
     if (voiceRef.current) u.voice = voiceRef.current;
-    u.lang = voiceRef.current?.lang ?? "fr-FR";
+    u.lang = voiceRef.current?.lang ?? ui.speechLang;
     u.rate = getRate(); u.pitch = 1.0; u.volume = 1.0; // vitesse courante, pitch naturel
     return speakSynced(u, text, emit, onFirstSpeak, cancelled, getPaused);
   }
@@ -155,7 +165,7 @@ export function useAXChat() {
         const res = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: clean }),
+          body: JSON.stringify({ text: clean, locale }),
         });
         if (res.ok) blob = await res.blob();
       } catch { /* réseau KO → repli plus bas */ }
@@ -233,7 +243,7 @@ export function useAXChat() {
       if (greetedRef.current) return;
       greetedRef.current = true;
       markIntroPlayed();                 // marque le flag de session
-      sayLine(GREETING);
+      sayLine(ui.greeting);
       ttsChain.current.then(() => setIntroDone(true)); // intro terminée
     };
     const cleanup = () => {
@@ -267,11 +277,11 @@ export function useAXChat() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         // Mémoire multi-tours : on envoie les N derniers messages (contexte de suivi).
-        body: JSON.stringify({ messages: msgs.slice(-MEMORY_MAX_MSGS) }),
+        body: JSON.stringify({ messages: msgs.slice(-MEMORY_MAX_MSGS), locale }),
       });
       if (!res.ok) {
         // Blocage gracieux (rate-limit / pause) : on affiche le message renvoyé.
-        let msg = "VEGA est momentanément indisponible. Réessaie.";
+        let msg = ui.unavailable;
         try { const j = await res.json(); if (j?.message) msg = j.message; } catch { /* pas de JSON */ }
         speakKind.current = "none";
         setDisplayText(msg); setFullText(msg); setShowText(true); setOrbState("idle"); setIsStreaming(false);
@@ -312,7 +322,7 @@ export function useAXChat() {
       history.current = [...msgs, { role: "assistant", content: full }];
       setConversation(history.current); // expose les tours → persistance (historique latéral)
     } catch {
-      const errMsg = "Erreur — VEGA est momentanément indisponible. Réessaie.";
+      const errMsg = ui.error;
       speakKind.current = "none";
       setDisplayText(errMsg);
       setFullText(errMsg);

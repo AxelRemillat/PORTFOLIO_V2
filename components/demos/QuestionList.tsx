@@ -1,7 +1,8 @@
 "use client";
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { QUESTION_CATEGORIES } from "./questionsData";
+import { useLocale } from "@/lib/i18n/client";
+import { vegaQuestions } from "./vega-ui";
 
 // Contenu du menu de questions : accordéon de catégories (repliées par défaut).
 // Réutilisé tel quel dans le panneau gauche (desktop) et le drawer (mobile).
@@ -40,6 +41,7 @@ const qBtn: CSSProperties = {
 };
 
 export default function QuestionList({ onPick }: Props) {
+  const categories = vegaQuestions(useLocale());
   const [openId, setOpenId] = useState<string | null>(null); // toutes repliées par défaut
 
   return (
@@ -48,7 +50,7 @@ export default function QuestionList({ onPick }: Props) {
         .ax-qitem:hover { color: #ff8a3c; text-shadow: 0 0 12px rgba(255,120,40,0.5); }
         .ax-qcat:hover  { color: #ffffff; }
       `}</style>
-      {QUESTION_CATEGORIES.map((cat) => {
+      {categories.map((cat) => {
         const expanded = openId === cat.id;
         return (
           <div key={cat.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>

@@ -1,5 +1,7 @@
 "use client";
 
+import { useVegaUi } from "./vega-ui";
+
 interface Props {
   paused: boolean;
   speed: number;
@@ -22,6 +24,7 @@ const TrashIcon = () => (
 
 // Cluster affiché UNIQUEMENT pendant "speaking" (monté/démonté par FloatingInput).
 export default function SpeakingControls({ paused, speed, onTogglePause, onCycleSpeed, onDelete }: Props) {
+  const t = useVegaUi().controls;
   return (
     <div style={{ display: "flex", gap: 18, alignItems: "center", justifyContent: "center" }}>
       {/* Pause / Reprise — rond orange, icône blanche */}
@@ -29,9 +32,9 @@ export default function SpeakingControls({ paused, speed, onTogglePause, onCycle
         type="button"
         onClick={onTogglePause}
         className="vega-ctrl vega-ctrl-play"
-        aria-label={paused ? "Reprendre" : "Mettre en pause"}
+        aria-label={paused ? t.resume : t.pause}
         aria-pressed={paused}
-        title={paused ? "Reprendre" : "Pause"}
+        title={paused ? t.resume : t.pauseTitle}
       >
         {paused ? <PlayIcon /> : <PauseIcon />}
       </button>
@@ -41,8 +44,8 @@ export default function SpeakingControls({ paused, speed, onTogglePause, onCycle
         type="button"
         onClick={onDelete}
         className="vega-ctrl vega-ctrl-del"
-        aria-label="Supprimer la conversation en cours"
-        title="Supprimer"
+        aria-label={t.deleteAria}
+        title={t.deleteTitle}
       >
         <TrashIcon />
       </button>
@@ -52,8 +55,8 @@ export default function SpeakingControls({ paused, speed, onTogglePause, onCycle
         type="button"
         onClick={onCycleSpeed}
         className="vega-ctrl vega-ctrl-speed"
-        aria-label={`Vitesse de lecture : ${speed}×. Cliquer pour changer.`}
-        title="Vitesse de lecture"
+        aria-label={t.speedAria(speed)}
+        title={t.speedTitle}
       >
         {speed}×
       </button>

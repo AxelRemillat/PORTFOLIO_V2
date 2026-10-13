@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
+import { useVegaUi } from "./vega-ui";
 
 // ── Constantes réglables ──────────────────────────────────────────────────
 // Juste sous la navbar (h=64px), aligné à droite sur le bord du contenu de la
@@ -30,6 +31,7 @@ function buildPoints(amp: number, phase: number): string {
 }
 
 export default function SoundToggle({ isOn, onToggle, speaking }: Props) {
+  const t = useVegaUi().sound;
   const lineRef  = useRef<SVGPolylineElement>(null);
   const ampRef   = useRef(isOn ? WAVE_AMP : 0); // amplitude courante (persiste entre renders)
   const phaseRef = useRef(0);
@@ -60,9 +62,9 @@ export default function SoundToggle({ isOn, onToggle, speaking }: Props) {
       type="button"
       onClick={onToggle}
       className={`vega-sound${isOn ? "" : " muted"}${speaking && isOn ? " speaking" : ""}`}
-      aria-label={isOn ? "Son activé — couper le son de VEGA" : "Son coupé — activer le son de VEGA"}
+      aria-label={isOn ? t.onAria : t.offAria}
       aria-pressed={isOn}
-      title={isOn ? "Couper le son" : "Activer le son"}
+      title={isOn ? t.muteTitle : t.unmuteTitle}
       style={{
         position: "fixed", top: POS.top, right: POS.right, zIndex: 40,
         width: BTN_SIZE, height: BTN_SIZE,

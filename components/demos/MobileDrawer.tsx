@@ -6,6 +6,7 @@ import { usePanelDrag } from "./usePanelDrag";
 import QuestionList from "./QuestionList";
 import HistoryContent from "./HistoryContent";
 import type { Conversation } from "./useConversationHistory";
+import { useVegaUi } from "./vega-ui";
 
 // Mobile : les deux poignées (gauche=Questions, droite=Historique) restent
 // visibles ; clic OU drag vers le centre ouvre un tiroir plein écran à 2 onglets.
@@ -36,6 +37,7 @@ const tabBtn = (active: boolean): CSSProperties => ({
 
 export default function MobileDrawer(props: Props) {
   const { onPick, reduced, intro } = props;
+  const ui = useVegaUi();
   const [tab, setTab] = useState<"q" | "h" | null>(null);
 
   const leftDrag = usePanelDrag({ side: "left", width: 220, open: false, setOpen: (v) => v && setTab("q") });
@@ -52,15 +54,15 @@ export default function MobileDrawer(props: Props) {
 
   return (
     <>
-      <SidePanelHandle side="left" label="QUESTIONS" icon={QIcon} open={tab === "q"} offset={6} frac={0}
+      <SidePanelHandle side="left" label={ui.panels.questions} icon={QIcon} open={tab === "q"} offset={6} frac={0}
         dragging={leftDrag.dragFrac !== null} reduced={reduced} intro={intro} transMs={350}
-        onPointerDown={leftDrag.onPointerDown} onToggleKey={() => setTab("q")} ariaLabel="Ouvrir les questions" />
-      <SidePanelHandle side="right" label="HISTORIQUE" icon={HIcon} open={tab === "h"} offset={6} frac={0}
+        onPointerDown={leftDrag.onPointerDown} onToggleKey={() => setTab("q")} ariaLabel={ui.panels.openQuestions} />
+      <SidePanelHandle side="right" label={ui.panels.history} icon={HIcon} open={tab === "h"} offset={6} frac={0}
         dragging={rightDrag.dragFrac !== null} reduced={reduced} intro={intro} transMs={350}
-        onPointerDown={rightDrag.onPointerDown} onToggleKey={() => setTab("h")} ariaLabel="Ouvrir l'historique" />
+        onPointerDown={rightDrag.onPointerDown} onToggleKey={() => setTab("h")} ariaLabel={ui.panels.openHistory} />
 
       <div
-        role="dialog" aria-label="Menu VEGA" aria-hidden={!tab}
+        role="dialog" aria-label={ui.drawer.menuAria} aria-hidden={!tab}
         style={{
           position: "fixed", inset: 0, zIndex: 60, display: "flex", flexDirection: "column",
           background: "rgba(8,8,16,0.97)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)",
@@ -69,9 +71,9 @@ export default function MobileDrawer(props: Props) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", borderBottom: "1px solid rgba(255,100,0,0.2)", paddingTop: 56 }}>
-          <button type="button" style={tabBtn(tab === "q")} onClick={() => setTab("q")} aria-pressed={tab === "q"}>Questions</button>
-          <button type="button" style={tabBtn(tab === "h")} onClick={() => setTab("h")} aria-pressed={tab === "h"}>Historique</button>
-          <button type="button" onClick={() => setTab(null)} aria-label="Fermer" style={{ width: 48, padding: 14, background: "transparent", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 18 }}>✕</button>
+          <button type="button" style={tabBtn(tab === "q")} onClick={() => setTab("q")} aria-pressed={tab === "q"}>{ui.drawer.questions}</button>
+          <button type="button" style={tabBtn(tab === "h")} onClick={() => setTab("h")} aria-pressed={tab === "h"}>{ui.drawer.history}</button>
+          <button type="button" onClick={() => setTab(null)} aria-label={ui.drawer.close} style={{ width: 48, padding: 14, background: "transparent", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 18 }}>✕</button>
         </div>
         <div style={{ flex: 1, overflowY: "auto" }}>
           {tab === "h" ? (
