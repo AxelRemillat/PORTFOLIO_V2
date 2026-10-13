@@ -2,10 +2,15 @@
 
 import Link from "next/link";
 import RotatingWord from "./RotatingWord";
+import { localizedHref } from "@/lib/i18n/paths";
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 
 // Hero plein écran. Animations au chargement (CSS keyframes, fill-mode both) :
 // labels fade-in, nom en clip-reveal ligne par ligne, sous-titres + CTA fade-in.
 export default function HeroSection() {
+  const locale = useLocale();
+  const c = parcoursCopy(locale).hero;
   const hudLabel: React.CSSProperties = {
     position: "absolute",
     top: "9vh",
@@ -33,7 +38,7 @@ export default function HeroSection() {
       </p>
       {/* Label HUD symétrique, même famille visuelle que /demos */}
       <p className="parcours-fade" style={{ ...hudLabel, right: "6vw", color: "rgba(255,100,0,0.5)", animationDelay: "0.2s" }}>
-        PARCOURS&nbsp;//&nbsp;v2026.07
+        {c.hudRight}
       </p>
 
       <h1
@@ -66,21 +71,21 @@ export default function HeroSection() {
           animationDelay: "0.8s",
         }}
       >
-        Je construis des <RotatingWord />
+        {c.build} <RotatingWord />
       </p>
       <p
         className="parcours-fade"
         style={{ marginTop: "0.6rem", fontSize: "clamp(0.85rem, 1.8vw, 1rem)", color: "var(--color-muted)", animationDelay: "0.9s" }}
       >
-        Ingénieur IA &amp; Data · ESME Paris · Alternant en startup EdTech (Station F)
+        {c.subtitle}
       </p>
 
       <div
         className="parcours-fade"
         style={{ marginTop: "2.25rem", display: "flex", gap: "1rem", flexWrap: "wrap", animationDelay: "1.05s" }}
       >
-        <Link href="/projets" className="parcours-cta">Voir les preuves →</Link>
-        <Link href="/demos" className="parcours-cta-outline">Poser une question à VEGA</Link>
+        <Link href={localizedHref("/projets", locale)} className="parcours-cta">{c.proof}</Link>
+        <Link href={localizedHref("/demos", locale)} className="parcours-cta-outline">{c.vega}</Link>
       </div>
 
       {/* Indicateur de scroll — pointer-events none pour ne jamais bloquer la nav */}

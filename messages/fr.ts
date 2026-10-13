@@ -27,6 +27,11 @@ export const fr = {
   },
   footer: {
     legal: "Mentions légales",
+    offers: "Offres",
+    projects: "Projets",
+    journey: "Parcours",
+    contact: "Contact",
+    signature: "Ingénieur IA · Mise en production",
   },
   switcher: {
     label: "Langue du site",

@@ -3,11 +3,14 @@
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 import SectionLabel from "./SectionLabel";
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 
 // Intro personnelle : photo circulaire (même traitement que /contact) + texte.
 // Desktop : photo à gauche, texte à droite. Mobile : photo au-dessus, centrée
 // (flexWrap + justifyContent center).
 export default function IntroSection() {
+  const c = parcoursCopy(useLocale()).intro;
   return (
     <section style={{ padding: "15vh 6vw 10vh", maxWidth: "1100px", margin: "0 auto" }}>
       <hr
@@ -20,7 +23,7 @@ export default function IntroSection() {
       />
 
       <ScrollReveal>
-        <SectionLabel>01 // QUI SUIS-JE</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
 
         <div
           style={{
@@ -58,13 +61,7 @@ export default function IntroSection() {
               color: "var(--color-text)",
             }}
           >
-            Ingénieur Data &amp; IA en formation à l&apos;ESME Paris, profil hybride
-            tech × produit × business. Cofondateur de RISE, startup EdTech primée
-            3 fois et incubée. Alternant Ingénieur IA Agentic dans une startup
-            EdTech à Station F. Je construis des produits IA complets — de l&apos;idée au
-            déploiement — et tout ce que je fais se teste en vrai sur ce site.
-            Aujourd&apos;hui, j&apos;accompagne aussi PME et startups en freelance :
-            mise en production et fiabilisation de systèmes IA.
+            {c.text}
           </p>
         </div>
       </ScrollReveal>

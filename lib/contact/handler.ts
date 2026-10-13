@@ -1,4 +1,12 @@
-import { buildContactMail, CONTACT_MAX_BODY_BYTES, validateContact, type ContactMail, type ContactData } from "./schema";
+import {
+  buildContactMail,
+  CONTACT_ERRORS,
+  CONTACT_MAX_BODY_BYTES,
+  contactLocale,
+  validateContact,
+  type ContactMail,
+  type ContactData,
+} from "./schema";
 
 // Logique de la route /api/contact, sans dépendance à Next ni à Resend : la
 // route branche les vrais services, le test local branche des doubles.
@@ -37,14 +45,16 @@ export interface ContactResponse {
 const fail = (status: number, error: string): ContactResponse => ({ status, body: { error } });
 
 export async function handleContact(request: ContactRequest, deps: ContactDeps): Promise<ContactResponse> {
-  if (Buffer.byteLength(request.rawBody, "utf8") > CONTACT_MAX_BODY_BYTES) return fail(413, "Message trop volumineux.");
+  // Corps trop gros ou illisible : la langue n'est pas encore connue, réponse en français.
+  if (Buffer.byteLength(request.rawBody, "utf8") > CONTACT_MAX_BODY_BYTES) return fail(413, CONTACT_ERRORS.fr.tooBig);
 
   let json: unknown;
   try {
     json = JSON.parse(request.rawBody);
   } catch {
-    return fail(400, "Requête invalide.");
+    return fail(400, CONTACT_ERRORS.fr.invalid);
   }
+  const t = CONTACT_ERRORS[contactLocale((json as { locale?: unknown } | null)?.locale)];
 
   const checked = validateContact(json);
   // Robot pris au piège : réponse « ok » identique, rien n'est envoyé ni compté.
@@ -52,10 +62,10 @@ export async function handleContact(request: ContactRequest, deps: ContactDeps):
   if (!checked.ok) return fail(400, checked.error);
 
   const limit = await deps.rateLimit(request.ip, "contact");
-  if (!limit.ok) return fail(429, "Trop de messages envoyés. Réessaie dans quelques minutes, ou écris-moi directement par email.");
+  if (!limit.ok) return fail(429, t.rate);
 
   const outcome = await sendWithFallback(checked.data, deps.send);
-  if (!outcome.ok) return fail(502, "L'envoi a échoué. Réessaie ou écris-moi directement par email.");
+  if (!outcome.ok) return fail(502, t.sendFailed);
   return { status: 200, body: { success: true } };
 }
 

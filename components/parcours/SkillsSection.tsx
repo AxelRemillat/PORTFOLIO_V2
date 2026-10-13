@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { EDGES, NODES, W, H } from "./skills-graph-data";
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 import NodePanel from "./NodePanel";
 import SkillsMarquee from "./SkillsMarquee";
 import SectionLabel from "./SectionLabel";
@@ -15,6 +17,7 @@ const ZOOM_SCALE = 1.8;                                  // facteur de zoom au f
 const ZOOM_TRANSITION = "transform 0.4s cubic-bezier(0.22,1,0.36,1)"; // durée/easing
 
 export default function SkillsSection() {
+  const c = parcoursCopy(useLocale()).skills;
   const [hovered, setHovered] = useState<string | null>(null);
   const [selected, setSelected] = useState<string | null>(null); // = focusedNodeId
   const [visible, setVisible] = useState(false);
@@ -72,12 +75,12 @@ export default function SkillsSection() {
 
       {/* Constellation des compétences */}
       <div style={{ position: "relative", maxWidth: "1600px", margin: "10vh auto 0", padding: "0 4vw" }}>
-        <SectionLabel>02 // COMPÉTENCES</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
         <h2 style={{ fontSize: "2rem", fontWeight: 700, color: "var(--color-text)", marginBottom: "0.75rem" }}>
-          Compétences
+          {c.title}
         </h2>
         <p style={{ fontSize: "0.9rem", color: "#7a7a92", marginBottom: "2rem", fontFamily: "var(--font-mono)" }}>
-          Cliquez sur un outil pour zoomer — ou attrapez-le et tirez.
+          {c.hint}
         </p>
 
         <svg

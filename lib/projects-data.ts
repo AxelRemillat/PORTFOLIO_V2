@@ -2,6 +2,9 @@
 // Repurposé depuis l'ancien projects-data : ne reste que ce qui tourne vraiment
 // (VEGA en prod) ou se déploie en ce moment (N8N, infra self-hosted).
 
+import type { Locale } from "@/lib/i18n/config";
+import { projectsEn } from "./projects-data.en";
+
 export type PreuveModel = "robot" | "drone" | "satellite";
 export type PreuveState = "live" | "wip" | "building";
 
@@ -147,6 +150,9 @@ export const projects: Project[] = [
   },
 ];
 
-export function getProjectBySlug(slug: string): Project | undefined {
-  return projects.find((p) => p.slug === slug);
+/** Projets dans la langue de la page (jumeau anglais : projects-data.en.ts, mêmes slugs). */
+export const projectsFor = (locale: Locale): Project[] => (locale === "en" ? projectsEn : projects);
+
+export function getProjectBySlug(slug: string, locale: Locale = "fr"): Project | undefined {
+  return projectsFor(locale).find((p) => p.slug === slug);
 }

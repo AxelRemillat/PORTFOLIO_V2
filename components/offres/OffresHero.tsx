@@ -2,13 +2,16 @@
 
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 import SectionLabel from "@/components/parcours/SectionLabel";
+import { useLocale } from "@/lib/i18n/client";
+import { offresCopy } from "./offres-copy";
 
 // Hero court de /offres : label HUD, titre, sous-ligne. Reveal au scroll.
 export default function OffresHero() {
+  const c = offresCopy(useLocale()).hero;
   return (
     <section style={{ padding: "10vh 6vw 6vh", maxWidth: "900px", margin: "0 auto", textAlign: "center" }}>
       <ScrollReveal>
-        <SectionLabel>01 // OFFRES</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
         <h1
           style={{
             fontSize: "clamp(2.25rem, 6vw, 4rem)",
@@ -18,7 +21,7 @@ export default function OffresHero() {
             margin: "0 0 1.25rem",
           }}
         >
-          Des offres claires, des résultats mesurables.
+          {c.title}
         </h1>
         <p
           style={{
@@ -29,7 +32,7 @@ export default function OffresHero() {
             lineHeight: 1.6,
           }}
         >
-          Pas de jargon, pas de surprise : un périmètre, un prix, un livrable.
+          {c.lead}
         </p>
       </ScrollReveal>
     </section>
