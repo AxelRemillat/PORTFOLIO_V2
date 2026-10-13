@@ -1,0 +1,52 @@
+import type { Metier } from "./types";
+
+// Construction / interior renovation. Sample prices excl. VAT, standard materials included.
+export const BTP: Metier = {
+  id: "btp",
+  label: "Construction / renovation",
+  entreprise: "Brickline Renovations",
+  activite: "Interior renovation: partitions, painting, flooring, electrical work, bathrooms.",
+  tva: 0.1,
+  remises: [],
+  minimum_ht: 500,
+  livraison: { libelle: "Travel and site setup", frais: 0, franco: null, delai_jours: 10 },
+  catalogue: [
+    { ref: "DEM-CLOISON", nom: "Demolition of a non-load-bearing partition wall", categorie: "demolition", description: "Removal and bagging, haul-away not included.", unite: "m²", prix_unitaire: 35, delai_jours: 0 },
+    { ref: "PLACO-CLOISON", nom: "Insulated plasterboard partition (BA13 drywall)", categorie: "drywall partitions", description: "Metal frame, mineral wool, taped and finished.", unite: "m²", prix_unitaire: 58, delai_jours: 0 },
+    { ref: "PLACO-DOUBLAGE", nom: "Insulated wall lining", categorie: "drywall insulation", description: "Bonded lining board, 10 cm insulation.", unite: "m²", prix_unitaire: 49, delai_jours: 0 },
+    { ref: "PEINT-MUR", nom: "Wall painting, 2 coats", categorie: "painting", description: "Prep work, primer and 2 coats of matte paint.", unite: "m²", prix_unitaire: 24, delai_jours: 0 },
+    { ref: "PEINT-PLAF", nom: "Ceiling painting, 2 coats", categorie: "painting", description: "Prep work, 2 coats of matte white.", unite: "m²", prix_unitaire: 28, delai_jours: 0 },
+    { ref: "SOL-CARRELAGE", nom: "Floor tiling", categorie: "flooring", description: "Standard 60×60 tiles supplied, adhesive and grout.", unite: "m²", prix_unitaire: 75, delai_jours: 5 },
+    { ref: "SOL-PARQUET", nom: "Laminate flooring, installed", categorie: "flooring", description: "8 mm laminate, underlay, baseboards.", unite: "m²", prix_unitaire: 42, delai_jours: 5 },
+    { ref: "SOL-RAGREAGE", nom: "Floor leveling", categorie: "flooring", description: "Self-leveling screed before laying the floor covering.", unite: "m²", prix_unitaire: 18, delai_jours: 0 },
+    { ref: "ELEC-PRISE", nom: "New electrical outlet", categorie: "electrical", description: "Wall chasing, conduit, 16 A outlet, connection.", unite: "unit", prix_unitaire: 85, delai_jours: 0 },
+    { ref: "ELEC-TABLEAU", nom: "Electrical panel upgrade to code", categorie: "electrical", description: "New panel, RCD breakers, compliance certificate.", unite: "flat rate", prix_unitaire: 1250, delai_jours: 5 },
+    { ref: "SDB-COMPLETE", nom: "Full bathroom renovation (≤ 5 m²)", categorie: "plumbing bathroom", description: "Strip-out, walk-in shower, vanity unit, wall tiles.", unite: "flat rate", prix_unitaire: 6900, delai_jours: 10 },
+    { ref: "WC-SUSPENDU", nom: "Replacement with a wall-hung toilet", categorie: "plumbing", description: "Concealed frame, toilet bowl, boxing-in.", unite: "unit", prix_unitaire: 890, delai_jours: 5 },
+    { ref: "ISO-COMBLES", nom: "Attic insulation", categorie: "insulation", description: "30 cm blown-in wool.", unite: "m²", prix_unitaire: 32, delai_jours: 5 },
+    { ref: "PROTECTION", nom: "Site protection and cleanup", categorie: "worksite", description: "Drop cloths, floor protection, final cleaning.", unite: "flat rate", prix_unitaire: 250, delai_jours: 0 },
+    { ref: "EVAC-GRAVATS", nom: "Rubble removal", categorie: "worksite", description: "Dumpster and disposal at a landfill.", unite: "flat rate", prix_unitaire: 390, delai_jours: 0 },
+    { ref: "MO-JOUR", nom: "Skilled tradesman, per day", categorie: "labor", description: "Miscellaneous work billed by the day.", unite: "day", prix_unitaire: 380, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "60 m² apartment", texte: "Renovating a 60 m² apartment in Lille: wall painting (150 m²), ceiling painting (60 m²) and laminate flooring in the bedrooms (25 m²). Can you send me a quote?" },
+    { label: "Partition + outlets", texte: "I want to split an office in two: a 12 m² plasterboard partition with 2 electrical outlets. Tight budget." },
+    { label: "Off-catalog", texte: "A full bathroom renovation plus a heat pump installation in a house in Bordeaux. Is that doable?" },
+  ],
+  politique: {
+    garantie: "10-year structural liability insurance plus a 1-year workmanship warranty. Proof of insurance comes with every quote.",
+    paiement: "30% deposit at the start, progress payments as work advances, balance at final handover.",
+    delais: "Work starts within 2 to 3 weeks depending on our schedule. Duration depends on the scope of work.",
+    tva: "10% VAT for renovating a home more than 2 years old, 20% for business premises or new builds.",
+    visite: "A free site visit confirms the surfaces and the condition of walls and floors before the final quote.",
+  },
+  sav: [
+    { id: "B1", question: "A crack appeared after the work", reponse: "During the 1-year workmanship warranty period, we fix it free of charge. Send us a photo and a tradesman will come by within 15 days." },
+    { id: "B2", question: "Lead time before work starts", reponse: "Allow 2 to 3 weeks after the quote is signed, depending on our crews' schedule." },
+    { id: "B3", question: "Insurance and 10-year structural liability", reponse: "We carry 10-year structural liability insurance. The certificate is attached to every quote." },
+    { id: "B4", question: "Site visit before the quote", reponse: "The site visit is free and takes about 45 minutes." },
+    { id: "B5", question: "Reduced VAT for renovation", reponse: "10% VAT for a home more than 2 years old, with a short statement signed by the customer." },
+    { id: "B6", question: "Paying for the work", reponse: "30% on signing, progress payments, balance at handover." },
+  ],
+  savExemples: ["A crack appeared in the ceiling 3 months after the work", "Do you have 10-year structural liability insurance?", "Do you build swimming pools too?"],
+};

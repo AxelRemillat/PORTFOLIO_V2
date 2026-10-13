@@ -138,3 +138,48 @@ Si le nœud compare toutes les colonnes (pas seulement l'identité), appliquer
 
 Dans `/automatisations?demo=dataclean`, bouton « Doublons (majuscules,
 accents) ». Attendu : `rows_in: 10`, `rows_out: 5`, `duplicates_removed: 5`.
+
+---
+
+## 3. Démos en anglais (portfolio bilingue, /en/automatisations)
+
+### Ce que le site envoie désormais
+
+Chaque webhook de démo reçoit un champ `locale` (`"fr"` par défaut, `"en"` sur
+les pages /en) :
+
+| Webhook | Où se trouve `locale` |
+| --- | --- |
+| `N8N_EMAIL_TRIAGE_WEBHOOK_URL` | corps JSON, à côté de `email_text` |
+| `N8N_MEETING_WEBHOOK_URL` | corps JSON (mode texte) ou champ de formulaire `locale` (mode audio) |
+| `N8N_DATACLEAN_WEBHOOK_URL` | corps JSON, à côté de `csv_text` |
+| `N8N_INVOICE_WEBHOOK_URL` | corps JSON, à côté de `file_data` |
+| `N8N_SAV_WEBHOOK_URL` | corps JSON ; la `base` est déjà en anglais quand `locale` vaut `"en"` |
+
+Sans changement dans n8n, le champ est ignoré : les démos marchent, mais le
+texte rédigé par l'IA peut rester en français.
+
+### Changement dans chaque workflow
+
+Dans le nœud OpenAI (prompt système), ajouter en fin de consigne :
+
+```
+{{ $json.body.locale === 'en'
+  ? 'Write every text field of your answer (summary, reply, labels, report) in natural English (US spelling). Amounts: €1,750.00.'
+  : 'Rédige tous les champs texte en français.' }}
+```
+
+(`$json.locale` au lieu de `$json.body.locale` si le webhook est en mode
+« body seul ».) Les clés JSON du contrat ne changent pas : seul le texte des
+valeurs passe en anglais. Les libellés fixes (« Points clés », « Réponse
+suggérée »…) sont traduits côté site.
+
+### Tester
+
+```bash
+curl -s -X POST "$N8N_EMAIL_TRIAGE_WEBHOOK_URL" -H "Content-Type: application/json" \
+  -H "x-demo-secret: $N8N_DEMO_SECRET" \
+  -d '{"email_text":"Hi, our invoice #4471 was charged twice, can you refund one?","locale":"en"}'
+```
+
+Attendu : `justification_priorite`, `points_cles` et `reponse_suggeree` en anglais ; `categorie` et `priorite` gardent leurs valeurs du contrat (`facturation`, `haute`…), le site les affiche en anglais.

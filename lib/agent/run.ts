@@ -2,6 +2,7 @@ import type OpenAI from "openai";
 import type { Metier } from "@/lib/metiers";
 import { createToolFns, type DevisCalcule } from "./tools";
 import { toolSchemas, systemPrompt } from "./schemas";
+import { AGENT_TEXT_FR, type AgentText } from "./text";
 
 // Boucle de l'agent devis (raisonnement + outils), indépendante d'OpenAI : le
 // client LLM est injecté (vrai client dans la route, script dans les tests).
@@ -13,35 +14,28 @@ export type Trace = { type: string; icon?: string; title: string; detail?: strin
 type Livrable = { complet?: boolean; email?: string; reponse?: string; note?: string; questions?: string[]; creneaux?: { jour: string; heure: string }[] };
 
 const MAX_ITER = 8;
-const META: Record<string, { icon: string; label: string; arg: (a: Record<string, unknown>) => string }> = {
-  rechercher_articles: { icon: "🔎", label: "Recherche catalogue", arg: (a) => `« ${a.requete ?? ""} »` },
-  verifier_livraison: { icon: "🚚", label: "Zone de livraison", arg: (a) => `${a.ville ?? "—"}` },
-  calculer_devis: { icon: "🧮", label: "Calcul du devis", arg: (a) => `${(a.lignes as unknown[])?.length ?? 0} ligne(s)${(a.hors_catalogue as unknown[])?.length ? ` + ${(a.hors_catalogue as unknown[]).length} à chiffrer` : ""}` },
-  infos_entreprise: { icon: "ℹ️", label: "Infos entreprise", arg: (a) => `${a.sujet ?? ""}` },
-};
-
-function summarize(name: string, res: Record<string, unknown>): string {
-  if (name === "rechercher_articles") return `${(res.articles as unknown[])?.length ?? 0} article(s) trouvé(s)`;
-  if (name === "verifier_livraison") return res.a_confirmer ? "À confirmer avec le client" : `${res.delai_jours} j · ${res.frais} € HT`;
-  if (name === "calculer_devis") return `${res.total_ttc} € TTC${(res.a_chiffrer as unknown[])?.length ? " · devis partiel" : ""}`;
-  if (name === "infos_entreprise") return "Politique récupérée";
+function summarize(t: AgentText, name: string, res: Record<string, unknown>): string {
+  if (name === "rechercher_articles") return t.summary.found((res.articles as unknown[])?.length ?? 0);
+  if (name === "verifier_livraison") return res.a_confirmer ? t.summary.toConfirm : t.summary.zone(res.delai_jours, res.frais);
+  if (name === "calculer_devis") return t.summary.total(res.total_ttc, Boolean((res.a_chiffrer as unknown[])?.length));
+  if (name === "infos_entreprise") return t.summary.policy;
   return "ok";
 }
 
 const parse = (s?: string) => { try { return JSON.parse(s || "{}") as Record<string, unknown>; } catch { return {}; } };
 
-export async function runAgent(m: Metier, demande: string, llm: Llm) {
-  const fns = createToolFns(m);
-  const tools = toolSchemas(m);
+export async function runAgent(m: Metier, demande: string, llm: Llm, t: AgentText = AGENT_TEXT_FR) {
+  const fns = createToolFns(m, t);
+  const tools = toolSchemas(m, t);
   const trace: Trace[] = [];
-  const messages: Msg[] = [{ role: "system", content: systemPrompt(m) }, { role: "user", content: demande }];
+  const messages: Msg[] = [{ role: "system", content: systemPrompt(m, t) }, { role: "user", content: demande }];
   let devis: DevisCalcule | null = null;
   let livrable: Livrable | null = null;
 
   for (let i = 0; i < MAX_ITER && !livrable; i++) {
     const msg = await llm(messages, tools);
     if (!msg) break;
-    if (msg.content) trace.push({ type: "reflexion", icon: "💭", title: "Réflexion", detail: msg.content });
+    if (msg.content) trace.push({ type: "reflexion", icon: "💭", title: t.trace.reflexion, detail: msg.content });
     messages.push(msg);
     const calls = (msg.tool_calls ?? []).filter((c) => c.type === "function");
     if (calls.length === 0) break;
@@ -50,34 +44,34 @@ export async function runAgent(m: Metier, demande: string, llm: Llm) {
       const args = parse(call.function.arguments);
       if (name === "finaliser") {
         livrable = args as Livrable;
-        trace.push({ type: "final", icon: "🏁", title: "Livrable prêt", detail: "Devis, email et questions générés.", fn: name, rawArgs: args });
+        trace.push({ type: "final", icon: "🏁", title: t.trace.ready, detail: t.trace.readyDetail, fn: name, rawArgs: args });
         messages.push({ role: "tool", tool_call_id: call.id, content: "ok" });
         continue;
       }
-      const meta = META[name] ?? { icon: "⚙", label: name, arg: () => "" };
-      const result = (fns[name]?.(args) ?? { erreur: "outil inconnu" }) as Record<string, unknown>;
+      const meta = t.meta[name] ?? { icon: "⚙", label: name, arg: () => "" };
+      const result = (fns[name]?.(args) ?? { erreur: t.trace.unknownTool }) as Record<string, unknown>;
       if (name === "calculer_devis") devis = result as unknown as DevisCalcule;
-      trace.push({ type: "outil", icon: meta.icon, title: meta.label, args: meta.arg(args), fn: name, rawArgs: args, result: summarize(name, result), rawResult: result });
+      trace.push({ type: "outil", icon: meta.icon, title: meta.label, args: meta.arg(args), fn: name, rawArgs: args, result: summarize(t, name, result), rawResult: result });
       messages.push({ role: "tool", tool_call_id: call.id, content: JSON.stringify(result) });
     }
   }
   if (!livrable) {
-    messages.push({ role: "user", content: "Termine maintenant : appelle finaliser avec l'email client et les questions." });
+    messages.push({ role: "user", content: t.finishNudge });
     const fc = (await llm(messages, tools, "finaliser"))?.tool_calls?.[0];
     if (fc?.type === "function") {
       livrable = parse(fc.function.arguments) as Livrable;
-      trace.push({ type: "final", icon: "🏁", title: "Livrable prêt", detail: "Généré.", fn: "finaliser", rawArgs: livrable });
+      trace.push({ type: "final", icon: "🏁", title: t.trace.ready, detail: t.trace.readyShort, fn: "finaliser", rawArgs: livrable });
     }
   }
-  return { trace, result: assemble(m, devis, livrable) };
+  return { trace, result: assemble(m, devis, livrable, t) };
 }
 
 // Le devis vient du dernier calcul serveur ; les questions = outils + agent, dédoublonnées.
-function assemble(m: Metier, devis: DevisCalcule | null, l: Livrable | null) {
+function assemble(m: Metier, devis: DevisCalcule | null, l: Livrable | null, t: AgentText) {
   const qs = [...(devis?.questions ?? []), ...(Array.isArray(l?.questions) ? l.questions : [])].map((q) => String(q).trim()).filter(Boolean);
   const questions = [...new Set(qs)].slice(0, 5);
   const email = (l?.email || l?.reponse || "").trim()
-    || `Bonjour,\n\nMerci pour votre demande. Un conseiller de ${m.entreprise} revient vers vous très rapidement pour la finaliser.\n\nCordialement,\nOSCAR — ${m.entreprise}`;
+    || t.fallbackEmail(m.entreprise);
   return {
     complet: Boolean(devis?.complet) && questions.length === 0 && l?.complet !== false,
     devis: devis && devis.lignes.length + devis.a_chiffrer.length > 0 ? devis : null,
