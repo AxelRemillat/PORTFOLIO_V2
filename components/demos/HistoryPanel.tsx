@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
 import type { Conversation } from "./useConversationHistory";
+import { useVegaUi, type VegaUi } from "./vega-ui";
 
 interface Props {
   conversations: Conversation[];
@@ -14,15 +15,18 @@ interface Props {
 
 const PANEL_W = 320; // largeur desktop (px) — réglable
 
-function relTime(ts: number): string {
+// Temps relatif et date dans la langue de la page (« 13 oct. » / « Oct 13 ») : mêmes
+// textes que HistoryContent, tirés de vega-ui. Le français est inchangé.
+function relTime(ts: number, t: VegaUi["history"]): string {
   const s = Math.floor((Date.now() - ts) / 1000);
-  if (s < 60) return "à l'instant";
-  if (s < 3600) return `il y a ${Math.floor(s / 60)} min`;
-  if (s < 86400) return `il y a ${Math.floor(s / 3600)} h`;
-  return new Date(ts).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" });
+  if (s < 60) return t.justNow;
+  if (s < 3600) return t.minutesAgo(Math.floor(s / 60));
+  if (s < 86400) return t.hoursAgo(Math.floor(s / 3600));
+  return new Date(ts).toLocaleDateString(t.dateLocale, { day: "2-digit", month: "short" });
 }
 
 export default function HistoryPanel({ conversations, activeId, onSelect, onNew, onDelete }: Props) {
+  const t = useVegaUi().history;
   const [open, setOpen] = useState(false);
   const [mobile, setMobile] = useState(false);
   const [reduced, setReduced] = useState(false);
@@ -85,14 +89,14 @@ export default function HistoryPanel({ conversations, activeId, onSelect, onNew,
             )}
           </div>
           <button type="button" onClick={onNew} className="hud-suggestion" style={{ marginTop: 10, color: "rgba(255,255,255,0.7)", border: "1px dashed rgba(255,255,255,0.15)", borderRadius: 6, width: "100%", padding: "8px 10px", textAlign: "left" }}>
-            + Nouvelle conversation
+            {t.newConversation}
           </button>
         </div>
 
         {/* Liste des conversations */}
         <div style={{ overflowY: "auto", flex: "0 0 auto", maxHeight: "40%", padding: "8px 10px" }}>
           {conversations.length === 0 && (
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", padding: "8px 6px" }}>Aucune conversation enregistrée.</p>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", padding: "8px 6px" }}>{t.empty}</p>
           )}
           {conversations.map(c => (
             <div
@@ -109,12 +113,12 @@ export default function HistoryPanel({ conversations, activeId, onSelect, onNew,
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{c.title}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{relTime(c.updatedAt)}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{relTime(c.updatedAt, t)}</div>
               </div>
               <button
                 type="button"
                 onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                className="hud-glyph" aria-label={`Supprimer ${c.title}`} style={{ width: 24, height: 24 }}
+                className="hud-glyph" aria-label={t.deleteAria(c.title)} style={{ width: 24, height: 24 }}
               >
                 ✕
               </button>
@@ -128,7 +132,7 @@ export default function HistoryPanel({ conversations, activeId, onSelect, onNew,
             {active.messages.map((m, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 10, letterSpacing: "0.1em", color: m.role === "user" ? "rgba(167,139,250,0.8)" : "rgba(255,140,0,0.8)", marginBottom: 3 }}>
-                  {m.role === "user" ? "TOI" : "VEGA"}
+                  {m.role === "user" ? t.you : "VEGA"}
                 </div>
                 <div style={{ fontSize: 13, lineHeight: 1.5, color: "rgba(255,255,255,0.78)" }}>{m.content}</div>
               </div>
