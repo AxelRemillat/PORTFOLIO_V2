@@ -1,18 +1,15 @@
 "use client";
 
 import ArchFlow from "../ArchFlow";
+import { useWindowsText } from "./windows-text";
 
 // Fenêtre Infra : panneau « serveur GPU » listant les services réels du socle
 // self-hosted, statut honnête « en construction » + bande de flux. Aucune valeur
 // inventée : les services existent (cible), le statut dit la vérité.
-const SERVICES = [
-  "LLM local — Ollama",
-  "API TTS self-hosted",
-  "Tunnel sécurisé",
-  "Monitoring & backups",
-];
+// Services listés : windows-text.ts (une version par langue).
 
 export default function InfraWindow() {
+  const t = useWindowsText().infra;
   return (
     <div className="pv-win">
       <style>{`
@@ -22,17 +19,17 @@ export default function InfraWindow() {
         .pfi-tag { margin-left:auto; font-size:.64rem; letter-spacing:.04em; text-transform:uppercase;
           color:#8b93a7; border:1px solid rgba(255,255,255,0.1); border-radius:999px; padding:1px 8px; }
       `}</style>
-      <div className="pv-bar"><span className="pv-bdot" />infra · serveur GPU</div>
+      <div className="pv-bar"><span className="pv-bdot" />{t.bar}</div>
       <div className="pfi-body">
-        {SERVICES.map((s) => (
+        {t.services.map((s) => (
           <div key={s} className="pfi-row">
             <span className="pfi-dot" />
             {s}
-            <span className="pfi-tag">en cours</span>
+            <span className="pfi-tag">{t.tag}</span>
           </div>
         ))}
       </div>
-      <ArchFlow steps={["Client", "Tunnel", "Docker", "Monitoring"]} />
+      <ArchFlow steps={t.flow} />
     </div>
   );
 }

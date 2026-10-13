@@ -3,10 +3,12 @@
 import { useEffect, useState } from "react";
 import MiniOrb from "@/components/home/hero-scene/MiniOrb";
 import ArchFlow from "../ArchFlow";
+import { useWindowsText } from "./windows-text";
 
 // Fenêtre VEGA : mini-chat (question réelle + orbe + état de réponse) surmontant
 // la bande de flux du VRAI pipeline RAG. Orbe figée si reduced-motion.
 export default function VegaWindow() {
+  const t = useWindowsText().vega;
   const [reduce, setReduce] = useState(false);
   useEffect(() => {
     const m = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -31,15 +33,15 @@ export default function VegaWindow() {
         @media (prefers-reduced-motion: reduce) { .pvv-status i::after{content:"···";animation:none;} }
       `}</style>
       <div className="pv-bar">
-        <span className="pv-bdot" />VEGA · assistant RAG
-        <span className="pvv-on">● online</span>
+        <span className="pv-bdot" />{t.bar}
+        <span className="pvv-on">{t.online}</span>
       </div>
       <div className="pvv-body">
-        <div className="pvv-q">Quel est ton parcours&nbsp;?</div>
+        <div className="pvv-q">{t.question}</div>
         <MiniOrb reduce={reduce} size={112} />
-        <div className="pvv-status"><b>VEGA</b> rédige la réponse<i /></div>
+        <div className="pvv-status"><b>VEGA</b> {t.writing}<i /></div>
       </div>
-      <ArchFlow steps={["Question", "Embed", "pgvector", "gpt-4o", "Voix"]} />
+      <ArchFlow steps={t.flow} />
     </div>
   );
 }

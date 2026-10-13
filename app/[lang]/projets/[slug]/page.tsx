@@ -63,7 +63,7 @@ export default async function ProjetDetailPage({ params }: { params: Promise<{ l
         <div className="ap-grid">
           <div className="ap-main">
             <p className="ap-seclabel">{t.pipeline}</p>
-            <ArchiDiagram slug={slug} locale={locale} />
+            <ArchiDiagram slug={slug} />
 
             {SECTIONS.map((s) => (
               <section key={s.n} className="ap-sec">

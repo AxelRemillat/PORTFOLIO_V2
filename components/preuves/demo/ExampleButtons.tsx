@@ -2,6 +2,7 @@
 
 import type { WorkflowExamples } from "./workflow-types";
 import type { InputMode } from "./ModeSelector";
+import { useDemoUi } from "./DemoUiContext";
 
 type Kind = "text" | "audio" | "file";
 const PATHS: Record<Kind, React.ReactNode> = {
@@ -26,11 +27,12 @@ export default function ExampleButtons({
   onText: (v: string) => void; onAudio: (f: File) => void;
   exampleText?: string; exampleLabel?: string;
 }) {
+  const ui = useDemoUi();
   const loadFile = async (src: string) => {
     try {
       const res = await fetch(src);
       const blob = await res.blob();
-      onAudio(new File([blob], src.split("/").pop() ?? "fichier", { type: blob.type || "application/octet-stream" }));
+      onAudio(new File([blob], src.split("/").pop() ?? ui.fileFallback, { type: blob.type || "application/octet-stream" }));
     } catch { /* réseau : réessayer */ }
   };
 
@@ -42,17 +44,17 @@ export default function ExampleButtons({
   } else if (examples?.text?.length) {
     examples.text.forEach((ex) => items.push({ key: ex.label, label: ex.label, kind: "text", on: () => onText(ex.value) }));
   } else if (exampleText) {
-    items.push({ key: "ex", label: exampleLabel ?? "Essayer avec cet exemple", kind: "text", on: () => onText(exampleText) });
+    items.push({ key: "ex", label: exampleLabel ?? ui.exampleDefault, kind: "text", on: () => onText(exampleText) });
   }
   if (!items.length) return null;
 
   return (
     <div className="wc-try">
-      <p className="wc-try-lbl">Pas d&apos;idée&nbsp;? Testez avec un exemple&nbsp;:</p>
+      <p className="wc-try-lbl">{ui.tryLabel}</p>
       <div className="wc-examples">
         {items.map((it) => (
           <button key={it.key} type="button" className="wc-ex" disabled={disabled}
-            onClick={it.on} aria-label={`Exemple : ${it.label}`}>
+            onClick={it.on} aria-label={ui.exampleAria(it.label)}>
             <span className="wc-ex-ico"><ExIcon kind={it.kind} /></span>
             {it.label}
           </button>

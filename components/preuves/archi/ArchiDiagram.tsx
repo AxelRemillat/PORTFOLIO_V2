@@ -1,12 +1,13 @@
-import type { Locale } from "@/lib/i18n/config";
 import { ARCHI } from "./archi-data";
-import { ARCHI_EN } from "./archi-data.en";
+import { ARCHI as ARCHI_EN } from "./archi-data.en";
+import { getLocale } from "@/lib/i18n/server";
 
 // Schéma de pipeline vertical animé : nœuds numérotés reliés par des connecteurs
 // où une impulsion « descend » (le flux de données). CSS pur → server component,
 // zéro JS. Impulsion figée si prefers-reduced-motion.
-export default function ArchiDiagram({ slug, locale = "fr" }: { slug: string; locale?: Locale }) {
-  const archi = (locale === "en" ? ARCHI_EN : ARCHI)[slug];
+// Langue : lue par getLocale() (posée par la page /projets/[slug]), comme tout composant serveur.
+export default async function ArchiDiagram({ slug }: { slug: string }) {
+  const archi = ((await getLocale()) === "en" ? ARCHI_EN : ARCHI)[slug];
   if (!archi) return null;
   const last = archi.flow.length - 1;
 

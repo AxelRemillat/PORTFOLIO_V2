@@ -1,20 +1,25 @@
 import type { Metadata } from "next";
-import { OPS_METRICS } from "./ops-data";
+import { OPS_METRICS, OPS_TEXT } from "./ops-data";
+import { OPS_METRICS as OPS_METRICS_EN, OPS_TEXT as OPS_TEXT_EN } from "./ops-data.en";
+import { getLocale } from "@/lib/i18n/server";
+import type { Locale } from "@/lib/i18n/config";
 import { pageMetadata } from "@/lib/i18n/seo";
 
 // Server component : conserve le SEO. Squelette statique — les valeurs
 // viendront de ops-data.ts quand le monitoring réel sera câblé.
-export const generateMetadata = pageMetadata("/ops", {
+const opsFor = (locale: Locale) => (locale === "en" ? { text: OPS_TEXT_EN, metrics: OPS_METRICS_EN } : { text: OPS_TEXT, metrics: OPS_METRICS });
+
+export const generateMetadata = pageMetadata("/ops", (locale) => ({
   // Tuiles encore en « câblage en cours » : ni indexée, ni dans le sitemap ni dans le menu.
   robots: { index: false, follow: false },
-  title: "Ops — Axel Remillat | Salle des machines",
-  description:
-    "Le monitoring de ce site, en public : uptime, latence VEGA, requêtes et coût par réponse.",
-});
+  title: opsFor(locale).text.title,
+  description: opsFor(locale).text.description,
+}));
 
 const PAD = "clamp(1.5rem, 4vw, 3rem)";
 
-export default function OpsPage() {
+export default async function OpsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { text, metrics } = opsFor(await getLocale(params));
   return (
     <main style={{ background: "var(--color-bg)", minHeight: "100vh", padding: `10vh ${PAD} 14vh` }}>
       <style>{`
@@ -55,7 +60,7 @@ export default function OpsPage() {
             color: "var(--color-orange)",
           }}
         >
-          OPS // SALLE DES MACHINES
+          {text.kicker}
         </p>
 
         <p
@@ -67,12 +72,11 @@ export default function OpsPage() {
             color: "var(--color-text)",
           }}
         >
-          Le monitoring de ce site, en public. Parce qu&apos;un ingénieur qui vous
-          vend du monitoring doit montrer le sien.
+          {text.intro}
         </p>
 
         <div className="ops-grid">
-          {OPS_METRICS.map((m) => (
+          {metrics.map((m) => (
             <div key={m.id} className="ops-tile">
               <p
                 style={{
@@ -111,7 +115,7 @@ export default function OpsPage() {
                 }}
               >
                 <span className="ops-dot" aria-hidden />
-                {m.value ? m.detail : "câblage en cours"}
+                {m.value ? m.detail : text.wiring}
               </p>
             </div>
           ))}

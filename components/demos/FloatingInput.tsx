@@ -7,7 +7,8 @@ import HudInput from "./HudInput";
 import SuggestionTicker from "./SuggestionTicker";
 import ThinkingIndicator from "./ThinkingIndicator";
 import SpeakingControls from "./SpeakingControls";
-import { ALL_QUESTIONS } from "./questionsData";
+import { useLocale } from "@/lib/i18n/client";
+import { vegaQuestions, vegaUi } from "./vega-ui";
 
 type OrbState = "idle" | "thinking" | "speaking";
 
@@ -26,7 +27,6 @@ interface Props {
 // Le ticker affiche les 50 questions du catalogue (source unique :
 // questionsData.ts), mélangées au montage → ordre aléatoire, sans répétition
 // avant d'avoir fait le tour.
-const THINKING_TEXT = "recherche dans la base vectorielle";
 const TRANSITION_MS = 320; // durée du fade/blur entre états
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -40,10 +40,14 @@ export default function FloatingInput({
 
   // Mélange des 50 questions APRÈS le montage (pas au rendu initial → pas de
   // mismatch d'hydratation SSR/client avec un ordre aléatoire).
-  const [suggestions, setSuggestions] = useState<string[]>(ALL_QUESTIONS);
+  // Questions et texte de réflexion dans la langue de la page (même catalogue de 50).
+  const locale = useLocale();
+  const ui = vegaUi(locale);
+  const [allQuestions] = useState(() => vegaQuestions(locale).flatMap((c) => c.questions));
+  const [suggestions, setSuggestions] = useState<string[]>(allQuestions);
   useEffect(() => {
-    setSuggestions([...ALL_QUESTIONS].sort(() => Math.random() - 0.5));
-  }, []);
+    setSuggestions([...allQuestions].sort(() => Math.random() - 0.5));
+  }, [allQuestions]);
 
   // Respect de prefers-reduced-motion (coupe typewriter/blur)
   const [reduced, setReduced] = useState(false);
@@ -86,7 +90,7 @@ export default function FloatingInput({
 
       {/* thinking : indicateur d'activité, aucune saisie attendue */}
       <div style={layer(state === "thinking")} aria-hidden={state !== "thinking"} inert={state !== "thinking"}>
-        <ThinkingIndicator text={THINKING_TEXT} reduced={reduced} />
+        <ThinkingIndicator text={ui.thinking} reduced={reduced} />
       </div>
 
       {/* speaking : cluster de contrôles (pause / supprimer / vitesse) à la place de la saisie */}

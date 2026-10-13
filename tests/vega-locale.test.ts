@@ -105,3 +105,17 @@ test("questions guidées anglaises : mêmes catégories (ids), 5 × 10, aucune q
   const all = en.flatMap((c) => [c.label, ...c.questions]).join(" ");
   assert.ok(!/[àâçéèêëîïôûùœ]|\b(vous|votre|vos|est-ce|combien|devis)\b/i.test(all), "reste de français");
 });
+
+test("textes d'interface VEGA : mêmes clés en anglais, aucun reste de français, français inchangé", async () => {
+  const { VEGA_UI_FR } = await import("@/components/demos/vega-ui");
+  const { VEGA_UI_EN } = await import("@/components/demos/vega-ui.en");
+  const shape = (o: object): string[] =>
+    Object.entries(o).flatMap(([k, v]) => (v && typeof v === "object" ? shape(v).map((s) => `${k}.${s}`) : [k])).sort();
+  assert.deepEqual(shape(VEGA_UI_EN), shape(VEGA_UI_FR));
+  const strings = (o: object): string[] =>
+    Object.values(o).flatMap((v) => (typeof v === "string" ? [v] : typeof v === "function" ? [String(v(3))] : v && typeof v === "object" ? strings(v) : []));
+  for (const text of strings(VEGA_UI_EN)) assert.ok(!/[àâçéèêëîïôûùœ]|\b(vous|votre|historique|réserver)\b/i.test(text), text);
+  assert.equal(VEGA_UI_FR.input.placeholder, "Posez votre question…");
+  assert.equal(VEGA_UI_FR.chezVous.book, "Réserver 15 min");
+  assert.equal(VEGA_UI_EN.speechLang, "en-US");
+});

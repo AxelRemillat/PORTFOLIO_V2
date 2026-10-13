@@ -1,5 +1,7 @@
 "use client";
 
+import { useDemoUi } from "./DemoUiContext";
+
 export type InputMode = "text" | "file";
 export interface ModeOption { id: InputMode; label: string }
 
@@ -8,6 +10,7 @@ export interface ModeOption { id: InputMode; label: string }
 export default function ModeSelector({
   options, value, onChange,
 }: { options: ModeOption[]; value: InputMode; onChange: (m: InputMode) => void }) {
+  const ui = useDemoUi();
   const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir) return;
@@ -19,7 +22,7 @@ export default function ModeSelector({
   };
 
   return (
-    <div className="wc-modes" role="radiogroup" aria-label="Mode d'entrée" onKeyDown={onKey}>
+    <div className="wc-modes" role="radiogroup" aria-label={ui.modeAria} onKeyDown={onKey}>
       {options.map((o) => (
         <button
           key={o.id} type="button" role="radio" aria-checked={o.id === value}

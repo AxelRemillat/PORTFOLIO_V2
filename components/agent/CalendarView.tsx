@@ -1,20 +1,22 @@
 "use client";
 
+import { useAgentUi } from "./AgentUiContext";
+
 export interface Creneau { jour: string; heure: string }
 
-const DAYS = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"];
 const norm = (s: string) => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 // Mini-calendrier « semaine prochaine » : affichage seulement. Les créneaux proposés
 // par l'agent sont mis en avant (rose) dans la colonne du jour correspondant.
 export default function CalendarView({ creneaux }: { creneaux: Creneau[] }) {
+  const t = useAgentUi();
   const byDay = (day: string) => (creneaux || []).filter((c) => norm(c.jour).startsWith(norm(day).slice(0, 3)));
 
   return (
     <div>
-      <p className="ag-cal-lead">📞 Appels proposés <b>avec le client</b> — semaine prochaine :</p>
-      <div className="ag-cal" role="img" aria-label={`Créneaux proposés : ${creneaux.map((c) => `${c.jour} ${c.heure}`).join(", ") || "à définir"}`}>
-        {DAYS.map((day) => {
+      <p className="ag-cal-lead">{t.callsLead.before}<b>{t.callsLead.strong}</b>{t.callsLead.after}</p>
+      <div className="ag-cal" role="img" aria-label={t.slotsAria(creneaux.map((c) => `${c.jour} ${c.heure}`).join(", ") || t.toDefine)}>
+        {t.days.map((day) => {
           const slots = byDay(day);
           return (
             <div key={day} className={`ag-cal-col${slots.length ? " has-slot" : ""}`}>
@@ -28,7 +30,7 @@ export default function CalendarView({ creneaux }: { creneaux: Creneau[] }) {
           );
         })}
       </div>
-      <p className="ag-cal-note">Démo — affichage indicatif, la prise de rendez-vous se fait ensuite avec Axel.</p>
+      <p className="ag-cal-note">{t.calNote}</p>
     </div>
   );
 }

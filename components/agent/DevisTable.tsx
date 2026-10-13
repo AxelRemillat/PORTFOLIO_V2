@@ -1,20 +1,21 @@
 "use client";
 
 import type { DevisCalcule } from "@/lib/agent/tools";
+import { useAgentUi } from "./AgentUiContext";
 
 export type AgentDevis = DevisCalcule;
-
-const eur = (n: number) => `${(n ?? 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
-const pct = (t: number) => `${(t * 100).toLocaleString("fr-FR", { maximumFractionDigits: 1 })} %`;
 
 // Devis structuré : lignes chiffrées, lignes « à chiffrer », totaux HT / TVA par
 // taux / TTC et délai. Tous les montants viennent du calcul serveur.
 export default function DevisTable({ devis: d }: { devis: AgentDevis }) {
+  const t = useAgentUi();
+  const { eur, pct, table: th, delivery } = t;
+  const lead = t.leadTime(d.delai_jours, d.a_chiffrer.length > 0);
   return (
     <>
       <div className="ag-devis">
         <table className="wc-mr-table">
-          <thead><tr><th>Désignation</th><th>Qté</th><th>Unité</th><th>P.U. HT</th><th>Montant HT</th></tr></thead>
+          <thead><tr><th>{th.item}</th><th>{th.qty}</th><th>{th.unit}</th><th>{th.unitPrice}</th><th>{th.amount}</th></tr></thead>
           <tbody>
             {d.lignes.map((l) => (
               <tr key={l.ref}>
@@ -23,7 +24,7 @@ export default function DevisTable({ devis: d }: { devis: AgentDevis }) {
             ))}
             {d.a_chiffrer.map((l, i) => (
               <tr key={`todo-${i}`} className="ag-todo">
-                <td>{l.designation}</td><td>{l.quantite}</td><td>{l.unite}</td><td colSpan={2}>à chiffrer</td>
+                <td>{l.designation}</td><td>{l.quantite}</td><td>{l.unite}</td><td colSpan={2}>{th.toPrice}</td>
               </tr>
             ))}
           </tbody>
@@ -31,18 +32,18 @@ export default function DevisTable({ devis: d }: { devis: AgentDevis }) {
       </div>
 
       <dl className="ag-tot">
-        <div><dt>Sous-total HT</dt><dd>{eur(d.sous_total_ht)}</dd></div>
+        <div><dt>{th.subtotal}</dt><dd>{eur(d.sous_total_ht)}</dd></div>
         {d.remise?.montant > 0 && (
-          <div><dt>Remise −{pct(d.remise.taux)}</dt><dd>−{eur(d.remise.montant)}</dd></div>
+          <div><dt>{th.discount} −{pct(d.remise.taux)}</dt><dd>−{eur(d.remise.montant)}</dd></div>
         )}
-        <div><dt>Livraison / déplacement</dt><dd>{d.frais_livraison > 0 ? eur(d.frais_livraison) : (d.livraison_offerte ? "offert" : "inclus")}</dd></div>
-        <div><dt>Total HT</dt><dd>{eur(d.total_ht)}</dd></div>
-        {d.tva.map((t) => (
-          <div key={t.taux}><dt>TVA {pct(t.taux)}</dt><dd>{eur(t.montant)}</dd></div>
+        <div><dt>{delivery.label}</dt><dd>{d.frais_livraison > 0 ? eur(d.frais_livraison) : (d.livraison_offerte ? delivery.free : delivery.included)}</dd></div>
+        <div><dt>{th.total}</dt><dd>{eur(d.total_ht)}</dd></div>
+        {d.tva.map((v) => (
+          <div key={v.taux}><dt>{th.vat} {pct(v.taux)}</dt><dd>{eur(v.montant)}</dd></div>
         ))}
-        <div className="ag-ttc"><dt>Total TTC</dt><dd>{eur(d.total_ttc)}</dd></div>
+        <div className="ag-ttc"><dt>{th.grand}</dt><dd>{eur(d.total_ttc)}</dd></div>
       </dl>
-      <p className="ag-meta">Délai estimé : <b>{d.delai_jours} jours ouvrés</b>{d.a_chiffrer.length > 0 ? " (hors lignes à chiffrer)" : ""}</p>
+      <p className="ag-meta">{lead.before}<b>{lead.strong}</b>{lead.after}</p>
     </>
   );
 }

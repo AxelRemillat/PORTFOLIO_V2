@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import TraceStep from "./TraceStep";
+import { useAgentUi } from "./AgentUiContext";
 
 export interface TraceItem {
   type: "reflexion" | "outil" | "final";
@@ -19,6 +20,7 @@ export interface TraceItem {
 // Chaque étape à outil est dépliable (TraceStep). prefers-reduced-motion → tout
 // d'un coup. role=log + aria-live.
 export default function TraceLive({ items }: { items: TraceItem[] }) {
+  const t = useAgentUi();
   const [visible, setVisible] = useState(0);
 
   useEffect(() => {
@@ -32,10 +34,10 @@ export default function TraceLive({ items }: { items: TraceItem[] }) {
   }, [items]);
 
   return (
-    <div className="ag-trace" role="log" aria-live="polite" aria-label="Trace de l'agent">
+    <div className="ag-trace" role="log" aria-live="polite" aria-label={t.traceAria}>
       {items.slice(0, visible).map((it, i) => <TraceStep key={i} item={it} />)}
       {visible < items.length && (
-        <div className="ag-think" aria-hidden>l&apos;agent réfléchit<span /><span /><span /></div>
+        <div className="ag-think" aria-hidden>{t.thinking}<span /><span /><span /></div>
       )}
     </div>
   );

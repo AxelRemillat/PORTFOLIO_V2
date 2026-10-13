@@ -20,9 +20,10 @@ type SpeechRecognitionLike = {
   abort: () => void;
 };
 
-export function useSpeechToText({ onText, onEnd }: {
+export function useSpeechToText({ onText, onEnd, lang = "fr-FR" }: {
   onText: (transcript: string) => void; // appelé en continu pendant la dictée
   onEnd?: () => void;                   // fin de dictée (silence ou stop)
+  lang?: string;                        // « en-US » sur la page anglaise
 }) {
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
@@ -38,7 +39,7 @@ export function useSpeechToText({ onText, onEnd }: {
     setSupported(true);
 
     const rec = new SR();
-    rec.lang = "fr-FR";
+    rec.lang = lang;
     rec.interimResults = true; // le texte s'écrit pendant qu'on parle
     rec.continuous = false;    // s'arrête au silence (façon Insta/Snap)
     rec.maxAlternatives = 1;

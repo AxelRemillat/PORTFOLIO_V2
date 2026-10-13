@@ -7,14 +7,12 @@ import type { ChatMessage } from "./SavBubble";
 import SavInput from "./SavInput";
 import NodePipeline from "./NodePipeline";
 import { SAV_CSS } from "./savCss";
-import { runWorkflow, GENERIC_ERRORS } from "./workflow-types";
+import { runWorkflow } from "./workflow-types";
 import type { WorkflowConfig } from "./workflow-types";
 import type { SavData } from "./SavResult";
 import MetierPicker from "@/components/demo-kit/MetierPicker";
-import { METIERS, getMetier, type Metier, type MetierId } from "@/lib/metiers";
-
-const welcome = (m: Metier) =>
-  `Bonjour 👋 Je suis l'assistant de ${m.entreprise}. Posez-moi une question sur nos délais, garanties, paiements ou commandes.`;
+import { getMetier, metiersFor, type MetierId } from "@/lib/metiers";
+import { useDemoUi } from "./DemoUiContext";
 
 const MIN_MS = 1200; // durée mini d'animation, lisible même si l'API répond vite
 type PipePhase = "idle" | "running" | "done" | "error";
@@ -23,15 +21,18 @@ type PipePhase = "idle" | "running" | "done" | "error";
 // base de connaissance d'exemple suit (lib/metiers). Chaque message est traité
 // indépendamment par /api/demo/sav ; changer de métier repart de zéro.
 export default function SavChat({ config }: { config: WorkflowConfig }) {
+  const ui = useDemoUi();
+  const t = ui.sav;
+  const metiers = metiersFor(ui.locale);
   const [metierId, setMetierId] = useState<MetierId>("menuiserie");
-  const metier = getMetier(metierId) ?? METIERS[0];
-  const [messages, setMessages] = useState<ChatMessage[]>(() => [{ role: "assistant", text: welcome(METIERS[0]) }]);
+  const metier = getMetier(metierId, ui.locale) ?? metiers[0];
+  const [messages, setMessages] = useState<ChatMessage[]>(() => [{ role: "assistant", text: t.welcome(metiers[0].entreprise) }]);
   const [sending, setSending] = useState(false);
   const [pipeIndex, setPipeIndex] = useState(-1);   // node actif du pipeline
   const [pipePhase, setPipePhase] = useState<PipePhase>("idle");
   const logRef = useRef<HTMLDivElement>(null);
   const timers = useRef<number[]>([]);
-  const errors = { ...GENERIC_ERRORS, ...(config.errorMessages ?? {}) };
+  const errors = { ...ui.errors, ...(config.errorMessages ?? {}) };
   const accentVars = { "--wc-accent": config.accent, "--wc-accent-weak": `${config.accent}1f` } as CSSProperties;
 
   const nodes = config.nodes;
@@ -47,10 +48,10 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
   useEffect(() => () => clearTimers(), []);
 
   const pick = (id: MetierId) => {
-    const m = getMetier(id);
+    const m = getMetier(id, ui.locale);
     if (!m || sending) return;
     setMetierId(id);
-    setMessages([{ role: "assistant", text: welcome(m) }]);
+    setMessages([{ role: "assistant", text: t.welcome(m.entreprise) }]);
   };
 
   const send = async (q: string) => {
@@ -70,7 +71,7 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
       minDelay = new Promise((r) => { timers.current.push(window.setTimeout(r, MIN_MS)); });
     }
 
-    const [res] = await Promise.all([runWorkflow(config.endpoint, config.inputField, q, "", { metier: metier.id }), minDelay]);
+    const [res] = await Promise.all([runWorkflow(config.endpoint, config.inputField, q, "", { metier: metier.id }, ui.locale), minDelay]);
     clearTimers();
 
     if (res.ok && res.result != null) {
@@ -90,26 +91,26 @@ export default function SavChat({ config }: { config: WorkflowConfig }) {
   return (
     <div className="wc-card wc-chat" style={accentVars}>
       <style>{SAV_CSS}</style>
-      <MetierPicker metiers={METIERS} value={metier.id} onChange={pick} disabled={sending} label="Votre métier" />
+      <MetierPicker metiers={metiers} value={metier.id} onChange={pick} disabled={sending} label={t.pick} />
       <div className="wc-chat-ctx">
         <div>
-          <p className="wc-chat-ctx-t">Service client — <b>{metier.entreprise}</b>, {metier.activite.charAt(0).toLowerCase() + metier.activite.slice(1)}</p>
-          <p className="wc-chat-ctx-s">Base de questions-réponses d&apos;exemple : chez vous, l&apos;assistant répond à partir de vos propres documents.</p>
+          <p className="wc-chat-ctx-t">{t.ctx}<b>{metier.entreprise}</b>, {metier.activite.charAt(0).toLowerCase() + metier.activite.slice(1)}</p>
+          <p className="wc-chat-ctx-s">{t.ctxNote}</p>
         </div>
-        <span className="wc-chat-pill">réponses sourcées</span>
+        <span className="wc-chat-pill">{t.pill}</span>
       </div>
 
       <NodePipeline nodes={nodes} activeIndex={pipeIndex} phase={pipePhase} />
 
       <div
         className="wc-chat-log" ref={logRef} role="log" aria-live="polite"
-        aria-label="Conversation avec l'assistant SAV"
+        aria-label={t.logAria}
       >
         {messages.map((m, i) => <SavBubble key={i} msg={m} />)}
         {sending && (
           <div className="wc-chat-row is-bot">
             <span className="wc-chat-avatar" aria-hidden>🌿</span>
-            <div className="wc-chat-bubble is-bot wc-chat-typing" role="status" aria-label="L'assistant écrit…">
+            <div className="wc-chat-bubble is-bot wc-chat-typing" role="status" aria-label={t.typing}>
               <span /><span /><span />
             </div>
           </div>

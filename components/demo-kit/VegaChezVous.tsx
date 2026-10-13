@@ -1,6 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import { CALENDAR_URL } from "@/lib/site-config";
 import { contactHref } from "./ChezVousCta";
+import { useLocale } from "@/lib/i18n/client";
+import { localizedHref } from "@/lib/i18n/paths";
+import { vegaUi } from "@/components/demos/vega-ui";
 
 // Version compacte de « Et chez vous ? » pour VEGA (page plein écran, sans
 // footer) : bandeau fixe sous le titre, affiché après la première réponse.
@@ -15,14 +20,16 @@ const CSS = `
 `;
 
 export default function VegaChezVous() {
+  const locale = useLocale();
+  const t = vegaUi(locale).chezVous;
   return (
-    <div className="vcv" role="complementary" aria-label="Et chez vous ?">
+    <div className="vcv" role="complementary" aria-label={t.aria}>
       <style>{CSS}</style>
-      <span className="vcv-t">Et chez vous ?</span>
+      <span className="vcv-t">{t.title}</span>
       <a className="vcv-main" href={CALENDAR_URL} target="_blank" rel="noopener noreferrer"
-        data-ax-event="cta_rdv" data-ax-page="vega">Réserver 15 min</a>
-      <Link className="vcv-alt" href={contactHref("Démo VEGA : un assistant comme celui-ci pour mon entreprise")}
-        data-ax-event="sortie" data-ax-cible="contact" data-ax-page="vega">Me décrire votre besoin</Link>
+        data-ax-event="cta_rdv" data-ax-page="vega">{t.book}</a>
+      <Link className="vcv-alt" href={localizedHref(contactHref(t.subject), locale)}
+        data-ax-event="sortie" data-ax-cible="contact" data-ax-page="vega">{t.describe}</Link>
     </div>
   );
 }

@@ -54,22 +54,13 @@ export interface WorkflowResponse {
   error?: string;
 }
 
-// Messages génériques (surchargés par config.errorMessages).
-export const GENERIC_ERRORS: Record<string, string> = {
-  rate_limited: "Trop d'essais rapprochés, réessaie dans 1 min.",
-  demo_busy: "Démo très sollicitée aujourd'hui, réessayez plus tard.",
-  demo_disabled: "Démo momentanément indisponible.",
-  invalid_input: "Entrée invalide (vide ou trop longue).",
-  file_too_large: "Fichier trop volumineux (max 15 Mo).",
-  upstream_error: "Le service est injoignable, réessayez plus tard.",
-  default: "Une erreur est survenue, réessayez.",
-};
+// Messages d'erreur génériques : demo-ui.ts / demo-ui.en.ts (surchargés par config.errorMessages).
 
 // Textarea → JSON { [field]: value, hp, ...extra }. Chaque lancement est compté
 // dans Umami : « demo_start » au lancement, « demo_result » si un résultat
 // revient. C'est l'écart entre les deux qui dit si la démo aboutit.
 export async function runWorkflow(
-  endpoint: string, field: string, value: string, hp: string, extra?: Record<string, string>,
+  endpoint: string, field: string, value: string, hp: string, extra?: Record<string, string>, locale = "fr",
 ): Promise<WorkflowResponse> {
   const demo = endpoint.split("/").pop() ?? endpoint;
   trackWithChannel("demo_start", { demo, ...extra });
@@ -77,7 +68,7 @@ export async function runWorkflow(
     const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...extra, [field]: value, hp }),
+      body: JSON.stringify({ ...extra, [field]: value, hp, locale }),
     });
     const parsed = (await res.json()) as WorkflowResponse;
     if (parsed.ok) trackWithChannel("demo_result", { demo });
@@ -89,7 +80,7 @@ export async function runWorkflow(
 
 // Fichier → multipart FormData (le navigateur pose le Content-Type).
 export async function runWorkflowFile(
-  endpoint: string, field: string, file: File | null, hp: string,
+  endpoint: string, field: string, file: File | null, hp: string, locale = "fr",
 ): Promise<WorkflowResponse> {
   if (!file) return { ok: false, error: "invalid_input" };
   const demo = endpoint.split("/").pop() ?? endpoint;
@@ -98,6 +89,7 @@ export async function runWorkflowFile(
     const fd = new FormData();
     fd.append(field, file);
     fd.append("hp", hp);
+    fd.append("locale", locale);
     const res = await fetch(endpoint, { method: "POST", body: fd });
     const parsed = (await res.json()) as WorkflowResponse;
     if (parsed.ok) trackWithChannel("demo_result", { demo });

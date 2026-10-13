@@ -9,8 +9,9 @@ import type { InputMode } from "./ModeSelector";
 import ExampleButtons from "./ExampleButtons";
 import ReboundCard from "./ReboundCard";
 import type { Suggestion } from "./ReboundCard";
-import { runWorkflow, runWorkflowFile, GENERIC_ERRORS } from "./workflow-types";
+import { runWorkflow, runWorkflowFile } from "./workflow-types";
 import type { WorkflowConfig, WorkflowResponse } from "./workflow-types";
+import { useDemoUi } from "./DemoUiContext";
 
 const MIN_MS = 1200; // durée mini d'animation, lisible même si l'API est rapide
 type Phase = "idle" | "running" | "done" | "error";
@@ -35,7 +36,8 @@ export default function WorkflowCanvas({
   const nodes = config.nodes;
   const isDual = config.inputType === "dual";
   const lastProcess = Math.max(0, nodes.length - 2);
-  const errors = { ...GENERIC_ERRORS, ...(config.errorMessages ?? {}) };
+  const ui = useDemoUi();
+  const errors = { ...ui.errors, ...(config.errorMessages ?? {}) };
   const clearTimers = () => { timers.current.forEach(clearTimeout); timers.current = []; };
 
   // Sélection de fichier → maj état + vignette (objectURL), l'ancien URL est révoqué.
@@ -57,21 +59,18 @@ export default function WorkflowCanvas({
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setPhase("running"); setResponse(null); setError(null);
     setActiveIndex(reduce ? lastProcess : 0);
-
     let minDelay: Promise<unknown> = Promise.resolve();
     if (!reduce) {
       const step = Math.max(220, MIN_MS / Math.max(1, lastProcess));
       for (let i = 1; i <= lastProcess; i++) timers.current.push(window.setTimeout(() => setActiveIndex(i), i * step));
       minDelay = new Promise((r) => { timers.current.push(window.setTimeout(r, MIN_MS)); });
     }
-
     const audioField = config.audioField ?? config.inputField;
     const fetchP = m === "file"
-      ? runWorkflowFile(config.endpoint, audioField, f, hp)
-      : runWorkflow(config.endpoint, config.inputField, v, hp);
+      ? runWorkflowFile(config.endpoint, audioField, f, hp, ui.locale)
+      : runWorkflow(config.endpoint, config.inputField, v, hp, undefined, ui.locale);
     const [data] = await Promise.all([fetchP, minDelay]);
     clearTimers();
-
     if (data.ok && data.result != null) {
       setActiveIndex(nodes.length - 1);
       setResponse(data);
@@ -90,16 +89,14 @@ export default function WorkflowCanvas({
   const canSubmit = hasInput && !running;
   const inId = `wc-in-${config.id}`;
   const accentVars = { "--wc-accent": config.accent, "--wc-accent-weak": `${config.accent}1f` } as CSSProperties;
-
   return (
     <div className="wc-card" style={accentVars}>
       <h2 className="wc-title">{config.title}</h2>
       <p className="wc-sub">{config.subtitle}</p>
-
       <div className="wc-form">
         {isDual && (
           <ModeSelector
-            options={[{ id: "text", label: "Texte" }, { id: "file", label: config.audioLabel ?? "Audio" }]}
+            options={[{ id: "text", label: ui.modeText }, { id: "file", label: config.audioLabel ?? ui.modeAudio }]}
             value={mode} onChange={setMode}
           />
         )}
@@ -129,14 +126,14 @@ export default function WorkflowCanvas({
 
         <div className="wc-actions">
           <button type="button" className="wc-btn wc-primary" onClick={() => run()} disabled={!canSubmit}>
-            {config.submitLabel ?? "Lancer le workflow"}
+            {config.submitLabel ?? ui.run}
           </button>
         </div>
       </div>
 
       <NodePipeline nodes={nodes} activeIndex={activeIndex} phase={phase} />
 
-      {running && <p className="wc-status" aria-live="polite"><span className="wc-spin" aria-hidden />Exécution du workflow…</p>}
+      {running && <p className="wc-status" aria-live="polite"><span className="wc-spin" aria-hidden />{ui.running}</p>}
       {phase === "error" && error && <p className="wc-error" role="alert">{error}</p>}
       {phase === "done" && response?.result != null && (
         <div className="wc-result">

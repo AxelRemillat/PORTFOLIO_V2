@@ -41,6 +41,14 @@ Commun aux trois lots (socle + pages, démos agent/automatisations, VEGA/pipelin
 | Station F | trained at Station F | **jamais** « works at Station F » |
 | ingénieur Data & IA | Data & AI engineer | |
 | alternance | work-study program | |
+| Réserver 15 min (bouton) | Book 15 min | VEGA, bandeau « Et chez vous ? » |
+| Et chez vous ? | What about your business? | |
+| base vectorielle | vector database | VEGA |
+| assistante / IA de présentation (VEGA) | AI assistant | |
+| historique (VEGA) | history | |
+| chaud / tiède / froid (leads) | hot / warm / cold | /pipeline |
+| TPE / PME / ETI (taille) | Micro / Small / Mid-market | /pipeline, affichage seulement |
+| essai gratuit | free trial | /pipeline |
 
 ## Ce qui ne se traduit pas
 
