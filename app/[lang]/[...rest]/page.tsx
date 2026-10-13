@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/server";
  * Le layout `[lang]` étant la racine, c'est ce relais qui déclenche la 404 DANS la
  * bonne langue — sans recourir à `global-not-found`, encore expérimental.
  */
-export default async function CatchAll({ params }: PageProps<"/[lang]/[...rest]">) {
+export default async function CatchAll({ params }: { params: Promise<{ lang: string; rest: string[] }> }) {
   await getLocale(params);
   notFound();
 }

@@ -27,7 +27,9 @@ const geistMono = Geist_Mono({
 export const generateStaticParams = () => locales.map((lang) => ({ lang }));
 export const dynamicParams = false;
 
-export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Promise<Metadata> {
+type LangParams = { params: Promise<{ lang: string }> };
+
+export async function generateMetadata({ params }: LangParams): Promise<Metadata> {
   const locale = await getLocale(params);
   const t = getMessages(locale).meta;
   return {
@@ -46,7 +48,7 @@ export async function generateMetadata({ params }: LayoutProps<"/[lang]">): Prom
   };
 }
 
-export default async function RootLayout({ children, params }: LayoutProps<"/[lang]">) {
+export default async function RootLayout({ children, params }: LangParams & { children: React.ReactNode }) {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const locale = await getLocale(params);
