@@ -1,31 +1,36 @@
 import Link from "next/link";
 import { CALENDAR_URL } from "@/lib/site-config";
 import { btnMain, btnAlt } from "./homeStyles";
+import { getLocale } from "@/lib/i18n/server";
+import { localizedHref } from "@/lib/i18n/paths";
+import { homeCopy } from "./copy";
 
 // Hero de la home (et de /pme via props) : promesse, sous-titre, 2 CTA. Composant
 // serveur, sans JS ni animation sur le titre (affichage immédiat, bon LCP).
 // Fond sombre + halo orange, repris de l'ancien hero.
-export default function HomeHero({
+export default async function HomeHero({
   origine = "home",
-  title = "J'automatise les tâches répétitives de votre PME avec l'IA",
-  subtitle = "Devis, commandes, relances, documents : moins de ressaisie, des réponses plus rapides. Testable avant de signer.",
+  title,
+  subtitle,
 }: { origine?: string; title?: string; subtitle?: string }) {
+  const locale = await getLocale();
+  const c = homeCopy(locale).hero;
   return (
     <section className="hh relative overflow-hidden">
       <div className="hh-bg" aria-hidden />
       <div className="hh-in relative">
         <p className="text-xs font-mono tracking-[0.2em] uppercase" style={{ color: "#fb923c", margin: 0 }}>
-          Axel Remillat — ingénieur IA pour les PME
+          {c.kicker}
         </p>
-        <h1 className="hh-title">{title}</h1>
-        <p className="hh-sub">{subtitle}</p>
+        <h1 className="hh-title">{title ?? c.title}</h1>
+        <p className="hh-sub">{subtitle ?? c.subtitle}</p>
         <div className="hh-ctas">
-          <Link href="/agent" style={btnMain} data-ax-event="demo_start" data-ax-demo="agent" data-ax-page={origine}>
-            Tester une démo
+          <Link href={localizedHref("/agent", locale)} style={btnMain} data-ax-event="demo_start" data-ax-demo="agent" data-ax-page={origine}>
+            {c.ctaDemo}
           </Link>
           <a href={CALENDAR_URL} target="_blank" rel="noopener noreferrer" style={btnAlt}
             data-ax-event="cta_rdv" data-ax-page={origine}>
-            Réserver 15 min
+            {c.ctaCall}
           </a>
         </div>
       </div>

@@ -10,7 +10,9 @@
  *      techniques sont retirés avant la recherche.
  *
  * Il faut donc un build à jour : `npm run build && npm run i18n:check`.
- * Code de sortie 1 au moindre problème. `--page /agent` ne contrôle qu'une page.
+ * Code de sortie 1 au moindre problème. `--page agent` ne contrôle qu'une page
+ * (`--page accueil` pour /en). Sans barre oblique : Git Bash réécrit « /agent »
+ * en chemin Windows avant même que le script ne le lise.
  */
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
@@ -57,7 +59,9 @@ function htmlFiles(dir: string): string[] {
 
 function main(): void {
   let problems = 0;
-  const only = process.argv.includes("--page") ? process.argv[process.argv.indexOf("--page") + 1] : null;
+  const raw = process.argv.includes("--page") ? process.argv[process.argv.indexOf("--page") + 1] ?? "" : null;
+  // « agent », « /agent », « projets/vega » ; « accueil » ou « / » pour la page d'accueil.
+  const only = raw === null ? null : raw === "accueil" || raw === "/" ? "/" : `/${raw.replace(/^\/+/, "")}`;
 
   // 1. Clés.
   const frKeys = new Set(keys(fr));
@@ -76,9 +80,11 @@ function main(): void {
     console.log("Aucune page /en prérendue : lancez d'abord `npm run build`.");
     process.exit(1);
   }
+  let checked = 0;
   for (const file of pages) {
     const route = "/" + relative(root, file).replace(/\\/g, "/").replace(/\.html$/, "");
     if (only && route !== `/en${only === "/" ? "" : only}`) continue;
+    checked += 1;
     const text = visibleText(readFileSync(file, "utf8"));
     const words = [...text.matchAll(FRENCH)].map((match) => match[1].toLowerCase());
     const accented = [...text.matchAll(ACCENTED)].map((match) => match[0].toLowerCase()).filter((word) => !ALLOWED_ACCENTED.has(word));
@@ -91,6 +97,10 @@ function main(): void {
     }
   }
 
+  if (only && !checked) {
+    console.log(`  Aucune page /en ne correspond à « ${raw} ».`);
+    problems += 1;
+  }
   console.log(problems ? `\n${problems} problème(s).` : "\nAucun reste de français sur les pages /en.");
   process.exit(problems ? 1 : 0);
 }

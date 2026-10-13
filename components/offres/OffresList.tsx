@@ -2,10 +2,12 @@
 
 import type { CSSProperties } from "react";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
-import { OFFERS } from "./offres-data";
+import { offersFor } from "./offres-data";
+import { useLocale } from "@/lib/i18n/client";
 
 // Les 4 offres en cards détaillées (2 × 2 sur grand écran). Reveal au scroll.
 export default function OffresList() {
+  const OFFERS = offersFor(useLocale());
   return (
     <section style={{ padding: "2vh 6vw 4vh", maxWidth: "1150px", margin: "0 auto" }}>
       <style>{`
@@ -20,7 +22,7 @@ export default function OffresList() {
       `}</style>
       <div className="offres-grid">
         {OFFERS.map((o, i) => (
-          <ScrollReveal key={o.name} delay={i * 0.08}>
+          <ScrollReveal key={o.num} delay={i * 0.08}>
             <article
               style={{
                 display: "flex",

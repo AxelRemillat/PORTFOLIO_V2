@@ -1,9 +1,12 @@
 "use client";
 
 import ScrollReveal from "@/components/parcours/ScrollReveal";
+import { useLocale } from "@/lib/i18n/client";
+import { offresCopy } from "./offres-copy";
 
 // Bandeau transverse : conformité au règlement européen sur l'IA (AI Act).
 export default function OffresBanners() {
+  const c = offresCopy(useLocale()).aiAct;
   return (
     <section style={{ padding: "4vh 6vw", maxWidth: "1000px", margin: "0 auto", display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Sceau transversal — Conformité AI Act « by design » (vaut pour toutes les offres) */}
@@ -56,15 +59,13 @@ export default function OffresBanners() {
                 marginBottom: "0.75rem",
               }}
             >
-              ✓ Conformité AI Act — by design
+              {c.badge}
             </span>
             <p style={{ margin: "0 0 0.5rem", fontSize: "0.95rem", lineHeight: 1.65, color: "var(--color-text)" }}>
-              Chaque automatisation respecte le règlement européen sur l&apos;IA : le niveau de
-              risque est évalué, le fonctionnement documenté, et ce que fait l&apos;IA reste
-              traçable. Vous l&apos;utilisez en règle, sans mauvaise surprise.
+              {c.text}
             </p>
             <p style={{ margin: 0, fontSize: "0.78rem", color: "var(--color-muted)", fontStyle: "italic" }}>
-              Intégré « by design » — accompagnement technique aligné sur le règlement, pas une certification légale ni un conseil juridique.
+              {c.note}
             </p>
           </div>
         </div>

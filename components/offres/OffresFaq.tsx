@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
 import SectionLabel from "@/components/parcours/SectionLabel";
-import { FAQ } from "./offres-data";
+import { faqFor } from "./offres-data";
+import { useLocale } from "@/lib/i18n/client";
+import { offresCopy } from "./offres-copy";
 
 // Mini-FAQ en accordéon. Une seule question ouverte à la fois. La transition
 // d'ouverture est désactivée si prefers-reduced-motion.
 export default function OffresFaq() {
+  const locale = useLocale();
+  const FAQ = faqFor(locale);
+  const c = offresCopy(locale).faq;
   const [open, setOpen] = useState<number | null>(0);
   const [reduce, setReduce] = useState(false);
 
@@ -21,7 +26,7 @@ export default function OffresFaq() {
   return (
     <section style={{ padding: "6vh 6vw", maxWidth: "820px", margin: "0 auto" }}>
       <ScrollReveal>
-        <SectionLabel>02 // FAQ</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
         <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "1rem" }}>
           {FAQ.map((f, i) => {
             const isOpen = open === i;

@@ -3,6 +3,8 @@
 // offersForPrompt(). Textes en clair (pas de JSX) pour éviter l'échappement.
 
 import { CALENDAR_URL } from "@/lib/site-config";
+import type { Locale } from "@/lib/i18n/config";
+import { FAQ_EN, OFFERS_EN } from "./offres-data.en";
 
 export interface Offer {
   num: string;        // "01"
@@ -88,9 +90,16 @@ export const OFFERS: Offer[] = [
   },
 ];
 
-/** Lignes de prix pour les prompts de VEGA : une seule vérité, celle de /offres. */
-export function offersForPrompt(): string {
-  return OFFERS.map((o) => `    • ${o.name} : ${o.price.toLowerCase()} (${o.priceNote}) — ${o.pitch}`).join("\n");
+/** Offres dans la langue de la page (jumeau anglais : offres-data.en.ts, même ordre). */
+export const offersFor = (locale: Locale): Offer[] => (locale === "en" ? OFFERS_EN : OFFERS);
+
+/**
+ * Lignes de prix pour les prompts de VEGA : une seule vérité, celle de /offres.
+ * `locale` est optionnelle (français par défaut) : les appels existants ne changent pas.
+ */
+export function offersForPrompt(locale: Locale = "fr"): string {
+  const colon = locale === "en" ? ":" : " :";
+  return offersFor(locale).map((o) => `    • ${o.name}${colon} ${o.price.toLowerCase()} (${o.priceNote}) — ${o.pitch}`).join("\n");
 }
 
 /** Noms des offres, pour les phrases du type « les offres X, Y et Z ». */
@@ -129,3 +138,6 @@ export const FAQ: Faq[] = [
     link: { label: "Réserver 15 min →", href: CALENDAR_URL },
   },
 ];
+
+/** FAQ dans la langue de la page. */
+export const faqFor = (locale: Locale): Faq[] => (locale === "en" ? FAQ_EN : FAQ);

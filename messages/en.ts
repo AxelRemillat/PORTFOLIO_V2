@@ -26,6 +26,11 @@ export const en: Messages = {
   },
   footer: {
     legal: "Legal notice",
+    offers: "Services",
+    projects: "Projects",
+    journey: "About",
+    contact: "Contact",
+    signature: "AI engineer · From prototype to production",
   },
   switcher: {
     label: "Site language",

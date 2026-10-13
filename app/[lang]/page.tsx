@@ -7,16 +7,18 @@ import OffersTeaser from "@/components/home/OffersTeaser";
 import ProjectsStrip from "@/components/home/ProjectsStrip";
 import HomeCta from "@/components/home/HomeCta";
 import { pageMetadata } from "@/lib/i18n/seo";
+import { getLocale } from "@/lib/i18n/server";
+import { homeCopy } from "@/components/home/copy";
 
 // Server component. Ordre : promesse → problèmes (1 démo chacun) → démo phare →
 // méthode → offres → preuves → à propos + CTA final.
-export const generateMetadata = pageMetadata("/", {
-  title: "Axel Remillat — J'automatise les tâches répétitives de votre PME",
-  description:
-    "Devis, commandes, relances, documents : moins de ressaisie, des réponses plus rapides. Démos testables sur votre métier avant de signer.",
-});
+export const generateMetadata = pageMetadata("/", (locale) => ({
+  title: homeCopy(locale).meta.title,
+  description: homeCopy(locale).meta.description,
+}));
 
-export default function HomePage() {
+export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
+  await getLocale(params);
   return (
     <main>
       <HomeHero />
