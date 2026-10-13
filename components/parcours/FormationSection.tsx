@@ -3,14 +3,19 @@
 import Link from "next/link";
 import ScrollReveal from "./ScrollReveal";
 import SectionLabel from "./SectionLabel";
+import { localizedHref } from "@/lib/i18n/paths";
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 
 // CTA final orienté client : appel en principal (plein), CV en secondaire
 // (outline). Le pont VEGA vit désormais en fin de timeline (TimelineSection).
 export default function FormationSection() {
+  const locale = useLocale();
+  const c = parcoursCopy(locale).closing;
   return (
     <section style={{ padding: "10vh 6vw 18vh", maxWidth: "820px", margin: "0 auto" }}>
       <ScrollReveal delay={0.1}>
-        <SectionLabel>04 // FORMATION</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
 
         <div style={{ textAlign: "center", marginTop: "4vh" }}>
           <p
@@ -21,7 +26,7 @@ export default function FormationSection() {
               marginBottom: "2rem",
             }}
           >
-            On travaille ensemble ?
+            {c.question}
           </p>
 
           <div
@@ -33,11 +38,11 @@ export default function FormationSection() {
               gap: "1rem",
             }}
           >
-            <Link href="/contact" className="parcours-cta">
-              Réserver un appel →
+            <Link href={localizedHref("/contact", locale)} className="parcours-cta">
+              {c.call}
             </Link>
             <a href="/CV-Axel-Remillat-2026.pdf" download className="parcours-cta-outline">
-              Télécharger mon CV (PDF)
+              {c.cv}
             </a>
           </div>
         </div>

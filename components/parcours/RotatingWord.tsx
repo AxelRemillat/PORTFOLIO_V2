@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-
-const WORDS = ["systèmes RAG", "agents IA", "pipelines de données", "produits qui tournent"];
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 const INTERVAL_MS = 2500;
 
 // Mot rotatif du hero : fade/slide vertical CSS (keyframe heroWordIn) à chaque
 // changement. Figé sur le premier mot si prefers-reduced-motion.
 export default function RotatingWord() {
+  const WORDS = parcoursCopy(useLocale()).hero.words;
   const [index, setIndex] = useState(0);
 
   useEffect(() => {

@@ -28,10 +28,27 @@ const FRENCH_WORDS = [
   "mentions", "légales", "accueil", "envoyer", "voir", "découvrir", "réserver", "rendez-vous", "entreprise",
 ];
 // « a », « en », « de », « la » existent aussi en anglais ou dans des noms propres : exclus.
-const FRENCH = new RegExp(`(?<![\\p{L}\\-])(${FRENCH_WORDS.join("|")})(?![\\p{L}\\-])`, "giu");
-/** Mots accentués typiquement français (é, è, à, ç…), noms propres exceptés. */
-const ACCENTED = /\b[\p{L}]*[éèêàùçôîû][\p{L}]*\b/giu;
-const ALLOWED_ACCENTED = new Set(["remillat", "café", "résumé", "français", "française"]);
+// Le tiret bas compte comme une lettre : `calculer_devis` est un nom de fonction, pas du texte.
+const FRENCH = new RegExp(`(?<![\\p{L}\\-_])(${FRENCH_WORDS.join("|")})(?![\\p{L}\\-_])`, "giu");
+/**
+ * Mots accentués typiquement français (é, è, à, ç…). Frontières Unicode : `\b`
+ * de JavaScript ignore les lettres accentuées et couperait « résumé » en « résum ».
+ */
+const ACCENTED = /(?<![\p{L}_])\p{L}*[éèêàùçôîû]\p{L}*(?![\p{L}_])/giu;
+const ALLOWED_ACCENTED = new Set(["remillat", "café", "résumé", "français", "française", "mapúa"]);
+/**
+ * Noms propres et adresses qui restent en français dans la version anglaise :
+ * retirés du texte avant la recherche. À compléter quand un nom légitime ressort.
+ */
+const PROPER_NOUNS = [
+  "Galets du Rhône",
+  "chemin de Pré Longe",
+  "Oris-en-Rattier",
+  "Version française",
+  "micro-entreprise",
+  "Math Sup",
+  "Math Spé",
+];
 
 const keys = (value: unknown, prefix = ""): string[] =>
   Object.entries(value as Record<string, unknown>).flatMap(([key, child]) =>
@@ -46,7 +63,8 @@ function visibleText(html: string): string {
     .replace(/<a[^>]*hreflang="fr"[^>]*>[\s\S]*?<\/a>/gi, " ")
     .replace(/<[^>]+>/g, " ")
     .replace(/&[a-z]+;|&#\d+;/gi, " ")
-    .replace(/\s+/g, " ");
+    .replace(/\s+/g, " ")
+    .replace(new RegExp(PROPER_NOUNS.map((name) => name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|"), "gi"), " ");
 }
 
 function htmlFiles(dir: string): string[] {

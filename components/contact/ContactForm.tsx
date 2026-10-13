@@ -2,31 +2,18 @@
 
 import { useState } from "react";
 import { trackWithChannel } from "@/lib/analytics";
-import type { CSSProperties } from "react";
 import Link from "next/link";
 import { CONTACT_LIMITS, CONTACT_SUBJECTS, CONTACT_SUBJECT_LABELS_EN, HONEYPOT_FIELD } from "@/lib/contact/schema";
 import { useLocale } from "@/lib/i18n/client";
 import { localizedHref } from "@/lib/i18n/paths";
 import { contactCopy } from "./contact-copy";
+import { fieldWrap, labelStyle, trapStyle } from "./contact-form-styles";
 
 type Status = "idle" | "sending" | "sent" | "error";
-
-const labelStyle: CSSProperties = {
-  display: "block",
-  fontFamily: "var(--font-mono)",
-  fontSize: 13,
-  color: "#94a3b8",
-  textTransform: "uppercase",
-  letterSpacing: "0.08em",
-  marginBottom: 8,
-};
-
-const fieldWrap: CSSProperties = { marginBottom: "1.5rem" };
 
 const SUBJECTS = CONTACT_SUBJECTS;
 
 /** Champ piège : hors écran, ignoré des lecteurs d'écran et du clavier. Un robot le remplit. */
-const trapStyle: CSSProperties = { position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" };
 
 export default function ContactForm() {
   const locale = useLocale();

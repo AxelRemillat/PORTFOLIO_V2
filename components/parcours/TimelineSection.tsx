@@ -6,6 +6,9 @@ import TimelineItem from "./TimelineItem";
 import ParcoursSnake from "./ParcoursSnake";
 import SectionLabel from "./SectionLabel";
 import { TIMELINE_EVENTS } from "./timeline-data";
+import { TIMELINE_EVENTS_EN } from "./timeline-data.en";
+import { useLocale } from "@/lib/i18n/client";
+import { parcoursCopy } from "./parcours-copy";
 import type { TimelineEvent } from "./TimelineItem";
 
 function groupByYear(list: TimelineEvent[]) {
@@ -60,7 +63,9 @@ function Reveal({ event, side, delay }: RevealProps) {
 }
 
 export default function TimelineSection() {
-  const groups = groupByYear(TIMELINE_EVENTS);
+  const locale = useLocale();
+  const c = parcoursCopy(locale).timeline;
+  const groups = groupByYear(locale === "en" ? TIMELINE_EVENTS_EN : TIMELINE_EVENTS);
   const containerRef = useRef<HTMLDivElement>(null);
   useWatermarkParallax(containerRef);
   let sideIndex = 0;
@@ -68,9 +73,9 @@ export default function TimelineSection() {
   return (
     <section style={{ padding: "4rem clamp(1rem, 4vw, 3rem)", maxWidth: 900, margin: "0 auto" }}>
       <ScrollReveal>
-        <SectionLabel>03 // PARCOURS</SectionLabel>
+        <SectionLabel>{c.label}</SectionLabel>
         <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)", margin: "0 0 2.5rem" }}>
-          Parcours
+          {c.title}
         </h2>
       </ScrollReveal>
 

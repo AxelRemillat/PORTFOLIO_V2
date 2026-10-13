@@ -1,6 +1,8 @@
 "use client";
 
 import { CAT_COLOR } from "./skills-graph-data";
+import { CAT_LABEL_EN } from "./skills-graph-data.en";
+import { useLocale } from "@/lib/i18n/client";
 import { ZONE_CATS, homePoints, zonePath, zoneLabelAnchor } from "./skills-zones";
 
 // Zones de thème « territoire » (arrière-plan), DERRIÈRE arêtes et nœuds :
@@ -14,6 +16,7 @@ export default function ThemeZones({
   registerPath: (cat: string) => (el: SVGPathElement | null) => void;
   registerLabel: (cat: string) => (el: SVGTextElement | null) => void;
 }) {
+  const locale = useLocale();
   return (
     <g aria-hidden style={{ pointerEvents: "none" }}>
       <defs>
@@ -39,7 +42,7 @@ export default function ThemeZones({
             <text ref={registerLabel(cat)} x={lx} y={ly} textAnchor="middle"
               fill={color} fillOpacity={0.7}
               style={{ fontFamily: "var(--font-mono)", fontSize: "11px", fontWeight: 600, letterSpacing: "0.15em", userSelect: "none" }}>
-              {cat.toUpperCase()}
+              {(locale === "en" ? CAT_LABEL_EN[cat] : cat).toUpperCase()}
             </text>
           </g>
         );
