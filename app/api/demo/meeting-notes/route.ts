@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/demo-rate-limit";
+import { demoLocale } from "@/lib/demo-locale";
 
 export const runtime = "nodejs";
 
@@ -32,14 +33,14 @@ export async function POST(req: NextRequest) {
 
   // ── MODE TEXTE (JSON) ──────────────────────────────────────────────────────
   if (ct.includes("application/json")) {
-    let body: { transcript_text?: unknown; hp?: unknown };
+    let body: { transcript_text?: unknown; hp?: unknown; locale?: unknown };
     try { body = await req.json(); } catch { return err(400, "invalid_input"); }
     if (typeof body.hp === "string" && body.hp.trim() !== "") return err(400, "invalid_input");
     const t = body.transcript_text;
     if (typeof t !== "string" || t.trim() === "" || t.length > MAX_TEXT) return err(400, "invalid_input");
     { const rl = await checkRateLimit(ip, "meeting"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
     if (!webhook) return err(502, "upstream_error");
-    return forward(webhook, JSON.stringify({ mode: "text", transcript_text: t }),
+    return forward(webhook, JSON.stringify({ mode: "text", transcript_text: t, locale: demoLocale(body.locale) }),
       { "Content-Type": "application/json", "x-demo-secret": secret });
   }
 
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
     if (!webhook) return err(502, "upstream_error");
     const fd = new FormData();
     fd.append("mode", "audio");
+    fd.append("locale", demoLocale(form.get("locale")));
     fd.append("audio", audio, audio.name);
     return forward(webhook, fd, { "x-demo-secret": secret }); // pas de Content-Type manuel (boundary)
   }

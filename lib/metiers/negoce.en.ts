@@ -1,0 +1,51 @@
+import type { Metier } from "./types";
+
+// B2B trade supplier: building materials and site supplies. Sample prices excl. VAT.
+export const NEGOCE: Metier = {
+  id: "negoce",
+  label: "B2B trade supply",
+  entreprise: "Northgate Building Supply",
+  activite: "Materials and supplies for building trade professionals, delivered to site.",
+  tva: 0.2,
+  remises: [{ seuil: 3000, taux: 0.05 }, { seuil: 1000, taux: 0.03 }],
+  minimum_ht: 100,
+  livraison: { libelle: "Crane-truck delivery to site", frais: 65, franco: 1500, delai_jours: 2 },
+  catalogue: [
+    { ref: "CIM-35", nom: "Cement CEM II 32.5 R — 35 kg bag", categorie: "structural work", description: "Gray cement for masonry and general-purpose concrete.", unite: "bag", prix_unitaire: 8.9, delai_jours: 0 },
+    { ref: "MORT-25", nom: "Ready-mix mortar — 25 kg bag", categorie: "structural work", description: "For laying blocks and small fixings.", unite: "bag", prix_unitaire: 7.5, delai_jours: 0 },
+    { ref: "PARP-20", nom: "Hollow concrete block 20×20×50", categorie: "structural work", description: "B40 hollow concrete block.", unite: "unit", prix_unitaire: 1.65, delai_jours: 0 },
+    { ref: "SABLE-BB", nom: "Sand 0/4 — 1 t big bag", categorie: "aggregates", description: "Washed river sand.", unite: "big bag", prix_unitaire: 69, delai_jours: 0 },
+    { ref: "GRAV-BB", nom: "Gravel 4/10 — 1 t big bag", categorie: "aggregates", description: "Washed rounded gravel.", unite: "big bag", prix_unitaire: 75, delai_jours: 0 },
+    { ref: "BA13", nom: "BA13 plasterboard sheet 250×120", categorie: "drywall", description: "Standard sheet, tapered edges.", unite: "sheet", prix_unitaire: 7.9, delai_jours: 0 },
+    { ref: "MONT-48", nom: "Metal stud 48 mm — 2.50 m", categorie: "drywall framing", description: "Galvanized stud for partitions.", unite: "unit", prix_unitaire: 3.6, delai_jours: 0 },
+    { ref: "RAIL-48", nom: "Metal track 48 mm — 3 m", categorie: "drywall framing", description: "Galvanized track for partitions.", unite: "unit", prix_unitaire: 3.2, delai_jours: 0 },
+    { ref: "VIS-PLACO", nom: "Drywall screws 3.5×25 — box of 1,000", categorie: "drywall hardware", description: "Phosphated screws, needle point.", unite: "box", prix_unitaire: 14.9, delai_jours: 0 },
+    { ref: "LV-100", nom: "Glass wool 100 mm — 6 m² roll", categorie: "insulation", description: "Semi-rigid insulation, R = 2.5.", unite: "roll", prix_unitaire: 29.9, delai_jours: 0 },
+    { ref: "OSB-18", nom: "OSB3 panel 18 mm 250×125", categorie: "wood panels", description: "Structural panel for humid conditions.", unite: "panel", prix_unitaire: 24.5, delai_jours: 0 },
+    { ref: "CHEV-4M", nom: "Fir rafter 63×75 — 4 m", categorie: "wood framing", description: "Treated fir, use class 2.", unite: "unit", prix_unitaire: 9.8, delai_jours: 0 },
+    { ref: "GANTS-12", nom: "Work gloves — pack of 12", categorie: "PPE safety equipment", description: "Nitrile coated, size 9.", unite: "pack", prix_unitaire: 18.5, delai_jours: 0 },
+    { ref: "CASQUE", nom: "Hard hat", categorie: "PPE safety equipment", description: "EN 397 standard, ratchet adjustment.", unite: "unit", prix_unitaire: 9.9, delai_jours: 0 },
+    { ref: "PALETTE", nom: "Pallet deposit", categorie: "logistics", description: "Refunded when the pallet is returned.", unite: "unit", prix_unitaire: 12, delai_jours: 0 },
+  ],
+  exemples: [
+    { label: "Partition order", texte: "For a job site in Villeurbanne: 80 BA13 plasterboard sheets, 120 metal studs 48 mm, 60 metal tracks and 10 boxes of drywall screws. Can you deliver on Tuesday?" },
+    { label: "Structural work", texte: "I need 3 big bags of sand, 40 bags of cement and 200 concrete blocks, delivered to a job site in Grenoble." },
+    { label: "Off-catalog", texte: "Do you carry Douglas fir cladding? I also need 30 OSB panels, 18 mm, delivered to Ajaccio, Corsica." },
+  ],
+  politique: {
+    paiement: "Trade account: payment at 30 days end of month once the account is open. Otherwise card or bank transfer when you order.",
+    livraison: "Crane-truck delivery within 48 hours anywhere in mainland France, free from €1,500 excl. VAT.",
+    remises: "3% discount from €1,000 excl. VAT, 5% from €3,000 excl. VAT.",
+    retours: "Returns accepted within 30 days for unopened products, except special orders.",
+    horaires: "Depot open Monday to Friday 7 am to 5 pm, Saturday 8 am to noon.",
+  },
+  sav: [
+    { id: "N1", question: "Delivery time to the job site", reponse: "Crane-truck delivery within 48 business hours anywhere in mainland France." },
+    { id: "N2", question: "Opening a trade account", reponse: "Send us your company registration certificate and bank details: the account is open within 48 hours, with payment at 30 days end of month." },
+    { id: "N3", question: "Returning unused products", reponse: "Returns within 30 days for unopened products. A credit note is issued once they're back at the depot." },
+    { id: "N4", question: "Volume discounts", reponse: "3% from €1,000 excl. VAT, 5% from €3,000 excl. VAT, applied automatically." },
+    { id: "N5", question: "Pallet deposits", reponse: "Each pallet carries a €12 deposit (excl. VAT), refunded when it comes back to the depot." },
+    { id: "N6", question: "Depot opening hours", reponse: "Monday to Friday 7 am to 5 pm, Saturday 8 am to noon." },
+  ],
+  savExemples: ["How do I open a trade account?", "Can I return 10 unopened bags of cement?", "Do you rent mini excavators?"],
+};

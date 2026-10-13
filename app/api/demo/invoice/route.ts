@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkRateLimit } from "@/lib/demo-rate-limit";
+import { demoLocale } from "@/lib/demo-locale";
 
 export const runtime = "nodejs";
 
@@ -38,7 +39,7 @@ export async function POST(req: NextRequest) {
     const res = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-demo-secret": secret },
-      body: JSON.stringify({ file_data: dataUri }),
+      body: JSON.stringify({ file_data: dataUri, locale: demoLocale(form.get("locale")) }),
       signal: controller.signal,
     });
     if (!res.ok) return err(502, "upstream_error");

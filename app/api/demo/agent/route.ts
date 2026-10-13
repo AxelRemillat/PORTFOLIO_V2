@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 import { checkRateLimit } from "@/lib/demo-rate-limit";
+import { demoLocale } from "@/lib/demo-locale";
+import { agentText } from "@/lib/agent/text-locale";
 import { getMetier } from "@/lib/metiers";
 import { runAgent, type Llm } from "@/lib/agent/run";
 
@@ -17,12 +19,13 @@ export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
 
   if (!(req.headers.get("content-type") ?? "").includes("application/json")) return err(400, "invalid_input");
-  let body: { demande?: unknown; metier?: unknown; hp?: unknown };
+  let body: { demande?: unknown; metier?: unknown; hp?: unknown; locale?: unknown };
   try { body = await req.json(); } catch { return err(400, "invalid_input"); }
   if (typeof body.hp === "string" && body.hp.trim() !== "") return err(400, "invalid_input");
   const demande = body.demande;
   if (typeof demande !== "string" || demande.trim() === "" || demande.length > MAX_LEN) return err(400, "invalid_input");
-  const metier = getMetier(body.metier ?? "menuiserie");
+  const locale = demoLocale(body.locale);
+  const metier = getMetier(body.metier ?? "menuiserie", locale);
   if (!metier) return err(400, "invalid_input");
   { const rl = await checkRateLimit(ip, "agent"); if (!rl.ok) return err(429, rl.scope === "global" ? "demo_busy" : "rate_limited"); }
 
@@ -41,7 +44,7 @@ export async function POST(req: NextRequest) {
   };
 
   try {
-    const { trace, result } = await runAgent(metier, demande, llm);
+    const { trace, result } = await runAgent(metier, demande, llm, agentText(locale));
     return NextResponse.json({ ok: true, metier: metier.id, trace, result });
   } catch {
     return err(502, "upstream_error");
