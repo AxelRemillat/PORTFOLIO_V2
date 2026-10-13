@@ -1,18 +1,19 @@
 import type { Metadata } from "next";
-import { projects } from "@/lib/projects-data";
+import { projectsFor } from "@/lib/projects-data";
 import PreuveCard from "@/components/preuves/PreuveCard";
 import { PREUVES_CSS } from "@/components/preuves/preuvesCss";
 import { pageMetadata } from "@/lib/i18n/seo";
+import { getLocale } from "@/lib/i18n/server";
+import { projetsCopy } from "@/components/preuves/projets-copy";
 
 // Server component : SEO + fond propre (plus de SpaceBackground). Les cards sont
 // des mini-interfaces produit + flux d'architecture (client, animées).
-export const generateMetadata = pageMetadata("/projets", {
-  title: "Projets — Axel Remillat | Systèmes IA testables",
-  description:
-    "Des systèmes IA testables en vrai : l'assistant RAG VEGA, les automatisations n8n, un agent commercial autonome, un pipeline Data/ML de scoring et l'infrastructure self-hosted. Pas de screenshots — des preuves.",
-});
+export const generateMetadata = pageMetadata("/projets", (locale) => projetsCopy(locale).meta);
 
-export default function ProjetsPage() {
+export default async function ProjetsPage({ params }: { params: Promise<{ lang: string }> }) {
+  const locale = await getLocale(params);
+  const c = projetsCopy(locale).list;
+  const projects = projectsFor(locale);
   return (
     <main className="pvp-main">
       <style>{PREUVES_CSS}</style>
@@ -48,12 +49,12 @@ export default function ProjetsPage() {
 
       <div className="pvp-wrap">
         <header>
-          <p className="pvp-label pvp-head">PROJETS // EN PRODUCTION</p>
+          <p className="pvp-label pvp-head">{c.label}</p>
           <h1 className="pvp-h1 pvp-head" style={{ animationDelay: "0.08s" }}>
-            Ne me croyez pas sur parole. Testez.
+            {c.title}
           </h1>
           <p className="pvp-sub pvp-head" style={{ animationDelay: "0.16s" }}>
-            Chaque système ci-dessous tourne en vrai. Cliquez, essayez, cassez-les si vous pouvez.
+            {c.lead}
           </p>
         </header>
 

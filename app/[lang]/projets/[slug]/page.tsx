@@ -6,6 +6,9 @@ import ArchiDiagram from "@/components/preuves/archi/ArchiDiagram";
 import BlueprintGrid from "@/components/preuves/archi/BlueprintGrid";
 import { ARCHI_CSS } from "@/components/preuves/archi/archiCss";
 import { pageMetadata } from "@/lib/i18n/seo";
+import { getLocale } from "@/lib/i18n/server";
+import { localizedHref } from "@/lib/i18n/paths";
+import { projetsCopy } from "@/components/preuves/projets-copy";
 
 const DOT: Record<string, string> = { live: "#22c55e", wip: "#f59e0b", building: "#60a5fa" };
 
@@ -15,15 +18,18 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const locale = await getLocale(params);
+  const project = getProjectBySlug(slug, locale);
   if (!project) return {};
-  // Canonical et hreflang PAR LANGUE (lib/i18n/seo) ; titre et description inchangés.
-  return pageMetadata(`/projets/${slug}`, { title: `${project.title} — Architecture`, description: project.tagline })({ params });
+  // Canonical et hreflang PAR LANGUE (lib/i18n/seo) ; titre et description dans la langue de la page.
+  return pageMetadata(`/projets/${slug}`, { title: projetsCopy(locale).detail.metaTitle(project.title), description: project.tagline })({ params });
 }
 
-export default async function ProjetDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ProjetDetailPage({ params }: { params: Promise<{ lang: string; slug: string }> }) {
   const { slug } = await params;
-  const project = getProjectBySlug(slug);
+  const locale = await getLocale(params);
+  const t = projetsCopy(locale).detail;
+  const project = getProjectBySlug(slug, locale);
   if (!project) notFound();
 
   const { accent, badge, state, title, tagline, stack, context, problem, result, demoUrl, offer } = project;
@@ -33,9 +39,9 @@ export default async function ProjetDetailPage({ params }: { params: Promise<{ s
     "--ac-grid": `${accent}16`, "--ac-state": sc,
   } as CSSProperties;
   const SECTIONS = [
-    { n: "01", t: "Contexte", c: context },
-    { n: "02", t: "Le défi", c: problem },
-    { n: "03", t: "Résultat / état", c: result },
+    { n: "01", t: t.context, c: context },
+    { n: "02", t: t.challenge, c: problem },
+    { n: "03", t: t.result, c: result },
   ];
 
   return (
@@ -44,11 +50,11 @@ export default async function ProjetDetailPage({ params }: { params: Promise<{ s
       <BlueprintGrid accent={accent} />
 
       <div className="ap-inner">
-        <Link href="/projets" className="ap-back">← Retour aux projets</Link>
+        <Link href={localizedHref("/projets", locale)} className="ap-back">{t.back}</Link>
 
         <header>
           <p className="ap-kicker">
-            <span className="ap-sdot" />{badge}<span className="ap-sep">{"//"}</span>Architecture
+            <span className="ap-sdot" />{badge}<span className="ap-sep">{"//"}</span>{t.architecture}
           </p>
           <h1 className="ap-h1">{title}</h1>
           <p className="ap-tag">{tagline}</p>
@@ -56,8 +62,8 @@ export default async function ProjetDetailPage({ params }: { params: Promise<{ s
 
         <div className="ap-grid">
           <div className="ap-main">
-            <p className="ap-seclabel">Pipeline // flux de données</p>
-            <ArchiDiagram slug={slug} />
+            <p className="ap-seclabel">{t.pipeline}</p>
+            <ArchiDiagram slug={slug} locale={locale} />
 
             {SECTIONS.map((s) => (
               <section key={s.n} className="ap-sec">
@@ -68,18 +74,18 @@ export default async function ProjetDetailPage({ params }: { params: Promise<{ s
           </div>
 
           <aside className="ap-rail">
-            <p className="ap-seclabel">Spécifications</p>
+            <p className="ap-seclabel">{t.specs}</p>
             <div className="ap-spec">
               <div className="ap-spec-row">
-                <span>Statut</span><b style={{ color: sc }}>{badge}</b>
+                <span>{t.status}</span><b style={{ color: sc }}>{badge}</b>
               </div>
               <div className="ap-spec-stack">
                 {stack.map((t) => <span key={t} className="ap-chip">{t}</span>)}
               </div>
             </div>
             <div className="ap-ctas">
-              {demoUrl && <Link href={demoUrl} className="ap-cta1">Tester en live →</Link>}
-              <Link href={offer.href} className="ap-cta2">{offer.label}</Link>
+              {demoUrl && <Link href={localizedHref(demoUrl, locale)} className="ap-cta1">{t.tryLive}</Link>}
+              <Link href={localizedHref(offer.href, locale)} className="ap-cta2">{offer.label}</Link>
             </div>
           </aside>
         </div>

@@ -4,7 +4,10 @@ import { useState } from "react";
 import { trackWithChannel } from "@/lib/analytics";
 import type { CSSProperties } from "react";
 import Link from "next/link";
-import { CONTACT_LIMITS, CONTACT_SUBJECTS, HONEYPOT_FIELD } from "@/lib/contact/schema";
+import { CONTACT_LIMITS, CONTACT_SUBJECTS, CONTACT_SUBJECT_LABELS_EN, HONEYPOT_FIELD } from "@/lib/contact/schema";
+import { useLocale } from "@/lib/i18n/client";
+import { localizedHref } from "@/lib/i18n/paths";
+import { contactCopy } from "./contact-copy";
 
 type Status = "idle" | "sending" | "sent" | "error";
 
@@ -26,6 +29,10 @@ const SUBJECTS = CONTACT_SUBJECTS;
 const trapStyle: CSSProperties = { position: "absolute", left: "-10000px", width: 1, height: 1, overflow: "hidden" };
 
 export default function ContactForm() {
+  const locale = useLocale();
+  const t = contactCopy(locale).form;
+  // La valeur envoyée reste le sujet français (validation serveur) ; seul le libellé se traduit.
+  const subjectLabel = (s: (typeof SUBJECTS)[number]) => (locale === "en" ? CONTACT_SUBJECT_LABELS_EN[s] : s);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [subject, setSubject] = useState<string>(SUBJECTS[0]);
@@ -45,7 +52,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, subject, message, [HONEYPOT_FIELD]: trap }),
+        body: JSON.stringify({ name, email, subject, message, locale, [HONEYPOT_FIELD]: trap }),
       });
       if (res.ok) {
         // Uniquement sur un envoi REUSSI : un contact compte quand il est parti.
@@ -69,7 +76,7 @@ export default function ContactForm() {
       <div style={{ textAlign: "center", padding: "4rem 1rem" }}>
         <div style={{ fontSize: "2.5rem", color: "var(--color-orange)", marginBottom: "1rem" }}>✦</div>
         <p style={{ fontSize: "clamp(1.4rem, 4vw, 2rem)", fontWeight: 700, color: "var(--color-text)" }}>
-          Message reçu — je te réponds en moins de 24h.
+          {t.sent}
         </p>
       </div>
     );
@@ -89,62 +96,62 @@ export default function ContactForm() {
           marginBottom: "1.75rem",
         }}
       >
-        {"// Envoyer un message direct"}
+        {t.heading}
       </p>
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 2rem" }}>
         <div style={fieldWrap}>
-          <label style={labelStyle} htmlFor="cf-name">Nom</label>
+          <label style={labelStyle} htmlFor="cf-name">{t.name}</label>
           <input id="cf-name" className="contact-field" value={name} autoComplete="name"
             maxLength={CONTACT_LIMITS.name} onChange={(e) => setName(e.target.value)} required />
         </div>
         <div style={fieldWrap}>
-          <label style={labelStyle} htmlFor="cf-email">Email</label>
+          <label style={labelStyle} htmlFor="cf-email">{t.email}</label>
           <input id="cf-email" type="email" className="contact-field" value={email} autoComplete="email"
             maxLength={CONTACT_LIMITS.email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div style={fieldWrap}>
-          <label style={labelStyle} htmlFor="cf-subject">Sujet</label>
+          <label style={labelStyle} htmlFor="cf-subject">{t.subject}</label>
           <select id="cf-subject" className="contact-field" value={subject}
             onChange={(e) => setSubject(e.target.value)}>
-            {SUBJECTS.map((s) => <option key={s} value={s}>{s}</option>)}
+            {SUBJECTS.map((s) => <option key={s} value={s}>{subjectLabel(s)}</option>)}
           </select>
         </div>
         <div style={fieldWrap}>
-          <label style={labelStyle} htmlFor="cf-short">Message court</label>
-          <input id="cf-short" className="contact-field" placeholder="En une phrase..."
+          <label style={labelStyle} htmlFor="cf-short">{t.short}</label>
+          <input id="cf-short" className="contact-field" placeholder={t.shortPlaceholder}
             value={shortMsg} maxLength={300} onChange={(e) => setShortMsg(e.target.value)} required />
         </div>
       </div>
 
       <div style={{ ...fieldWrap, marginBottom: "2rem" }}>
-        <label style={labelStyle} htmlFor="cf-long">Message complet (optionnel)</label>
+        <label style={labelStyle} htmlFor="cf-long">{t.long}</label>
         <textarea id="cf-long" className="contact-field" style={{ height: 80, resize: "none" }}
           value={longMsg} maxLength={CONTACT_LIMITS.message - 400} onChange={(e) => setLongMsg(e.target.value)} />
       </div>
 
       {/* Pot de miel : invisible et non focalisable pour un humain */}
       <div style={trapStyle} aria-hidden="true">
-        <label htmlFor="cf-trap">Ne pas remplir</label>
+        <label htmlFor="cf-trap">{t.trap}</label>
         <input id="cf-trap" name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" value={trap}
           onChange={(e) => setTrap(e.target.value)} />
       </div>
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap" }}>
         <p style={{ fontSize: 13, color: "#94a3b8", maxWidth: 320 }}>
-          Dispo pour missions data/IA & collaborations. Réponse en moins de 24h.
-          {" "}Ces informations servent uniquement à te répondre, voir les{" "}
-          <Link href="/mentions-legales#donnees" style={{ color: "var(--color-orange)", textDecoration: "underline" }}>mentions légales</Link>.
+          {t.noteA}
+          {" "}{t.noteB}{" "}
+          <Link href={localizedHref("/mentions-legales#donnees", locale)} style={{ color: "var(--color-orange)", textDecoration: "underline" }}>{t.noteLink}</Link>.
         </p>
         <button type="submit" className="contact-submit" disabled={sending}>
           <span className="contact-ring" />
-          {sending ? "Envoi..." : "Envoyer"}
+          {sending ? t.sending : t.send}
         </button>
       </div>
 
       {status === "error" && (
         <p role="alert" style={{ marginTop: "1rem", fontSize: 13, color: "#f87171" }}>
-          {errorMsg || "Une erreur est survenue. Réessaie ou écris-moi directement par email."}
+          {errorMsg || t.error}
         </p>
       )}
     </form>

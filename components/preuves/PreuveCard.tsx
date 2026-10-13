@@ -4,6 +4,8 @@ import Link from "next/link";
 import type { CSSProperties, ComponentType } from "react";
 import { projects, type Project, type PreuveState } from "@/lib/projects-data";
 import ScrollReveal from "@/components/parcours/ScrollReveal";
+import { useLocale } from "@/lib/i18n/client";
+import { localizedHref } from "@/lib/i18n/paths";
 import VegaWindow from "./windows/VegaWindow";
 import WorkflowWindow from "./windows/WorkflowWindow";
 import InfraWindow from "./windows/InfraWindow";
@@ -28,6 +30,7 @@ const STATE_COLOR: Record<PreuveState, string> = {
 export default function PreuveCard({ project, index }: { project: Project; index: number }) {
   const { slug, accent, badge, state, title, tagline, stack, primaryCta, detailCta } = project;
   const Win = WINDOWS[slug] ?? VegaWindow;
+  const locale = useLocale();
   const sc = STATE_COLOR[state];
 
   const vars = {
@@ -54,8 +57,8 @@ export default function PreuveCard({ project, index }: { project: Project; index
             {stack.map((t) => <span key={t} className="pv-chip">{t}</span>)}
           </div>
           <div className="pv-ctas">
-            {primaryCta && <Link href={primaryCta.href} className="pv-cta1">{primaryCta.label}</Link>}
-            <Link href={detailCta.href} className="pv-cta2">{detailCta.label}</Link>
+            {primaryCta && <Link href={localizedHref(primaryCta.href, locale)} className="pv-cta1">{primaryCta.label}</Link>}
+            <Link href={localizedHref(detailCta.href, locale)} className="pv-cta2">{detailCta.label}</Link>
           </div>
         </div>
         <div className="pv-window"><Win /></div>

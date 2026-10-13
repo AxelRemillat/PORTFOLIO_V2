@@ -88,6 +88,23 @@ function harness(opts: { unverified?: boolean; limited?: boolean } = {}) {
   const failed = await handleContact({ ip: "8.8.8.8", rawBody: raw() }, { send: down, rateLimit: async () => ({ ok: true }) });
   check("échec d'envoi : 502 lisible, pas de détail interne", failed.status === 502 && !JSON.stringify(failed.body).includes("boom"));
 
+  console.log("\n5. Visiteur anglophone (/en/contact)");
+  const enInvalid = validateContact({ ...valid, email: "pas-un-email", locale: "en" });
+  check("erreur dans la langue du visiteur", !enInvalid.ok && enInvalid.error === "Invalid email address.", JSON.stringify(enInvalid));
+  const frInvalid = validateContact({ ...valid, email: "pas-un-email" });
+  check("sans `locale` : français, comme avant", !frInvalid.ok && frInvalid.error === "Adresse email invalide.", JSON.stringify(frInvalid));
+  check("`locale` farfelue : français", !validateContact({ ...valid, email: "x", locale: "de" }).ok && (validateContact({ ...valid, email: "x", locale: "de" }) as { error: string }).error === "Adresse email invalide.");
+
+  const english = harness();
+  await handleContact({ ip: "9.9.9.9", rawBody: raw({ locale: "en" }) }, english.deps);
+  check("mail d'Axel : objet marqué [EN] pour répondre en anglais", english.sent[0]?.subject === "[Portfolio] [EN] Demander un devis — de Claire Martin", english.sent[0]?.subject);
+  check("mail d'Axel : ligne « Langue : anglais »", (english.sent[0]?.text ?? "").includes("Langue : anglais") && (english.sent[0]?.html ?? "").includes("Langue :"));
+  check("visiteur français : objet et corps inchangés (pas de ligne Langue)", ok.sent[0].subject === "[Portfolio] Demander un devis — de Claire Martin" && !ok.sent[0].text.includes("Langue"));
+
+  const enLimited = harness({ limited: true });
+  const enBlocked = await handleContact({ ip: "10.10.10.10", rawBody: raw({ locale: "en" }) }, enLimited.deps);
+  check("limite de débit en anglais", enBlocked.status === 429 && JSON.stringify(enBlocked.body).includes("Too many messages"), JSON.stringify(enBlocked.body));
+
   console.log(failures === 0 ? "\nTous les tests passent.\n" : `\n${failures} test(s) en echec.\n`);
   process.exit(failures === 0 ? 0 : 1);
 })();

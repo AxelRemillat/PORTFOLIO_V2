@@ -1,10 +1,12 @@
+import type { Locale } from "@/lib/i18n/config";
 import { ARCHI } from "./archi-data";
+import { ARCHI_EN } from "./archi-data.en";
 
 // Schéma de pipeline vertical animé : nœuds numérotés reliés par des connecteurs
 // où une impulsion « descend » (le flux de données). CSS pur → server component,
 // zéro JS. Impulsion figée si prefers-reduced-motion.
-export default function ArchiDiagram({ slug }: { slug: string }) {
-  const archi = ARCHI[slug];
+export default function ArchiDiagram({ slug, locale = "fr" }: { slug: string; locale?: Locale }) {
+  const archi = (locale === "en" ? ARCHI_EN : ARCHI)[slug];
   if (!archi) return null;
   const last = archi.flow.length - 1;
 
