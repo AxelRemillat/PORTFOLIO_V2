@@ -3,6 +3,8 @@
 // Rendu dédié « compte rendu de réunion » (thème clair, accent indigo de l'onglet).
 // Contrat n8n : result{ titre, resume, decisions[], actions[{tache,responsable,
 // echeance}], points_ouverts[] } + transcript (sibling de result).
+import { useDemoUi } from "./DemoUiContext";
+
 export interface MeetingAction { tache: string; responsable: string; echeance: string }
 export interface MeetingData {
   titre: string;
@@ -13,6 +15,7 @@ export interface MeetingData {
 }
 
 export default function MeetingResult({ result, transcript }: { result: MeetingData; transcript?: string }) {
+  const t = useDemoUi().meeting;
   return (
     <>
       <h3 className="wc-mr-title">{result.titre}</h3>
@@ -20,17 +23,17 @@ export default function MeetingResult({ result, transcript }: { result: MeetingD
 
       {result.decisions?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Décisions</p>
+          <p className="wc-res-lbl">{t.decisions}</p>
           <ul className="wc-res-keys">{result.decisions.map((d, i) => <li key={`d${i}`}>{d}</li>)}</ul>
         </>
       )}
 
       {result.actions?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Actions</p>
+          <p className="wc-res-lbl">{t.actions}</p>
           <div className="wc-mr-tablewrap">
             <table className="wc-mr-table">
-              <thead><tr><th>Tâche</th><th>Responsable</th><th>Échéance</th></tr></thead>
+              <thead><tr><th>{t.task}</th><th>{t.owner}</th><th>{t.due}</th></tr></thead>
               <tbody>
                 {result.actions.map((a, i) => (
                   <tr key={`a${i}`}><td>{a.tache}</td><td>{a.responsable}</td><td>{a.echeance}</td></tr>
@@ -43,14 +46,14 @@ export default function MeetingResult({ result, transcript }: { result: MeetingD
 
       {result.points_ouverts?.length > 0 && (
         <>
-          <p className="wc-res-lbl">Points ouverts</p>
+          <p className="wc-res-lbl">{t.open}</p>
           <ul className="wc-res-keys">{result.points_ouverts.map((p, i) => <li key={`p${i}`}>{p}</li>)}</ul>
         </>
       )}
 
       {transcript && (
         <details className="wc-mr-transcript">
-          <summary>Voir la transcription</summary>
+          <summary>{t.transcript}</summary>
           <p>{transcript}</p>
         </details>
       )}

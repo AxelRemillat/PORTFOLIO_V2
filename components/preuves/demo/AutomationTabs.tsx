@@ -5,20 +5,26 @@ import TabBar from "./TabBar";
 import WorkflowCanvas from "./WorkflowCanvas";
 import SavChat from "./SavChat";
 import ChezVousCta from "@/components/demo-kit/ChezVousCta";
-import { AUTOMATIONS } from "./automations-data";
+import { AUTOMATIONS as AUTOMATIONS_FR } from "./automations-data";
+import { AUTOMATIONS as AUTOMATIONS_EN } from "./automations-data.en";
+import { DemoUiProvider, demoUi } from "./DemoUiContext";
+import { useLocale } from "@/lib/i18n/client";
 
 // Orchestrateur des onglets : un seul WorkflowCanvas actif à la fois (key=id → son
 // état se réinitialise au switch). Lien direct vers un onglet : ?demo=<id> (lu au
 // montage, sans useSearchParams → la page reste statique). Changer d'onglet ne
 // modifie pas la position de scroll de la page.
 export default function AutomationTabs() {
+  const locale = useLocale();
+  const ui = demoUi(locale);
+  const AUTOMATIONS = locale === "en" ? AUTOMATIONS_EN : AUTOMATIONS_FR;
   const [active, setActive] = useState(0);
 
   useEffect(() => {
     const id = new URLSearchParams(window.location.search).get("demo");
     const i = AUTOMATIONS.findIndex((a) => a.id === id);
     if (i > 0) requestAnimationFrame(() => setActive(i));
-  }, []);
+  }, [AUTOMATIONS]);
 
   const cfg = AUTOMATIONS[active];
   const selectById = (id: string) => {
@@ -31,14 +37,14 @@ export default function AutomationTabs() {
     .map((a) => ({ id: a.id, label: a.tabLabel, icon: a.tabIcon }));
 
   return (
-    <>
+    <DemoUiProvider value={ui}>
       <TabBar tabs={tabs} active={active} onSelect={setActive} />
       <div role="tabpanel" id={`panel-${cfg.id}`} aria-labelledby={`tab-${cfg.id}`}>
         {cfg.chat
           ? <SavChat key={cfg.id} config={cfg} />
           : <WorkflowCanvas key={cfg.id} config={cfg} suggestions={suggestions} onSelect={selectById} />}
       </div>
-      <ChezVousCta demo={cfg.id} sujet={`Démo « ${cfg.title} » : je voudrais la même chose chez moi`} />
-    </>
+      <ChezVousCta demo={cfg.id} sujet={ui.cta(cfg.title)} locale={locale} />
+    </DemoUiProvider>
   );
 }

@@ -10,21 +10,18 @@ import MetierPicker from "@/components/demo-kit/MetierPicker";
 import { trackWithChannel } from "@/lib/analytics";
 import { useFollowScroll } from "./useFollowScroll";
 import { AGENT_CSS } from "./agentCss";
-import { METIERS, getMetier, type MetierId } from "@/lib/metiers";
+import { getMetier, metiersFor, type MetierId } from "@/lib/metiers";
+import { useLocale } from "@/lib/i18n/client";
+import { AgentUiProvider, agentUi } from "./AgentUiContext";
 
-const ERRORS: Record<string, string> = {
-  rate_limited: "Trop d'essais rapprochés. Réessayez dans une minute.",
-  demo_busy: "Démo très sollicitée aujourd'hui, réessayez plus tard.",
-  demo_disabled: "Démo momentanément indisponible.",
-  invalid_input: "Demande invalide (vide ou trop longue).",
-  upstream_error: "L'agent est injoignable, réessayez plus tard.",
-  default: "Une erreur est survenue, réessayez.",
-};
 type Phase = "idle" | "running" | "done" | "error";
 
 // Démo agent devis : choix du métier → demande (libre ou exemple) → trace de
 // l'agent → devis, questions, email, créneaux.
 export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMetier?: MetierId }) {
+  const locale = useLocale();
+  const t = agentUi(locale);
+  const metiers = metiersFor(locale);
   const [metierId, setMetierId] = useState<MetierId>(initialMetier);
   const [value, setValue] = useState("");
   const [hp, setHp] = useState("");
@@ -37,7 +34,7 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
   const endRef = useRef<HTMLDivElement>(null);
   useFollowScroll(outRef, endRef, runId);
 
-  const metier = getMetier(metierId) ?? METIERS[0];
+  const metier = getMetier(metierId, locale) ?? metiers[0];
   const running = phase === "running";
 
   const pick = (id: MetierId) => {
@@ -53,26 +50,27 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
     try {
       const res = await fetch("/api/demo/agent", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ demande, metier: metier.id, hp }),
+        body: JSON.stringify({ demande, metier: metier.id, hp, locale }),
       });
       const data = await res.json();
       if (data.ok && data.result) { setTrace(data.trace ?? []); setResult(data.result as AgentResult); setPhase("done"); trackWithChannel("demo_result", { demo: `agent-${metier.id}` }); }
-      else { setError(ERRORS[data.error ?? "default"] ?? ERRORS.default); setPhase("error"); }
-    } catch { setError(ERRORS.default); setPhase("error"); }
+      else { setError(t.errors[data.error ?? "default"] ?? t.errors.default); setPhase("error"); }
+    } catch { setError(t.errors.default); setPhase("error"); }
   };
 
   const accent = { "--wc-accent": "#ec4899", "--wc-accent-weak": "#ec489922" } as CSSProperties;
 
   return (
+    <AgentUiProvider value={t}>
     <div style={accent}>
       <style>{AGENT_CSS}</style>
-      <MetierPicker metiers={METIERS} value={metier.id} onChange={pick} disabled={running} />
+      <MetierPicker metiers={metiers} value={metier.id} onChange={pick} disabled={running} label={t.pickLabel} />
       <IdentityHeader metier={metier} />
 
       <div className="wc-card ag-card">
         <div className="wc-form">
           <div className="wc-try">
-            <p className="wc-try-lbl">Testez avec une demande type&nbsp;:</p>
+            <p className="wc-try-lbl">{t.tryLabel}</p>
             <div className="wc-examples">
               {metier.exemples.map((ex) => (
                 <button key={ex.label} type="button" className="wc-ex" disabled={running}
@@ -81,7 +79,7 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
             </div>
           </div>
 
-          <label htmlFor="ag-in" className="wc-label">…ou écrivez la demande d&apos;un client</label>
+          <label htmlFor="ag-in" className="wc-label">{t.freeLabel}</label>
           <textarea id="ag-in" className="wc-ta" value={value} maxLength={1500} disabled={running}
             placeholder={metier.exemples[0].texte}
             onChange={(e) => setValue(e.target.value)} />
@@ -90,7 +88,7 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
 
           <div className="wc-actions">
             <button type="button" className="wc-btn wc-primary" onClick={() => run(value)} disabled={running || !value.trim()}>
-              {running ? "L'agent prépare le devis…" : "Lancer l'agent"}
+              {running ? t.running : t.run}
             </button>
           </div>
           <CatalogueDetails metier={metier} />
@@ -100,9 +98,9 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
           {phase === "error" && error && <p className="wc-error" role="alert">{error}</p>}
           {(phase === "running" || phase === "done") && (
             <>
-              <p className="ag-seclabel">Ce que fait l&apos;agent</p>
+              <p className="ag-seclabel">{t.stepsLabel}</p>
               {phase === "running"
-                ? <div className="ag-think ag-think-solo" aria-live="polite">L&apos;agent démarre<span /><span /><span /></div>
+                ? <div className="ag-think ag-think-solo" aria-live="polite">{t.starting}<span /><span /><span /></div>
                 : <TraceLive key={runId} items={trace} />}
             </>
           )}
@@ -111,5 +109,6 @@ export default function AgentDemo({ initialMetier = "menuiserie" }: { initialMet
         </div>
       </div>
     </div>
+    </AgentUiProvider>
   );
 }

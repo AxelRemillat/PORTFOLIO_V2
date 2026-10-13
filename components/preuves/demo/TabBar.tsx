@@ -3,6 +3,7 @@
 import type { CSSProperties } from "react";
 import { Icon } from "./nodeIcons";
 import type { NodeIcon } from "./workflow-types";
+import { useDemoUi } from "./DemoUiContext";
 
 export interface TabItem { id: string; label: string; icon: NodeIcon; accent: string }
 
@@ -41,6 +42,7 @@ function tabVars(accent: string): CSSProperties {
 export default function TabBar({
   tabs, active, onSelect,
 }: { tabs: TabItem[]; active: number; onSelect: (i: number) => void }) {
+  const ui = useDemoUi();
   const onKey = (e: React.KeyboardEvent<HTMLDivElement>) => {
     const dir = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
     if (!dir) return;
@@ -51,7 +53,7 @@ export default function TabBar({
   };
 
   return (
-    <div className="wc-tabs" role="tablist" aria-label="Automatisations" onKeyDown={onKey}>
+    <div className="wc-tabs" role="tablist" aria-label={ui.tabsAria} onKeyDown={onKey}>
       {tabs.map((t, i) => (
         <button
           key={t.id} type="button" role="tab" id={`tab-${t.id}`} aria-controls={`panel-${t.id}`}

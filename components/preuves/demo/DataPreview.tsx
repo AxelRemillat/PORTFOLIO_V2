@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useDemoUi } from "./DemoUiContext";
 
 export interface ApercuRow {
   avant: Record<string, unknown>;
@@ -16,6 +17,7 @@ const cell = (v: unknown) => String(v ?? "");
 // (« corrigée »). AVANT en monospace = effet brut/illisible. Scroll vertical des
 // deux cartes synchronisé par refs (rAF-guardé, sans boucle ni conflit).
 export default function DataPreview({ apercu }: { apercu: ApercuRow[] }) {
+  const t = useDemoUi().clean;
   const aRef = useRef<HTMLDivElement>(null);
   const bRef = useRef<HTMLDivElement>(null);
   const lock = useRef(false);
@@ -34,15 +36,15 @@ export default function DataPreview({ apercu }: { apercu: ApercuRow[] }) {
   return (
     <div>
       {total > 3 && (
-        <p className="wc-dc-hint">3 lignes visibles · faites défiler pour voir les {total}</p>
+        <p className="wc-dc-hint">{t.hint(total)}</p>
       )}
       <div className="wc-dc-preview">
         <div className="wc-dc-side wc-dc-before">
-          <p className="wc-dc-side-title">AVANT — données brutes</p>
+          <p className="wc-dc-side-title">{t.before}</p>
           <div
             ref={aRef} onScroll={() => sync(aRef.current, bRef.current)}
             className="wc-dc-side-tablewrap" tabIndex={0} role="group"
-            aria-label={`Avant nettoyage — ${total} lignes, faites défiler`}
+            aria-label={t.beforeAria(total)}
           >
             <table className="wc-mr-table wc-dc-raw">
               <thead><tr>{cols.map((c) => <th key={c}>{c}</th>)}</tr></thead>
@@ -60,11 +62,11 @@ export default function DataPreview({ apercu }: { apercu: ApercuRow[] }) {
         </div>
 
         <div className="wc-dc-side wc-dc-after">
-          <p className="wc-dc-side-title">APRÈS — nettoyé</p>
+          <p className="wc-dc-side-title">{t.after}</p>
           <div
             ref={bRef} onScroll={() => sync(bRef.current, aRef.current)}
             className="wc-dc-side-tablewrap" tabIndex={0} role="group"
-            aria-label={`Après nettoyage — ${total} lignes, faites défiler`}
+            aria-label={t.afterAria(total)}
           >
             <table className="wc-mr-table">
               <thead><tr>{cols.map((c) => <th key={c}>{c}</th>)}</tr></thead>

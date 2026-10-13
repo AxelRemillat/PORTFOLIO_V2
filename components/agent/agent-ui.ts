@@ -1,9 +1,12 @@
+import { TOOL_META, type ToolMeta } from "@/lib/agent/tools-meta";
+
 // Libellés de la démo agent devis (/agent) : un fichier par langue, même type.
 // Les montants passent par `eur` (« 1 750,00 € » en français, « €1,750.00 » en anglais).
 export interface AgentUi {
   eur: (n: number) => string;
   pct: (t: number) => string;
   errors: Record<string, string>;
+  pickLabel: string;
   tryLabel: string;
   freeLabel: string;
   running: string;
@@ -16,13 +19,16 @@ export interface AgentUi {
   techHide: string;
   techReturned: string;
   techPseudo: string;
+  toolMeta: Record<string, ToolMeta>;
   partialTitle: string;
   partialText: string;
+  quoteLabel: string;
   questionsLabel: string;
   emailLabel: string;
   copy: string;
   copied: string;
   slotsLabel: string;
+  delivery: { label: string; free: string; included: string };
   table: { item: string; qty: string; unit: string; unitPrice: string; amount: string; subtotal: string; discount: string; total: string; vat: string; grand: string; toPrice: string };
   leadTime: (jours: number, partial: boolean) => { before: string; strong: string; after: string };
   days: string[];
@@ -51,6 +57,7 @@ export const AGENT_UI_FR: AgentUi = {
     upstream_error: "L'agent est injoignable, réessayez plus tard.",
     default: "Une erreur est survenue, réessayez.",
   },
+  pickLabel: "Choisissez votre métier",
   tryLabel: "Testez avec une demande type :",
   freeLabel: "…ou écrivez la demande d'un client",
   running: "L'agent prépare le devis…",
@@ -63,13 +70,16 @@ export const AGENT_UI_FR: AgentUi = {
   techHide: "Masquer le détail technique",
   techReturned: "données retournées",
   techPseudo: "logique (extrait)",
+  toolMeta: TOOL_META,
   partialTitle: "Devis partiel :",
   partialText: "tout ce qui est au catalogue est chiffré ; le reste attend les réponses du client.",
+  quoteLabel: "Devis",
   questionsLabel: "Questions à poser au client",
   emailLabel: "Email de réponse",
   copy: "Copier",
   copied: "Copié ✓",
   slotsLabel: "Rendez-vous proposés",
+  delivery: { label: "Livraison / déplacement", free: "offert", included: "inclus" },
   table: { item: "Désignation", qty: "Qté", unit: "Unité", unitPrice: "P.U. HT", amount: "Montant HT", subtotal: "Sous-total HT", discount: "Remise", total: "Total HT", vat: "TVA", grand: "Total TTC", toPrice: "à chiffrer" },
   leadTime: (j, partial) => ({ before: "Délai estimé : ", strong: `${j} jours ouvrés`, after: partial ? " (hors lignes à chiffrer)" : "" }),
   days: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"],
@@ -78,7 +88,7 @@ export const AGENT_UI_FR: AgentUi = {
   toDefine: "à définir",
   calNote: "Démo — affichage indicatif, la prise de rendez-vous se fait ensuite avec Axel.",
   sampleCatalogue: "Catalogue d'exemple",
-  sampleNote: " — chez vous, l'agent utilise votre catalogue et vos prix.",
+  sampleNote: "— chez vous, l'agent utilise votre catalogue et vos prix.",
   botTag: "agent devis",
   botIntro: { a: "Il lit la demande du client, cherche dans le catalogue, puis prépare un ", quote: "devis chiffré", b: " (HT, TVA, TTC, délai), les ", questions: "questions à poser", c: " s'il manque une information, et l'", email: "email de réponse", d: "." },
   catalogueSummary: (n) => `Voir le catalogue d'exemple (${n} articles)`,

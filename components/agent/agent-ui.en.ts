@@ -1,4 +1,5 @@
 import type { AgentUi } from "./agent-ui";
+import { TOOL_META } from "@/lib/agent/tools-meta.en";
 
 // English labels of the quote agent demo (/en/agent). Amounts: "€1,750.00".
 const en = (n: number, d = 2) => (n ?? 0).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -14,6 +15,7 @@ export const AGENT_UI_EN: AgentUi = {
     upstream_error: "The agent can't be reached right now. Please try again later.",
     default: "Something went wrong. Please try again.",
   },
+  pickLabel: "Choose your trade",
   tryLabel: "Try a sample request:",
   freeLabel: "…or write a customer request yourself",
   running: "The agent is preparing the quote…",
@@ -26,13 +28,16 @@ export const AGENT_UI_EN: AgentUi = {
   techHide: "Hide technical details",
   techReturned: "returned data",
   techPseudo: "logic (excerpt)",
+  toolMeta: TOOL_META,
   partialTitle: "Partial quote:",
   partialText: "everything in the catalog is priced; the rest waits for the customer's answers.",
+  quoteLabel: "Quote",
   questionsLabel: "Questions for the customer",
   emailLabel: "Reply email",
   copy: "Copy",
   copied: "Copied ✓",
   slotsLabel: "Suggested meetings",
+  delivery: { label: "Delivery / travel", free: "free", included: "included" },
   table: { item: "Item", qty: "Qty", unit: "Unit", unitPrice: "Unit price excl. VAT", amount: "Amount excl. VAT", subtotal: "Subtotal excl. VAT", discount: "Discount", total: "Total excl. VAT", vat: "VAT", grand: "Total incl. VAT", toPrice: "to be priced" },
   leadTime: (j, partial) => ({ before: "Estimated lead time: ", strong: `${j} business days`, after: partial ? " (excluding lines to be priced)" : "" }),
   days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
