@@ -120,6 +120,18 @@ export const NAVBAR_CSS = `
         }
         .nv-mobile a:hover, .nv-mobile a.nv-active { color: #ffffff; }
 
+        /* Sélecteur FR | EN : toujours visible, desktop comme mobile (hors burger). */
+        .nv-lang { display: flex; align-items: center; gap: 6px; font-family: var(--font-geist-mono), monospace; }
+        .nv-lang-item { display: flex; align-items: center; gap: 6px; }
+        .nv-lang-sep { color: rgba(255,255,255,0.25); font-size: 12px; }
+        .nv-lang a {
+          font-size: 12px; font-weight: 700; letter-spacing: 0.08em;
+          color: rgba(255,255,255,0.5); text-decoration: none;
+          padding: 6px 2px; transition: color 0.2s ease;
+        }
+        .nv-lang a:hover { color: rgba(255,255,255,0.9); }
+        .nv-lang a.nv-lang-on { color: #ffffff; }
+
         @media (max-width: 1000px) { .nv-center { gap: 18px; } .nv-link { letter-spacing: 0.08em; } }
         @media (max-width: 768px) {
           .nv-center { display: none; }

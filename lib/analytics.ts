@@ -22,11 +22,21 @@ export type EventName =
   | "offre_click"
   | "sortie";
 
+/**
+ * Langue de la page, lue sur `<html lang>` (posé par le layout `[lang]`).
+ * Tous les événements la portent : on compare ainsi visiteurs FR et EN sans
+ * toucher un seul appel `track()` dans les composants.
+ */
+export function pageLang(): string {
+  if (typeof document === "undefined") return "fr";
+  return document.documentElement.lang === "en" ? "en" : "fr";
+}
+
 /** Envoi protégé : sans script (dev, bloqueur, opt-out), l'appel ne fait rien. */
 export function track(event: EventName | string, data?: Record<string, string | number>) {
   if (typeof window === "undefined") return;
   try {
-    (window as unknown as { umami?: Umami }).umami?.track(event, data);
+    (window as unknown as { umami?: Umami }).umami?.track(event, { ...data, lang: pageLang() });
   } catch {
     /* les statistiques ne bloquent jamais une page */
   }
