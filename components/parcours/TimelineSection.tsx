@@ -71,7 +71,7 @@ export default function TimelineSection() {
   let sideIndex = 0;
 
   return (
-    <section style={{ padding: "4rem clamp(1rem, 4vw, 3rem)", maxWidth: 900, margin: "0 auto" }}>
+    <section className="timeline-section" style={{ padding: "4rem clamp(1rem, 4vw, 3rem)", maxWidth: 900, margin: "0 auto" }}>
       <ScrollReveal>
         <SectionLabel>{c.label}</SectionLabel>
         <h2 style={{ fontSize: "1.75rem", fontWeight: 700, color: "var(--color-text)", margin: "0 0 2.5rem" }}>

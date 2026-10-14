@@ -189,6 +189,17 @@ body {
 }
 .freq-row:hover .freq-value { color: var(--color-orange); }
 .freq-row:hover .freq-arrow { opacity: 1; transform: translateX(0); }
+/* Mobile : le libellé reste en haut, la valeur passe sur sa propre ligne, pleine
+   largeur. Avant, l'adresse mail et les libellés EN élargissaient la page
+   (444 px de large à 360 px). `!important` : flex et taille sont en style inline. */
+@media (max-width: 639px) {
+  .freq-row { flex-wrap: wrap; column-gap: 0.75rem; row-gap: 0.3rem; }
+  .freq-value {
+    order: 3; flex: 1 1 calc(100% - 24px - 2.25rem) !important; min-width: 0;
+    margin-left: calc(24px + 0.75rem); font-size: 17px !important; overflow-wrap: anywhere;
+  }
+  .freq-arrow { order: 4; }
+}
 
 @keyframes contactRing {
   0%, 100% { transform: scale(1); opacity: 1; }
@@ -385,6 +396,10 @@ body {
   .tl-node-cell { position: absolute; left: -7px; top: 0; display: block; }
   .timeline-watermark { left: 0 !important; transform: none !important; }
   .timeline-year-label { text-align: left !important; }
+  /* Les lignes encore masquées (glissement de 40 px) et le tracé débordaient de
+     ~25 px : coupé horizontalement au bord de la section, pas à celui de la frise,
+     pour garder les points de la timeline (left: -7px) entiers. */
+  .timeline-section { overflow-x: clip; }
 }
 
 /* Révélation au scroll SANS JavaScript (home, /pme) : animation pilotée par le
