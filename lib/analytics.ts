@@ -34,14 +34,65 @@ export function pageLang(): string {
   return document.documentElement.lang === "en" ? "en" : "fr";
 }
 
-/** Envoi protégé : sans script (dev, bloqueur, opt-out), l'appel ne fait rien. */
-export function track(event: EventName | string, data?: Record<string, string | number>) {
-  if (typeof window === "undefined") return;
+/**
+ * FILE D'ATTENTE (Cowork #36). Le script d'Umami se charge APRÈS l'hydratation
+ * (next/script, afterInteractive) : `arrivee`, envoyé au montage, partait
+ * avant lui et se perdait en silence — aucun `arrivee` en prod depuis le 09/10.
+ * Un événement émis trop tôt attend donc ici, et part dès que `window.umami`
+ * existe (onLoad du script, ou au plus tard 10 s de vérification). Sans script
+ * du tout (dev, bloqueur), la file est jetée : rien ne s'accumule.
+ */
+type Pending = [string, Record<string, string | number>];
+const queue: Pending[] = [];
+const QUEUE_MAX = 20;
+const WAIT_STEP_MS = 200;
+const WAIT_TRIES = 50;
+let waiting = false;
+
+const umamiOf = () => (window as unknown as { umami?: Umami }).umami;
+
+function send(umami: Umami, event: string, data: Record<string, string | number>) {
   try {
-    (window as unknown as { umami?: Umami }).umami?.track(event, { ...data, lang: pageLang() });
+    umami.track(event, data);
   } catch {
     /* les statistiques ne bloquent jamais une page */
   }
+}
+
+/** Rejoue les événements en attente. Appelé par le onLoad du script (components/Analytics.tsx). */
+export function flushQueue() {
+  if (typeof window === "undefined") return;
+  const umami = umamiOf();
+  if (!umami) return;
+  for (const [event, data] of queue.splice(0)) send(umami, event, data);
+}
+
+function waitForUmami() {
+  if (waiting) return;
+  waiting = true;
+  let tries = 0;
+  const timer = setInterval(() => {
+    tries += 1;
+    if (umamiOf() || tries >= WAIT_TRIES) {
+      clearInterval(timer);
+      waiting = false;
+      if (umamiOf()) flushQueue();
+      else queue.length = 0;
+    }
+  }, WAIT_STEP_MS);
+}
+
+/** Événements en attente (tests). */
+export const pendingEvents = (): readonly Pending[] => queue;
+
+/** Envoi protégé : script pas encore chargé → mis en attente ; jamais d'erreur visible. */
+export function track(event: EventName | string, data?: Record<string, string | number>) {
+  if (typeof window === "undefined") return;
+  const payload = { ...data, lang: pageLang() };
+  const umami = umamiOf();
+  if (umami) return send(umami, event, payload);
+  if (queue.length < QUEUE_MAX) queue.push([event, payload]);
+  waitForUmami();
 }
 
 /** Canaux reconnus. « autre » est le fourre-tout d'un ?ref= inconnu. */
