@@ -9,6 +9,8 @@
 // Aucune donnée personnelle n'entre ici : jamais d'e-mail, de nom, de
 // téléphone ni le texte d'un formulaire. Seules des étiquettes courtes.
 
+import { arrivalDemo, rememberV, reportOrionVisit } from "./orion-visits";
+
 type Umami = { track: (event: string, data?: Record<string, string | number>) => void };
 
 /** Les événements du site. Minuscules, stables : on ne les renomme pas sans migrer Umami. */
@@ -135,6 +137,8 @@ export function sessionChannel(): Channel {
 /** `track`, avec le canal de la session recollé — pour les actions qui comptent. */
 export function trackWithChannel(event: EventName, data: Record<string, string | number> = {}) {
   track(event, { ...data, canal: sessionChannel() });
+  // Session venue d'un mail ORION : compteur agrégé côté ORION (lib/orion-visits.ts).
+  if (event === "demo_start" || event === "demo_result") reportOrionVisit(event, data.demo ? String(data.demo) : null);
 }
 
 /** `arrivee` une seule fois par session. Rend `true` si l'événement est parti. */
@@ -147,6 +151,10 @@ export function trackArrival(): boolean {
   if (arrival.demo) data.demo = arrival.demo;
   if (arrival.v) data.v = arrival.v;
   track("arrivee", data);
+  if (arrival.canal === "orion") {
+    rememberV(arrival.v);
+    reportOrionVisit("arrivee", arrivalDemo(window.location.pathname, arrival.demo));
+  }
   return true;
 }
 

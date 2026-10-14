@@ -110,3 +110,19 @@ Chine. Ceux-là se lisent dans Umami en filtrant sur le pays, ou se reconnaissen
    avec `contact_submit` pour savoir quel canal amène des gens qui agissent.
 3. **Écarter les robots** : filtrer le rapport sur la France, ou comparer
    « visites » et « sessions ayant émis au moins un événement ».
+
+## Compteurs agrégés côté ORION (Cowork #34)
+
+En plus de l'événement Umami, une session venue d'un mail ORION (`?v=`)
+signale à ORION trois choses : l'arrivée, la démo lancée, la démo aboutie
+(`lib/orion-visits.ts`). Le navigateur appelle `/api/visite-demo`, qui relaie
+côté serveur vers `https://orion.axelremillat.com/api/demo-visits` avec
+l'en-tête `x-demo-visits-secret`.
+
+- Ce qui part : `{ demo, v, type }`, rien d'autre. Aucun identifiant, aucun
+  cookie, aucune IP ni user-agent, pas de jeton par prospect. ORION n'en garde
+  que des compteurs par jour × démo × v × type (Cockpit › « Démos ouvertes
+  depuis les mails »).
+- Variable Vercel **`DEMO_VISITS_SECRET`**, même valeur dans les projets
+  portfolio et ORION. Absente : la route ne fait rien (204), sans erreur.
+- `?moi=1` exclut aussi ce navigateur de ces compteurs.
