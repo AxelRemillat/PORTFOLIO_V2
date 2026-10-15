@@ -2,6 +2,7 @@ import type OpenAI from "openai";
 import type { Metier } from "@/lib/metiers";
 import { createToolFns, type DevisCalcule } from "./tools";
 import { toolSchemas, systemPrompt } from "./schemas";
+import { plainEmail } from "./plain";
 import { AGENT_TEXT_FR, type AgentText } from "./text";
 
 // Boucle de l'agent devis (raisonnement + outils), indépendante d'OpenAI : le
@@ -16,7 +17,7 @@ type Livrable = { complet?: boolean; email?: string; reponse?: string; note?: st
 const MAX_ITER = 8;
 function summarize(t: AgentText, name: string, res: Record<string, unknown>): string {
   if (name === "rechercher_articles") return t.summary.found((res.articles as unknown[])?.length ?? 0);
-  if (name === "verifier_livraison") return res.a_confirmer ? t.summary.toConfirm : t.summary.zone(res.delai_jours, res.frais);
+  if (name === "verifier_livraison") return res.a_confirmer ? t.summary.toConfirm : t.summary.zone(res.delai_jours, res.frais, res.franco);
   if (name === "calculer_devis") return t.summary.total(res.total_ttc, Boolean((res.a_chiffrer as unknown[])?.length));
   if (name === "infos_entreprise") return t.summary.policy;
   return "ok";
@@ -70,7 +71,7 @@ export async function runAgent(m: Metier, demande: string, llm: Llm, t: AgentTex
 function assemble(m: Metier, devis: DevisCalcule | null, l: Livrable | null, t: AgentText) {
   const qs = [...(devis?.questions ?? []), ...(Array.isArray(l?.questions) ? l.questions : [])].map((q) => String(q).trim()).filter(Boolean);
   const questions = [...new Set(qs)].slice(0, 5);
-  const email = (l?.email || l?.reponse || "").trim()
+  const email = plainEmail(l?.email || l?.reponse || "")
     || t.fallbackEmail(m.entreprise);
   return {
     complet: Boolean(devis?.complet) && questions.length === 0 && l?.complet !== false,

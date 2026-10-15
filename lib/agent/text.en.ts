@@ -14,7 +14,9 @@ STRICT rules:
 - NEVER answer "not possible". Anything not in the catalog goes into hors_catalogue (a "to be priced" line) and becomes a question for the customer. Price everything you can: a partial quote beats a refusal.
 - Missing quantity or size: make a reasonable assumption, price it, and ask a question to confirm.
 - Tight budget: pick the most affordable option and say so.
-- ALWAYS end with finaliser and a friendly email that restates the total (format amounts like €1,750) and the questions. Write one sentence of reasoning before each tool call.`,
+- ALWAYS end with finaliser and a friendly email that restates the total (format amounts like €1,750) and the questions. Write one sentence of reasoning before each tool call.
+- The email is PLAIN TEXT: no Markdown at all (no asterisks, no #, no Markdown bullet lists).
+- Delivery: restate the quote exactly (frais_livraison, livraison_offerte, franco). If it is free, say so with the threshold ("free delivery on orders over €…").`,
   finishNudge: "Finish now: call finaliser with the customer email and the questions.",
   fallbackEmail: (e) => `Hello,\n\nThank you for your request. A member of the ${e} team will get back to you shortly to finalize it.\n\nBest regards,\nOSCAR — ${e}`,
   trace: { reflexion: "Reasoning", ready: "Deliverable ready", readyDetail: "Quote, email and questions generated.", readyShort: "Generated.", unknownTool: "unknown tool" },
@@ -27,7 +29,7 @@ STRICT rules:
   summary: {
     found: (n) => `${n} item(s) found`,
     toConfirm: "To confirm with the customer",
-    zone: (j, f) => `${j} days · ${eur(f)} excl. VAT`,
+    zone: (j, f, franco) => `${j} days · ${eur(f)} excl. VAT${franco ? ` (free on orders over ${eur(franco)} excl. VAT)` : ""}`,
     total: (ttc, partial) => `${eur(ttc)} incl. VAT${partial ? " · partial quote" : ""}`,
     policy: "Policy retrieved",
   },
@@ -40,7 +42,7 @@ STRICT rules:
     finish: "Closes the request. Call it once, last. The customer email is ALWAYS required.",
     finishArgs: {
       complet: "true if everything is priced, false for a partial quote (lines to be priced or missing info)",
-      email: "Personalized customer email, ready to send, restating the quote and the questions.",
+      email: "Personalized customer email, ready to send, in plain text (no Markdown), restating the quote and the questions.",
       questions: "Questions to ask the customer to complete the quote (0 to 4).",
       reponse: "Short answer to a general question (optional).",
       creneaux: "2 suggested call slots",

@@ -11,7 +11,7 @@ export interface AgentText {
   summary: {
     found: (n: number) => string;
     toConfirm: string;
-    zone: (jours: unknown, frais: unknown) => string;
+    zone: (jours: unknown, frais: unknown, franco?: unknown) => string;
     total: (ttc: unknown, partial: boolean) => string;
     policy: string;
   };
@@ -47,7 +47,9 @@ Règles STRICTES :
 - Tu ne réponds JAMAIS « non faisable ». Ce qui n'est pas au catalogue va dans hors_catalogue (ligne « à chiffrer ») et devient une question au client. Tu chiffres tout ce qui peut l'être : devis partiel plutôt que refus.
 - Quantité ou dimension manquante : prends une hypothèse raisonnable, chiffre, et pose la question pour confirmer.
 - Budget serré : choisis l'option la plus économique et dis-le.
-- Termine TOUJOURS par finaliser, avec un email cordial qui reprend le total et les questions. Une phrase de raisonnement avant chaque appel d'outil.`,
+- Termine TOUJOURS par finaliser, avec un email cordial qui reprend le total et les questions. Une phrase de raisonnement avant chaque appel d'outil.
+- L'email est en TEXTE BRUT : aucun Markdown (pas d'astérisques, pas de #, pas de listes à puces Markdown).
+- Livraison : reprends exactement le devis (frais_livraison, livraison_offerte, franco). Si elle est offerte, dis-le avec le seuil (« livraison offerte dès … € HT »).`,
   finishNudge: "Termine maintenant : appelle finaliser avec l'email client et les questions.",
   fallbackEmail: (e) => `Bonjour,\n\nMerci pour votre demande. Un conseiller de ${e} revient vers vous très rapidement pour la finaliser.\n\nCordialement,\nOSCAR — ${e}`,
   trace: { reflexion: "Réflexion", ready: "Livrable prêt", readyDetail: "Devis, email et questions générés.", readyShort: "Généré.", unknownTool: "outil inconnu" },
@@ -60,7 +62,7 @@ Règles STRICTES :
   summary: {
     found: (n) => `${n} article(s) trouvé(s)`,
     toConfirm: "À confirmer avec le client",
-    zone: (j, f) => `${j} j · ${f} € HT`,
+    zone: (j, f, franco) => `${j} j · ${f} € HT${franco ? ` (offerte dès ${Number(franco).toLocaleString("fr-FR")} € HT)` : ""}`,
     total: (ttc, partial) => `${ttc} € TTC${partial ? " · devis partiel" : ""}`,
     policy: "Politique récupérée",
   },
@@ -73,7 +75,7 @@ Règles STRICTES :
     finish: "Clôt le traitement. À appeler une seule fois, en dernier. L'email client est OBLIGATOIRE dans tous les cas.",
     finishArgs: {
       complet: "true si tout est chiffré, false si devis partiel (lignes à chiffrer ou infos manquantes)",
-      email: "Email client personnalisé, prêt à envoyer, qui reprend le devis et les questions.",
+      email: "Email client personnalisé, prêt à envoyer, en texte brut (sans Markdown), qui reprend le devis et les questions.",
       questions: "Questions à poser au client pour compléter le devis (0 à 4).",
       reponse: "Réponse courte pour une question générale (optionnel).",
       creneaux: "2 créneaux d'appel proposés",

@@ -36,7 +36,7 @@ export default function DevisTable({ devis: d }: { devis: AgentDevis }) {
         {d.remise?.montant > 0 && (
           <div><dt>{th.discount} −{pct(d.remise.taux)}</dt><dd>−{eur(d.remise.montant)}</dd></div>
         )}
-        <div><dt>{delivery.label}</dt><dd>{d.frais_livraison > 0 ? eur(d.frais_livraison) : (d.livraison_offerte ? delivery.free : delivery.included)}</dd></div>
+        <div><dt>{delivery.label}</dt><dd>{d.frais_livraison > 0 ? eur(d.frais_livraison) : d.livraison_offerte ? (d.franco ? delivery.freeOver(eur(d.franco)) : delivery.free) : delivery.included}</dd></div>
         <div><dt>{th.total}</dt><dd>{eur(d.total_ht)}</dd></div>
         {d.tva.map((v) => (
           <div key={v.taux}><dt>{th.vat} {pct(v.taux)}</dt><dd>{eur(v.montant)}</dd></div>
