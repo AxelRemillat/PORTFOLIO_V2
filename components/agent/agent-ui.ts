@@ -28,7 +28,7 @@ export interface AgentUi {
   copy: string;
   copied: string;
   slotsLabel: string;
-  delivery: { label: string; free: string; included: string };
+  delivery: { label: string; free: string; freeOver: (seuil: string) => string; included: string };
   table: { item: string; qty: string; unit: string; unitPrice: string; amount: string; subtotal: string; discount: string; total: string; vat: string; grand: string; toPrice: string };
   leadTime: (jours: number, partial: boolean) => { before: string; strong: string; after: string };
   days: string[];
@@ -79,7 +79,7 @@ export const AGENT_UI_FR: AgentUi = {
   copy: "Copier",
   copied: "Copié ✓",
   slotsLabel: "Rendez-vous proposés",
-  delivery: { label: "Livraison / déplacement", free: "offert", included: "inclus" },
+  delivery: { label: "Livraison / déplacement", free: "offert", freeOver: (s) => `offerte (commande dès ${s} HT)`, included: "inclus" },
   table: { item: "Désignation", qty: "Qté", unit: "Unité", unitPrice: "P.U. HT", amount: "Montant HT", subtotal: "Sous-total HT", discount: "Remise", total: "Total HT", vat: "TVA", grand: "Total TTC", toPrice: "à chiffrer" },
   leadTime: (j, partial) => ({ before: "Délai estimé : ", strong: `${j} jours ouvrés`, after: partial ? " (hors lignes à chiffrer)" : "" }),
   days: ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi"],

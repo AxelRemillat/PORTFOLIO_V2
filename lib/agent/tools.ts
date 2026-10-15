@@ -78,7 +78,7 @@ export function calculer_devis(m: Metier, { lignes, hors_catalogue, ville }: { l
   const delai = chiffrees.reduce((d, l) => Math.max(d, l._delai), 0) + m.livraison.delai_jours;
   return {
     lignes: chiffrees.map(({ ref, designation, unite, quantite, prix_unitaire, montant }) => ({ ref, designation, unite, quantite, prix_unitaire, montant })),
-    a_chiffrer, sous_total_ht, remise, frais_livraison, livraison_offerte: offert, total_ht, tva, tva_montant,
+    a_chiffrer, sous_total_ht, remise, frais_livraison, livraison_offerte: offert, franco: m.livraison.franco, total_ht, tva, tva_montant,
     total_ttc: r2(total_ht + tva_montant), delai_jours: delai, ville: ville ?? null,
     complet: a_chiffrer.length === 0 && !zone.a_confirmer && chiffrees.length > 0, questions,
   };

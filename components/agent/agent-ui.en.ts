@@ -37,7 +37,7 @@ export const AGENT_UI_EN: AgentUi = {
   copy: "Copy",
   copied: "Copied ✓",
   slotsLabel: "Suggested meetings",
-  delivery: { label: "Delivery / travel", free: "free", included: "included" },
+  delivery: { label: "Delivery / travel", free: "free", freeOver: (s) => `free (orders over ${s} excl. VAT)`, included: "included" },
   table: { item: "Item", qty: "Qty", unit: "Unit", unitPrice: "Unit price excl. VAT", amount: "Amount excl. VAT", subtotal: "Subtotal excl. VAT", discount: "Discount", total: "Total excl. VAT", vat: "VAT", grand: "Total incl. VAT", toPrice: "to be priced" },
   leadTime: (j, partial) => ({ before: "Estimated lead time: ", strong: `${j} business days`, after: partial ? " (excluding lines to be priced)" : "" }),
   days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
